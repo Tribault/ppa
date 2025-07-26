@@ -10,6 +10,6 @@ router.get('/', getAllPosters)
 router.post('/', authenticate, authorize('admin'), upload.single('image'), createPoster)
 router.put('/:id', authenticate, authorize('admin'), updatePoster)
 router.delete('/:id', authenticate, authorize('admin'), deletePoster)
-router.post('/:id/book', authenticate, bookPoster)
+router.post('/:posterId/validate/:bookingId', authenticate, authorize('admin'), validateBooking)
 
 module.exports = router

@@ -1,4 +1,5 @@
 <template>
+  <div class="container-home">
     <div class="header-home">
         <h2>Affiches de film</h2> 
         <div class="view-toggle">
@@ -27,6 +28,7 @@
     <PosterCard v-for="p in posters" :key="p._id" :poster="p" :view="view" />
   </div>
 </transition>
+</div>
 
 </template>
 
@@ -52,6 +54,10 @@ watch(view, (newView) => {
 </script>
 
 <style scoped>
+
+.container-home{
+  padding: 0 1rem
+}
 
 .header-home{
     display: flex;

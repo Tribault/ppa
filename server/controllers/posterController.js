@@ -22,12 +22,28 @@ exports.deletePoster = async (req, res) => {
     res.json({message: 'Poster deleted'})
 }
 
-exports.bookPoster = async (req, res) => {
-    const poster = await Poster.findById(req.params.id)
-    if(poster.isBooked) return res.status(400).json({message: 'Already booked'})
-    
-    poster.isBooked = true
-    poster.bookedBy = req.user._id
-    await poster.save()
-    res.json(poster)
+exports.validateBooking = async (req, res) => {
+  const poster = await Poster.findById(req.params.posterId);
+
+  const booking = poster.bookings.id(req.params.bookingId);
+  if (!booking) return res.status(404).json({ error: 'Booking not found' });
+
+  if (booking.status === 'validated') {
+    return res.status(400).json({ error: 'Booking already validated' });
+  }
+
+  // Mark booking as validated
+  booking.status = 'validated';
+  await poster.save();
+
+  // Create sale record
+  const sale = new Sale({
+    user: booking.user,
+    poster: poster._id,
+    quantity: booking.quantity
+  });
+
+  await sale.save();
+
+  res.json({ message: 'Booking validated and sale recorded' });
 }

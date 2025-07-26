@@ -1,6 +1,7 @@
 <template>
   <div v-if="view === 'grid'" class="card-grid">
-        <img :src="`http://localhost:5000/uploads/${poster.image}`" alt=""/>
+        <img v-if=poster.image :src="`http://localhost:5000/uploads/${poster.image}`" alt=""/>
+        <img v-else src= "../assets/undraw_page-eaten_b2rt.svg" />
         <div>
           <h3>{{ poster.title }}</h3>
           <p>{{ poster.description }}</p>
@@ -49,6 +50,10 @@ const bookPoster = async () =>
   padding: 0.5rem;
   border-radius: 6px;
   text-align: center;
+
+  & img{
+    max-width: 150px;
+  }
 }
 .card-list {
   display: flex;
@@ -57,9 +62,5 @@ const bookPoster = async () =>
   padding: 1rem 0;
   justify-content: space-between;
   
-}
-.card-list img {
-  width: 100px;
-  height: auto;
 }
 </style>
