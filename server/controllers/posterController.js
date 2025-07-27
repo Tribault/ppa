@@ -2,7 +2,17 @@ const Poster = require('../models/Poster')
 
 exports.getAllPosters = async(req, res) => {
     const posters = await Poster.find()
-    res.json(posters)
+
+    const withAvailableStock = await Promise.all(
+        posters.map(async (poster) => {
+            const available = await poster.getAvailableStock()
+            return{
+                ...poster.toObject(),
+                availableStock: available
+            }
+        })
+    )
+    res.json(withAvailableStock)
 }
 
 exports.createPoster = async (req, res) => {
