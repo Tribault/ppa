@@ -7,8 +7,10 @@ export interface User {
 export interface Poster {
     _id: string
     title: string
-    description: string
+    price: number
+    size : string
     image: string
-    isBooked: boolean
-    bookedBy?: string
+    note: string
+    availableStock : number
+    totalStock : number
 }
