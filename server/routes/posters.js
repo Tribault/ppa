@@ -3,13 +3,12 @@ const router = express.Router()
 const upload = require('../middleware/upload')
 const {authenticate, authorize} = require('../middleware/auth')
 const {
-    getAllPosters, createPoster, updatePoster, deletePoster, bookPoster
+    getAllPosters, createPoster, updatePoster, deletePoster
 } = require('../controllers/posterController')
 
 router.get('/', getAllPosters)
 router.post('/', authenticate, authorize('admin'), upload.single('image'), createPoster)
 router.put('/:id', authenticate, authorize('admin'), updatePoster)
 router.delete('/:id', authenticate, authorize('admin'), deletePoster)
-router.post('/:posterId/validate/:bookingId', authenticate, authorize('admin'), validateBooking)
 
 module.exports = router
