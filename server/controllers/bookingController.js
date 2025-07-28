@@ -2,8 +2,6 @@ const Poster = require('../models/Poster')
 const Booking = require('../models/Booking')
 const Sale = require('../models/Sale')
 
-// POST /api/bookings
-
 exports.createBooking =  async (req, res) => {
   const { posterId, quantity } = req.body;
   const userId = req.user.id;
@@ -23,6 +21,11 @@ exports.createBooking =  async (req, res) => {
 
   await booking.save();
   res.status(201).json(booking);
+}
+
+exports.updateBooking = async (req, res) => {
+    const updated = await Booking.findByIdAndUpdate(req.params.id, req.body, {new: true})
+    res.json(updated)
 }
 
 exports.validateBooking = async (req, res) => {

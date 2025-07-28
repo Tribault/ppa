@@ -4,6 +4,7 @@ import Login from '../pages/Login.vue'
 import Signup from '../pages/Signup.vue'
 import Admin from '../pages/Admin.vue'
 import PosterForm from '../pages/PosterForm.vue'
+import Account from '../pages/Account.vue'
 
 const routes = [
   { path: '/', component: Home },
@@ -11,10 +12,11 @@ const routes = [
   { path: '/signup', component: Signup },
   { path: '/admin', component: Admin },
   { path: '/admin/new', component: PosterForm },
-  { path: '/admin/edit/:id', component: PosterForm, props: true }
+  { path: '/account', component: Account },
+  { path: '/admin/edit/:id', component: PosterForm, props: true },
 ]
 
 export default createRouter({
   history: createWebHistory(),
-  routes
+  routes,
 })
