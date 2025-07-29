@@ -16,11 +16,11 @@ export interface Poster {
 }
 
 export interface Booking {
-_id: string;
-  user: string; 
-  poster: Poster; 
-  quantity: number;
-  status: string;
-  bookedAt: string;
-  priceAtBooking: number;
+  _id: string
+  user: string
+  poster: Poster
+  quantity: number
+  status: string
+  bookedAt: string
+  priceAtBooking: number
 }

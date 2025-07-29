@@ -1,65 +1,72 @@
 <template>
-  <form @submit.prevent="submitForm">
-    <input v-model="title" placeholder="Title" />
-    <textarea v-model="description" placeholder="Description" />
-    <input type="file" @change="onFileChange" />
-    <button>Submit</button>
-  </form>
+  <div v-if="visible" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    <div class="bg-white rounded p-4 w-full max-w-md relative">
+      <button class="absolute top-2 right-2" @click="close">✖</button>
+
+      <h2 class="text-xl font-bold mb-4">
+        {{ posterToEdit?._id ? 'Edit Poster' : 'New Poster' }}
+      </h2>
+
+      <form @submit.prevent="submit">
+        <input v-model="form.title" placeholder="Title" class="mb-2 w-full" />
+        <input v-model="form.size" placeholder="Size" class="mb-2 w-full" />
+        <input v-model.number="form.price" type="number" placeholder="Price" class="mb-2 w-full" />
+        <input
+          v-model.number="form.totalStock"
+          type="number"
+          placeholder="Stock"
+          class="mb-2 w-full"
+        />
+
+        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Save</button>
+      </form>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import axios from 'axios'
-import { useRoute, useRouter } from 'vue-router'
-import { useAuthStore } from '../stores/auth'
+import { ref, watch } from 'vue'
+import type { Poster } from '@/types/models'
+import { usePosterStore } from '@/stores/posters'
 
-const route = useRoute()
-const router = useRouter()
-const auth = useAuthStore()
+const props = defineProps<{
+  visible: boolean
+  posterToEdit: Poster | null
+}>()
+const emit = defineEmits(['close', 'saved'])
 
-const title = ref('')
-const description = ref('')
-const file = ref<File | null>(null)
-
-const onFileChange = (e: Event) => {
-  const target = e.target as HTMLInputElement
-  if (target.files) {
-    file.value = target.files[0]
-  }
-}
-
-onMounted(async () => {
-  const id = route.params.id as string
-  if (id) {
-    const res = await axios.get('http://localhost:5000/api/posters')
-    const poster = res.data.find((p: any) => p._id === id)
-    title.value = poster.title
-    description.value = poster.description
-  }
+const form = ref({
+  title: '',
+  size: '',
+  price: 0,
+  totalStock: 0,
 })
 
-const submitForm = async () => {
-  const id = route.params.id as string
-  const headers = { Authorization: `Bearer ${auth.token}` }
+const store = usePosterStore()
 
-  if (id) {
-    await axios.put(
-      `http://localhost:5000/api/posters/${id}`,
-      {
-        title: title.value,
-        description: description.value,
-      },
-      { headers },
-    )
+watch(
+  () => props.posterToEdit,
+  (val) => {
+    if (val) {
+      form.value = { ...val }
+    } else {
+      form.value = { title: '', size: '', price: 0, totalStock: 0 }
+    }
+  },
+  { immediate: true },
+)
+
+function close() {
+  emit('close')
+}
+
+async function submit() {
+  if (props.posterToEdit?._id) {
+    await store.updatePoster(props.posterToEdit._id, form.value)
   } else {
-    const formData = new FormData()
-    formData.append('title', title.value)
-    formData.append('description', description.value)
-    if (file.value) formData.append('image', file.value)
-
-    await axios.post('http://localhost:5000/api/posters', formData, { headers })
+    await store.createPoster(form.value)
   }
-
-  router.push('/admin')
+  emit('saved')
+  close()
 }
 </script>

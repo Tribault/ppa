@@ -65,7 +65,19 @@ exports.getBookings = async (res) => {
 
 exports.getUserBookings = async (req, res) => {
    const bookings = await Booking.find({ user: req.params.userId })
-    .populate('poster');
+    .populate('poster')
+    .lean()
+
+  await Promise.all(
+  bookings.map(async (booking) => {
+    if (booking.poster && booking.poster._id) {
+      const posterDoc = await Poster.findById(booking.poster._id);
+      const availableStock = await posterDoc.getAvailableStock();
+      booking.poster.availableStock = availableStock;
+    }
+  })
+)
+
   res.json(bookings);
 }
 
@@ -92,7 +104,8 @@ exports.deleteBooking = async (req, res) => {
     return res.status(400).json({ error: 'Only pending bookings can be cancelled' });
   }
 
-  await booking.remove();
+  await Booking.findByIdAndDelete(req.params.id)
+
   res.json({ message: 'Booking cancelled' });
 }
 

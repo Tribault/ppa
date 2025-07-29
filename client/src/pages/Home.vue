@@ -14,11 +14,28 @@
 
     <transition name="fade" mode="out-in">
       <div v-if="view === 'grid'" key="grid" class="grid-container">
-        <PosterCard v-for="p in posters" :key="p._id" :poster="p" :view="view" />
+        <PosterCard v-for="p in posters" :columns="columns" :key="p._id" :poster="p" :view="view" />
       </div>
 
       <div v-else key="list" class="list-container">
-        <PosterCard v-for="p in posters" :key="p._id" :poster="p" :view="view" />
+        <table class="min-w-full table-auto border">
+          <thead class="bg-gray-100">
+            <tr>
+              <th v-for="column in columns" :key="column.key" class="px-4 py-2 text-left">
+                {{ column.label }}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <PosterCard
+              v-for="p in posters"
+              :columns="columns"
+              :key="p._id"
+              :poster="p"
+              :view="view"
+            />
+          </tbody>
+        </table>
       </div>
     </transition>
   </div>
@@ -33,6 +50,13 @@ import PosterCard from '../components/PosterCard.vue'
 
 const posters = ref<Poster[]>([])
 const view = ref<'grid' | 'list'>((localStorage.getItem('posterView') as 'grid' | 'list') || 'grid')
+
+const columns = ref([
+  { key: 'title', label: 'Titre' },
+  { key: 'availableStock', label: 'Stock disponible' },
+  { key: 'note', label: 'Commentaire' },
+  { key: 'total', label: 'Prix total', manual: true },
+])
 
 onMounted(async () => {
   const res = await axios.get('http://localhost:5000/api/posters')

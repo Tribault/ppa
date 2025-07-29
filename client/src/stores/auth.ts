@@ -8,8 +8,23 @@ export const useAuthStore = defineStore('auth', {
   state: () => ({
     user: null as User | null,
     token: localStorage.getItem('token') || '',
+    initialized: false,
   }),
   actions: {
+    async init() {
+      if (this.token || this.initialized) return
+
+      const saved = localStorage.getItem('token')
+      if (saved) {
+        this.token = saved
+        try {
+          await this.fetchUser() // get user profile
+        } catch (e) {
+          this.token = ''
+        }
+      }
+      this.initialized = true
+    },
     async login(username: string, password: string) {
       const res = await axios.post(`${API}/auth/login`, { username, password })
       this.token = res.data.token
@@ -23,11 +38,9 @@ export const useAuthStore = defineStore('auth', {
       localStorage.setItem('token', this.token)
     },
     async fetchUser() {
-       
       if (!this.token) return
 
       try {
-                 console.log('coucou')
         const res = await axios.get('http://localhost:5000/api/auth/me', {
           headers: { Authorization: `Bearer ${this.token}` },
         })

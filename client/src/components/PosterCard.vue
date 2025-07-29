@@ -22,10 +22,25 @@
       <p v-else>{{ poster.price }} €</p>
     </div>
   </div>
-  <div v-else class="card-list">
-    <div>{{ poster.title }}</div>
-    <div></div>
-  </div>
+  <tr v-else class="card-list, border-t">
+    <td><button>Image</button></td>
+    <td v-for="column in columns" :key="column.key" class="px-4 py-2 whitespace-nowrap text-sm">
+      {{ renderCell(column) }}
+    </td>
+    <td v-if="canBook">
+      <button @click="increment" :disabled="quantity >= poster.availableStock">
+        <PlusIcon class="icon" />
+      </button>
+      <button @click="decrement" :disabled="quantity <= 1">
+        <MinusIcon class="icon" />
+      </button>
+      <button @click="bookPoster">Réserver</button>
+    </td>
+    <td v-if="admin && auth.user?.role == 'admin'">
+      <button @click="$emit('edit', poster)">Modifier</button>
+      <button @click="deletePoster(poster._id)">Supprimer</button>
+    </td>
+  </tr>
 </template>
 
 <script setup lang="ts">
@@ -37,16 +52,38 @@ import { EyeSlashIcon, PlusIcon, MinusIcon } from '@heroicons/vue/24/solid'
 
 const props = defineProps<{
   poster: Poster
+  admin?: boolean
+  columns: { key: string; label: string; manual?: boolean }[]
   view: 'grid' | 'list'
 }>()
+
+const emit = defineEmits(['edit', 'updated'])
 
 const auth = useAuthStore()
 const canBook = computed(() => auth.user?.role === 'user')
 const quantity = ref<number>(1)
 
+function resolve(obj: any, path: string): any {
+  return path.split('.').reduce((acc, part) => acc?.[part], obj)
+}
+
+function renderCell(column: { key: string; manual?: boolean }) {
+  if (!column.manual) {
+    return resolve(props.poster, column.key)
+  }
+
+  switch (column.key) {
+    case 'total':
+      return props.poster.price * quantity.value + ' €'
+    case 'image':
+      return '<buttton>'
+    default:
+      return '—'
+  }
+}
+
 const bookPoster = async () => {
   try {
-    console.log(auth.token)
     await axios.post(
       'http://localhost:5000/api/bookings',
       {
@@ -60,6 +97,13 @@ const bookPoster = async () => {
   } catch (err: any) {
     alert(err.response?.data?.error || 'Booking failed')
   }
+}
+
+const deletePoster = async (id: string) => {
+  await axios.delete(`http://localhost:5000/api/posters/${id}`, {
+    headers: { Authorization: `Bearer ${auth.token}` },
+  })
+  emit('updated')
 }
 
 const increment = () => {
