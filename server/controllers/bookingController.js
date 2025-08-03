@@ -56,10 +56,11 @@ exports.validateBooking = async (req, res) => {
   res.status(201).json({ message: 'Booking validated and sale recorded' });
 }
 
-exports.getBookings = async (res) => {
+exports.getBookings = async (req, res) => {
  const bookings = await Booking.find()
     .populate('user')
     .populate('poster');
+    console.log(res)
   res.json(bookings);
 }
 

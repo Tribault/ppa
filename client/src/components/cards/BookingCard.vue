@@ -1,6 +1,6 @@
 <template>
   <tr class="border-t">
-    <td v-for="column in columns" :key="column.key" class="px-4 py-2 whitespace-nowrap text-sm">
+    <td v-for="column in columns" :key="column.key" >
       {{ renderCell(column) }}
     </td>
     <td v-if="booking.status == 'pending'">
@@ -20,7 +20,7 @@
 import type { Booking } from '@/types/models'
 import { ref } from 'vue'
 import axios from 'axios'
-import { useAuthStore } from '../stores/auth'
+import { useAuthStore } from '@/stores/auth'
 
 import { PlusIcon, MinusIcon } from '@heroicons/vue/24/solid'
 
@@ -28,11 +28,10 @@ const auth = useAuthStore()
 
 const props = defineProps<{
   booking: Booking
+  admin?: boolean
   columns: { key: string; label: string; manual?: boolean }[]
 }>()
-const emit = defineEmits<{
-  (e: 'updated'): void
-}>()
+const emit = defineEmits(['edit', 'updated'])
 
 const quantity = ref<number>(props.booking.quantity)
 

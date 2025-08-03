@@ -31,7 +31,7 @@
 <script setup>
 import { ref, watch } from 'vue'
 import { useAuthStore } from '@/stores/auth'
-import BookingCard from '../components/BookingCard.vue'
+import BookingCard from '@/components/cards/BookingCard.vue'
 import axios from 'axios'
 
 const auth = useAuthStore()

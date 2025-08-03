@@ -23,7 +23,7 @@
     </div>
   </div>
   <tr v-else class="card-list, border-t">
-    <td><button>Image</button></td>
+    <td><EyeIcon class="icon"/></td>
     <td v-for="column in columns" :key="column.key" class="px-4 py-2 whitespace-nowrap text-sm">
       {{ renderCell(column) }}
     </td>
@@ -37,18 +37,29 @@
       <button @click="bookPoster">Réserver</button>
     </td>
     <td v-if="admin && auth.user?.role == 'admin'">
-      <button @click="$emit('edit', poster)">Modifier</button>
-      <button @click="deletePoster(poster._id)">Supprimer</button>
+      <span @click="$emit('edit', poster)"><PencilIcon class="icon" /></span>
+      <span @click="confirmDelete"><DocumentMinusIcon class="icon" /></span>
     </td>
   </tr>
+   <ConfirmModal
+  :visible="confirmDeleteVisible"
+  message="This will permanently delete the poster."
+  @confirm="doDelete"
+  @cancel="confirmDeleteVisible = false"
+/>
 </template>
 
 <script setup lang="ts">
 import axios from 'axios'
-import type { Poster } from '../types/models'
-import { useAuthStore } from '../stores/auth'
+import { usePosterStore } from '@/stores/posters'
+import type { Poster } from '@/types/models'
+import { useAuthStore } from '@/stores/auth'
+import ConfirmModal from '@/components/ConfirmModal.vue'
 import { computed, ref } from 'vue'
-import { EyeSlashIcon, PlusIcon, MinusIcon } from '@heroicons/vue/24/solid'
+import { EyeSlashIcon, EyeIcon, PlusIcon, MinusIcon, PencilIcon, DocumentMinusIcon} from '@heroicons/vue/24/solid'
+
+import { useToast } from 'vue-toastification'
+const toast = useToast()
 
 const props = defineProps<{
   poster: Poster
@@ -58,6 +69,8 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits(['edit', 'updated'])
+
+const store = usePosterStore()
 
 const auth = useAuthStore()
 const canBook = computed(() => auth.user?.role === 'user')
@@ -99,13 +112,6 @@ const bookPoster = async () => {
   }
 }
 
-const deletePoster = async (id: string) => {
-  await axios.delete(`http://localhost:5000/api/posters/${id}`, {
-    headers: { Authorization: `Bearer ${auth.token}` },
-  })
-  emit('updated')
-}
-
 const increment = () => {
   if (quantity.value < props.poster.availableStock) {
     quantity.value++
@@ -115,6 +121,25 @@ const increment = () => {
 const decrement = () => {
   if (quantity.value > 1) {
     quantity.value--
+  }
+}
+
+const confirmDeleteVisible = ref(false)
+
+function confirmDelete() {
+  confirmDeleteVisible.value = true
+}
+
+async function doDelete() {
+  try {
+    if (props.poster?._id) {
+      await store.deletePoster(props.poster._id)
+      toast.success('Poster deleted 🗑')
+    }
+  } catch (err) {
+    toast.error('Failed to delete ❌')
+  } finally {
+    confirmDeleteVisible.value = false
   }
 }
 </script>

@@ -46,7 +46,7 @@ import axios from 'axios'
 import { ref, onMounted, watch } from 'vue'
 import { Squares2X2Icon, ListBulletIcon } from '@heroicons/vue/24/outline'
 import type { Poster } from '../types/models'
-import PosterCard from '../components/PosterCard.vue'
+import PosterCard from '@/components/cards/PosterCard.vue'
 
 const posters = ref<Poster[]>([])
 const view = ref<'grid' | 'list'>((localStorage.getItem('posterView') as 'grid' | 'list') || 'grid')

@@ -1,4 +1,5 @@
 <template>
+  <div class="new-admin-posters"><button @click="openNewPoster">Nouveau Poster</button></div>
   <div key="list" class="list-container">
     <table class="min-w-full table-auto border">
       <thead class="bg-gray-100">
@@ -9,7 +10,7 @@
         </tr>
       </thead>
       <tbody>
-        <PosterCard
+        <poster-card
           v-for="p in store.posters"
           :columns="columns"
           :key="p._id"
@@ -22,7 +23,7 @@
       </tbody>
     </table>
   </div>
-  <PosterForm
+  <poster-form
     :visible="showModal"
     :posterToEdit="editingPoster"
     @close="closeModal"
@@ -32,10 +33,11 @@
 
 <script setup lang="ts">
 import { usePosterStore } from '@/stores/posters'
-const store = usePosterStore()
 import { ref, onMounted } from 'vue'
-import PosterCard from '../../components/PosterCard.vue'
-import PosterForm from '../PosterForm.vue'
+import PosterCard from '@/components/cards/PosterCard.vue'
+import PosterForm from '@/components/AdminPosterEdit.vue'
+
+const store = usePosterStore()
 
 const columns = ref([
   { key: 'title', label: 'Titre' },
@@ -67,6 +69,10 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+
+.new-admin-posters{
+  text-align: end;
+}
 .container-home {
   padding: 0 1rem;
 }
@@ -119,5 +125,19 @@ onMounted(async () => {
 .list-container {
   display: flex;
   flex-direction: column;
+}
+
+.poster-form{
+  position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  background-color: white;
+  border: solid 1px black;
+    padding: 4em 2em;
 }
 </style>
