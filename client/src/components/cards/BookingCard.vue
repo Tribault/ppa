@@ -4,27 +4,30 @@
       {{ renderCell(column) }}
     </td>
     <td v-if="booking.status == 'pending'">
-      <button @click="increment" :disabled="quantity >= booking.poster.availableStock">
-        <PlusIcon class="icon" />
-      </button>
-      <button @click="decrement" :disabled="quantity <= 1">
-        <MinusIcon class="icon" />
-      </button>
-      <button @click="updateBooking">Modifier</button>
-      <button @click="deleteBooking">Supprimer</button>
+     <span @click="$emit('edit', booking)"><PencilIcon class="icon" /></span>
+      <span @click="confirmDelete"><DocumentMinusIcon class="icon" /></span>
     </td>
   </tr>
+<ConfirmModal
+  :visible="confirmDeleteVisible"
+  message="This will permanently delete the poster."
+  @confirm="doDelete"
+  @cancel="confirmDeleteVisible = false"
+/>
 </template>
 
 <script setup lang="ts">
 import type { Booking } from '@/types/models'
 import { ref } from 'vue'
-import axios from 'axios'
-import { useAuthStore } from '@/stores/auth'
+import { useBookingStore } from '@/stores/bookings'
+import ConfirmModal from '@/components/ConfirmModal.vue'
 
-import { PlusIcon, MinusIcon } from '@heroicons/vue/24/solid'
+import { useToast } from 'vue-toastification'
+const toast = useToast()
 
-const auth = useAuthStore()
+import { PencilIcon, DocumentMinusIcon} from '@heroicons/vue/24/solid'
+
+const bookingStore = useBookingStore()
 
 const props = defineProps<{
   booking: Booking
@@ -33,7 +36,6 @@ const props = defineProps<{
 }>()
 const emit = defineEmits(['edit', 'updated'])
 
-const quantity = ref<number>(props.booking.quantity)
 
 function resolve(obj: any, path: string): any {
   return path.split('.').reduce((acc, part) => acc?.[part], obj)
@@ -47,52 +49,31 @@ function renderCell(column: { key: string; manual?: boolean }) {
   switch (column.key) {
     case 'total':
       return (props.booking.quantity * props.booking.priceAtBooking).toFixed(2)
-    case 'quantity':
-      return quantity.value
     default:
       return '—'
   }
 }
 
-const increment = () => {
-  if (quantity.value < props.booking.poster.availableStock) {
-    quantity.value++
-  }
+const confirmDeleteVisible = ref(false)
+
+function confirmDelete() {
+  confirmDeleteVisible.value = true
 }
 
-const decrement = () => {
-  if (quantity.value > 1) {
-    quantity.value--
-  }
-}
-
-const updateBooking = async () => {
+async function doDelete() {
   try {
-    await axios.put(
-      ` http://localhost:5000/api/bookings/${props.booking._id}`,
-      {
-        quantity: quantity.value,
-      },
-      { headers: { Authorization: `Bearer ${auth.token}` } },
-    )
-    alert(`Booked ${quantity.value} copy/copies of "${props.booking.poster.title}"`)
-    emit('updated')
-  } catch (err: any) {
-    alert(err.response?.data?.error || 'Booking failed')
+    if (props.booking?._id) {
+      await bookingStore.deleteBooking(props.booking._id)
+      toast.success('booking cancelled 🗑')
+      emit('updated')
+    }
+  } catch (err) {
+    toast.error('Failed to cancel ❌')
+  } finally {
+    confirmDeleteVisible.value = false
   }
 }
 
-const deleteBooking = async () => {
-  try {
-    await axios.delete(` http://localhost:5000/api/bookings/${props.booking._id}`, {
-      headers: { Authorization: `Bearer ${auth.token}` },
-    })
-    alert('Booking deleted')
-    emit('updated')
-  } catch (err: any) {
-    alert(err.response?.data?.error || 'Booking deletion failed')
-  }
-}
 </script>
 <style>
 .container-booking {
@@ -102,8 +83,8 @@ const deleteBooking = async () => {
 }
 
 .icon {
-  width: 14px;
-  height: 14px;
+  width: 2rem;
+  height: 2rem;
   color: #333;
 }
 </style>

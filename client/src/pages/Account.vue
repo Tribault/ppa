@@ -40,7 +40,7 @@ const loading = ref(true)
 
 const columns = ref([
   { key: 'poster.title', label: 'Titre' },
-  { key: 'quantity', label: 'Quantité', manual: true },
+  { key: 'quantity', label: 'Quantité' },
   { key: 'status', label: 'Statut' },
   { key: 'priceAtBooking', label: 'Prix individuel' },
   { key: 'bookedAt', label: 'Date de réservation' },

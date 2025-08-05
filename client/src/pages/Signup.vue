@@ -3,6 +3,7 @@
     <h2>Sign Up</h2>
     <form @submit.prevent="handleSignup">
       <input v-model="username" type="text" placeholder="Username" required />
+      <input v-model="email" type="email" placeholder="Email" required />
       <input v-model="password" type="password" placeholder="Password" required />
       <select v-model="role">
         <option value="user">User</option>
@@ -22,6 +23,7 @@ import { useAuthStore } from '@/stores/auth'
 
 const username = ref('')
 const password = ref('')
+const email = ref('')
 const role = ref<'user' | 'admin'>('user')
 const error = ref('')
 
@@ -31,7 +33,7 @@ const router = useRouter()
 const handleSignup = async () => {
   error.value = ''
   try {
-    await auth.signup(username.value, password.value, role.value)
+    await auth.signup(username.value, password.value, email.value, role.value)
     router.push('/')
   } catch (err) {
     error.value = 'Identifiant déjà pris.'

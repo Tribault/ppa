@@ -31,8 +31,8 @@ export const useAuthStore = defineStore('auth', {
       this.user = res.data.user
       localStorage.setItem('token', this.token)
     },
-    async signup(username: string, password: string, role: string = 'user') {
-      const res = await axios.post(`${API}/auth/signup`, { username, password, role })
+    async signup(username: string, password: string, email: string, role: string = 'user') {
+      const res = await axios.post(`${API}/auth/signup`, { username, password, email, role })
       this.token = res.data.token
       this.user = res.data.user
       localStorage.setItem('token', this.token)

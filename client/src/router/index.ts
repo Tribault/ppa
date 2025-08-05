@@ -6,7 +6,7 @@ import Home from '../pages/Home.vue'
 import Login from '../pages/Login.vue'
 import Signup from '../pages/Signup.vue'
 import Admin from '../pages/AdminPage.vue'
-import PosterForm from '../components/AdminPosterEdit.vue'
+import PosterForm from '../pages/admin/AdminPosterEdit.vue'
 import Account from '../pages/Account.vue'
 
 const routes = [

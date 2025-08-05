@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import type { Booking } from '@/types/models'
+import type { Booking, BookingPayload } from '@/types/models'
 import api from '@/utils/axios'
 
 export const useBookingStore = defineStore('bookings', {
@@ -15,7 +15,6 @@ export const useBookingStore = defineStore('bookings', {
       try {
         const res = await api.get('/bookings')
         this.bookings = res.data
-        console.log("bookings", this.bookings)
       } catch (err: any) {
         this.error = err.response?.data?.message || 'Failed to fetch bookings'
       } finally {
@@ -23,7 +22,7 @@ export const useBookingStore = defineStore('bookings', {
       }
     },
 
-    async createBooking(bookingData: Partial<Booking>) {
+    async createBooking(bookingData: BookingPayload) {
       try {
         const res = await api.post('/bookings', bookingData)
         this.bookings.push(res.data)
@@ -33,7 +32,7 @@ export const useBookingStore = defineStore('bookings', {
       }
     },
 
-    async updateBooking(id: string, bookingData: Partial<Booking>) {
+    async updateBooking(id: string, bookingData: BookingPayload) {
       try {
         const res = await api.put(`/bookings/${id}`, bookingData)
         const index = this.bookings.findIndex((p) => p._id === id)
@@ -46,9 +45,9 @@ export const useBookingStore = defineStore('bookings', {
       }
     },
 
-    async deleteBoooking(id: string) {
+    async deleteBooking(id: string) {
       try {
-        await api.delete(`/posters/${id}`)
+        await api.delete(`/bookings/${id}`)
         this.bookings = this.bookings.filter((p) => p._id !== id)
       } catch (err: any) {
         this.error = err.response?.data?.message || 'Failed to delete poster'

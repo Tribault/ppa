@@ -1,19 +1,23 @@
 const Poster = require('../models/Poster')
 const Booking = require('../models/Booking')
 const Sale = require('../models/Sale')
+const User = require('../models/User')
 
 exports.createBooking =  async (req, res) => {
-  const { posterId, quantity } = req.body;
-  const userId = req.user.id;
+  const { posterId, quantity, userId } = req.body;
+  console.log("heyyyy", req.body)
 
   const poster = await Poster.findById(posterId);
   if (!poster) return res.status(404).json({ error: 'Poster not found' });
+
+  const user = await User.findById(userId);
+  if (!user) return res.status(404).json({ error: 'User not found' });
 
   if (quantity > poster.totalStock)
     return res.status(400).json({ error: 'Not enough stock' });
 
   const booking = new Booking({
-    user: req.user.id,
+    user: user._id,
     poster: poster._id,
     quantity,
     priceAtBooking: poster.price
@@ -60,7 +64,6 @@ exports.getBookings = async (req, res) => {
  const bookings = await Booking.find()
     .populate('user')
     .populate('poster');
-    console.log(res)
   res.json(bookings);
 }
 
@@ -91,12 +94,13 @@ exports.getPosterBookings = async (req, res) => {
 
 exports.deleteBooking = async (req, res) => {
   const booking = await Booking.findById(req.params.id);
+  console.log("req", req.user.role, req.user.role == 'admin')
 
   if (!booking) return res.status(404).json({ error: 'Booking not found' });
 
   if (
     booking.user.toString() !== req.user.id &&
-    !req.user.isAdmin
+    req.user.role !== 'admin'
   ) {
     return res.status(403).json({ error: 'Not authorized' });
   }

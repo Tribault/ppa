@@ -16,47 +16,46 @@
           :key="b._id"
           :booking="b"
           admin
-          @updated="store.fetchPosters()"
+          @updated="bookingStore.fetchBookings()"
           @edit="openEditPoster"
         />
       </tbody>
     </table>
   </div>
-  <poster-form
+  <admin-booking-edit
     :visible="showModal"
-    :posterToEdit="editingPoster"
+    :bookingToEdit="editingBooking"
     @close="closeModal"
-    @saved="store.fetchPosters"
+    @saved="bookingStore.fetchBookings"
   />
 </template>
 
 <script setup lang="ts">
 import { useBookingStore } from '@/stores/bookings'
-import { usePosterStore } from '@/stores/posters'
 import { ref, onMounted } from 'vue'
 import BookingCard from '@/components/cards/BookingCard.vue'
-import PosterForm from '@/components/AdminPosterEdit.vue'
+import AdminBookingEdit from '@/pages/admin/AdminBookingEdit.vue'
 
-const store = usePosterStore()
 const bookingStore = useBookingStore()
 
 const columns = ref([
-  { key: 'poster', label: 'Affiche réservée' },
+  { key: 'poster.title', label: 'Affiche réservée' },
+  {key: 'user.username', label:'Réservé par'},
   { key: 'quantity', label: 'Quantité' },
   { key: 'status', label: 'Statut de la réservation' },
   { key: 'total', label: 'Prix total', manual: true },
 ])
 
 const showModal = ref(false)
-const editingPoster = ref(null)
+const editingBooking = ref(null)
 
 const openNewPoster = () => {
-  editingPoster.value = null
+  editingBooking.value = null
   showModal.value = true
 }
 
-const openEditPoster = (poster: any) => {
-  editingPoster.value = poster
+const openEditPoster = (booking: any) => {
+  editingBooking.value = booking
   showModal.value = true
 }
 

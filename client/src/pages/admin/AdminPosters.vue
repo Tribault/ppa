@@ -35,7 +35,7 @@
 import { usePosterStore } from '@/stores/posters'
 import { ref, onMounted } from 'vue'
 import PosterCard from '@/components/cards/PosterCard.vue'
-import PosterForm from '@/components/AdminPosterEdit.vue'
+import PosterForm from '@/pages/admin/AdminPosterEdit.vue'
 
 const store = usePosterStore()
 

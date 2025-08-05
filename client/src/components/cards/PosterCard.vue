@@ -50,9 +50,10 @@
 </template>
 
 <script setup lang="ts">
-import axios from 'axios'
-import { usePosterStore } from '@/stores/posters'
+
 import type { Poster } from '@/types/models'
+import { usePosterStore } from '@/stores/posters'
+import { useBookingStore } from '@/stores/bookings'
 import { useAuthStore } from '@/stores/auth'
 import ConfirmModal from '@/components/ConfirmModal.vue'
 import { computed, ref } from 'vue'
@@ -70,7 +71,8 @@ const props = defineProps<{
 
 const emit = defineEmits(['edit', 'updated'])
 
-const store = usePosterStore()
+const posterStore = usePosterStore()
+const bookingStore = useBookingStore()
 
 const auth = useAuthStore()
 const canBook = computed(() => auth.user?.role === 'user')
@@ -97,18 +99,17 @@ function renderCell(column: { key: string; manual?: boolean }) {
 
 const bookPoster = async () => {
   try {
-    await axios.post(
-      'http://localhost:5000/api/bookings',
-      {
-        posterId: props.poster._id,
-        quantity: quantity.value,
-      },
-      { headers: { Authorization: `Bearer ${auth.token}` } },
-    )
-    alert(`Booked ${quantity.value} copy/copies of "${props.poster.title}"`)
+    if(auth.user)
+    bookingStore.createBooking({
+    posterId: props.poster._id,
+    userId: auth.user._id,
+    quantity: quantity.value,
+})
     quantity.value = 1
+    toast.success('Booking created!')
+    emit('updated')
   } catch (err: any) {
-    alert(err.response?.data?.error || 'Booking failed')
+    toast.error(err.response?.data?.error || 'Booking failed')
   }
 }
 
@@ -133,7 +134,7 @@ function confirmDelete() {
 async function doDelete() {
   try {
     if (props.poster?._id) {
-      await store.deletePoster(props.poster._id)
+      await posterStore.deletePoster(props.poster._id)
       toast.success('Poster deleted 🗑')
     }
   } catch (err) {
