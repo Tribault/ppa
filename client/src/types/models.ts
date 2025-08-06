@@ -28,6 +28,7 @@ export interface Booking {
 }
 
 export interface Sale {
+  _id: string
   user: string,
   poster: Poster
   quantity: number

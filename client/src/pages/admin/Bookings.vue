@@ -34,7 +34,7 @@
 import { useBookingStore } from '@/stores/bookings'
 import { ref, onMounted } from 'vue'
 import BookingCard from '@/components/cards/BookingCard.vue'
-import AdminBookingEdit from '@/pages/admin/AdminBookingEdit.vue'
+import AdminBookingEdit from '@/components/edition/bookingEdit.vue'
 
 const bookingStore = useBookingStore()
 

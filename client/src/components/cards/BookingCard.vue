@@ -4,9 +4,13 @@
       {{ renderCell(column) }}
     </td>
     <td v-if="booking.status == 'pending'">
+      <span @click="bookingStore.validateBooking(booking._id)"><CurrencyEuroIcon class="icon" /></span>
      <span @click="$emit('edit', booking)"><PencilIcon class="icon" /></span>
-      <span @click="confirmDelete"><DocumentMinusIcon class="icon" /></span>
+      <span @click="confirmDelete"><TrashIcon class="icon" /></span>
     </td>
+     <td v-if="booking.status == 'validated'">
+      <span @click="bookingStore.devalidateBooking(booking._id)"><MinusCircleIcon class="icon" /></span>
+     </td>
   </tr>
 <ConfirmModal
   :visible="confirmDeleteVisible"
@@ -25,7 +29,7 @@ import ConfirmModal from '@/components/ConfirmModal.vue'
 import { useToast } from 'vue-toastification'
 const toast = useToast()
 
-import { PencilIcon, DocumentMinusIcon} from '@heroicons/vue/24/solid'
+import { CurrencyEuroIcon, MinusCircleIcon, PencilIcon, TrashIcon} from '@heroicons/vue/24/solid'
 
 const bookingStore = useBookingStore()
 
@@ -34,7 +38,7 @@ const props = defineProps<{
   admin?: boolean
   columns: { key: string; label: string; manual?: boolean }[]
 }>()
-const emit = defineEmits(['edit', 'updated'])
+const emit = defineEmits(['edit', 'validate','updated', 'revert'])
 
 
 function resolve(obj: any, path: string): any {

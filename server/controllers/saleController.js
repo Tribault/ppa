@@ -1,3 +1,5 @@
+const Sale = require('../models/Sale')
+
 exports.getSales = async(req, res) => {
    const sales = await Sale.find()
     .populate('user')

@@ -19,7 +19,6 @@
             <option v-for="u in userStore.users" :key="u._id" :value="u._id">{{ u.email }}</option>
             </select>
             <input v-model.number="form.quantity" placeholder="Quantity" class="input" />
-            <input v-model.number="form.status"  placeholder="Price" class="input" />
 
             <div class="flex justify-between items-center mt-4">
               <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">{{ bookingToEdit ? 'Update' : 'Create' }}</button>
@@ -52,7 +51,6 @@ const form = ref<BookingPayload>({
   posterId: '' as string,
   userId: '' as string,
   quantity: 1,
-  status: 'pending',
 })
 
 const bookingStore = useBookingStore()
@@ -82,14 +80,12 @@ watch(
         userId: booking.user._id,
         posterId: booking.poster._id,
         quantity: booking.quantity,
-        status: booking.status
       }
     } else {
       form.value = {
         userId: '',
         posterId: '',
         quantity: 1,
-        status: 'pending'
       }
     }
   },

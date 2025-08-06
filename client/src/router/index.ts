@@ -5,8 +5,8 @@ import { useAuthStore } from '@/stores/auth'
 import Home from '../pages/Home.vue'
 import Login from '../pages/Login.vue'
 import Signup from '../pages/Signup.vue'
-import Admin from '../pages/AdminPage.vue'
-import PosterForm from '../pages/admin/AdminPosterEdit.vue'
+import Admin from '../pages/AdminHome.vue'
+import PosterForm from '../components/edition/posterEdit.vue'
 import Account from '../pages/Account.vue'
 
 const routes = [

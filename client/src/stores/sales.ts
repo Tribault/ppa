@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import type { Sale } from '@/types/models'
 import api from '@/utils/axios'
 
-export const usePosterStore = defineStore('sales', {
+export const useSaleStore = defineStore('sales', {
   state: () => ({
     sales: [] as Sale[],
     userSales: [] as Sale[],

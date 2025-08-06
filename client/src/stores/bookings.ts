@@ -2,6 +2,9 @@ import { defineStore } from 'pinia'
 import type { Booking, BookingPayload } from '@/types/models'
 import api from '@/utils/axios'
 
+import { useToast } from 'vue-toastification'
+const toast = useToast()
+
 export const useBookingStore = defineStore('bookings', {
   state: () => ({
     bookings: [] as Booking[],
@@ -31,7 +34,28 @@ export const useBookingStore = defineStore('bookings', {
         throw err
       }
     },
-
+    async validateBooking(id: string){
+      try{
+        await api.post(`/bookings/${id}/validate`)
+        await this.fetchBookings()
+        toast.success('booking validated')
+      }catch(err: any){
+        this.error = err.response?.data?.message || 'Failed to validate booking'
+        toast.error(this.error)
+        throw err
+      }
+    },
+        async devalidateBooking(id: string){
+      try{
+        await api.post(`/bookings/${id}/devalidate`)
+        await this.fetchBookings()
+        toast.success('booking devalidated')
+      }catch(err: any){
+        this.error = err.response?.data?.message || 'Failed to devalidate booking'
+        toast.error(this.error)
+        throw err
+      }
+    },
     async updateBooking(id: string, bookingData: BookingPayload) {
       try {
         const res = await api.put(`/bookings/${id}`, bookingData)
@@ -40,7 +64,7 @@ export const useBookingStore = defineStore('bookings', {
           this.bookings[index] = res.data
         }
       } catch (err: any) {
-        this.error = err.response?.data?.message || 'Failed to update poster'
+        this.error = err.response?.data?.message || 'Failed to update booking'
         throw err
       }
     },

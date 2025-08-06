@@ -23,7 +23,7 @@
       </tbody>
     </table>
   </div>
-  <poster-form
+  <poster-edit
     :visible="showModal"
     :posterToEdit="editingPoster"
     @close="closeModal"
@@ -35,7 +35,7 @@
 import { usePosterStore } from '@/stores/posters'
 import { ref, onMounted } from 'vue'
 import PosterCard from '@/components/cards/PosterCard.vue'
-import PosterForm from '@/pages/admin/AdminPosterEdit.vue'
+import PosterEdit from '@/components/edition/posterEdit.vue'
 
 const store = usePosterStore()
 

@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import AdminPosters from './admin/AdminPosters.vue'
-import AdminBookings from './admin/AdminBookings.vue'
-import AdminSales from './admin/AdminSales.vue'
+import AdminPosters from './admin/Posters.vue'
+import AdminBookings from './admin/Bookings.vue'
+import AdminSales from './admin/Sales.vue'
 
 const currentTab = ref<'posters' | 'bookings' | 'sales'>('posters')
 </script>

@@ -60,6 +60,35 @@ exports.validateBooking = async (req, res) => {
   res.status(201).json({ message: 'Booking validated and sale recorded' });
 }
 
+exports.devalidateBooking = async (req, res) => {
+  try {
+
+  const booking = await Booking.findById(req.params.bookingId);
+  if (!booking) return res.status(404).json({ error: 'Booking not found' });
+
+  if (booking.status !== 'validated')
+    return res.status(400).json({ error: 'Only validated bookings can be devalidated' });
+
+  const poster = await Poster.findById(booking.poster)
+  poster.totalStock += booking.quantity
+  await poster.save()
+
+  await Sale.deleteOne({
+      user: booking.user,
+      poster: booking.poster,
+      quantity: booking.quantity,
+      priceAtSale: booking.priceAtBooking
+    });
+
+  booking.status = 'pending'
+  await booking.save()
+
+  res.status(201).json({ message: 'Booking validated and sale recorded' });
+  }catch(err){
+    res.status(500).json({ error: 'Server error while devalidating booking' });
+  }
+}
+
 exports.getBookings = async (req, res) => {
  const bookings = await Booking.find()
     .populate('user')
