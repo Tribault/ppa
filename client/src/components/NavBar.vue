@@ -1,19 +1,20 @@
 <template>
   <nav class="navbar">
-    <router-link to="/"><img src="@/assets/logo.png"/></router-link>
-    <template v-if="!auth.user">
-      <router-link to="/login">S'indentifier</router-link>
+    <div class="navbar-home">
+    <router-link class="navbar-home__link" to="/" ><img src="@/assets/logo.png"/></router-link>
+    </div>
+    <div v-if="!auth.user" class="navbar-options">
+      <router-link to="/login">S'identifier</router-link>
       <router-link to="/signup">S'inscrire</router-link>
-    </template>
-    <template v-else>
-      
+    </div>
+    <div v-else class="navbar-options">
       <router-link v-if="auth.user.role === 'admin'" to="/admin" >Admin</router-link>
       <router-link v-if="auth.user.role === 'user'" to="/account" >Mes réservations</router-link>
-      <div>
-        <span>{{ auth.user.email }}</span>
-        <button @click="logout">Déconnexion</button>
+      <div class="navbar-options__user">
+        <span class="navbar-home__logout--user" >Compte : {{ auth.user.username }}</span>
+        <button @click="logout" class="navbar-home__logout" title="se déconnecter">[Déconnexion]</button>
       </div>
-    </template>
+    </div>
   </nav>
 </template>
 
@@ -34,18 +35,50 @@ const logout = () => {
 .navbar {
   display: flex;
   color:whitesmoke;
-  font: 1.4rem $font-base;
+  font: $font-size-lg $font-base;
+  font-weight: 700;
   gap: 1rem;
   padding: 1rem;
   background-color: $red;
   align-items: center;
-  
+  justify-content: space-between;
   text-decoration: none;
-  max-height: 200px;
+  
 }
 
-img{
-  max-width:100%;
-  max-height: 180px;
+  .navbar-home__link > img{
+      max-height:150px;
+    }
+  .navbar-home__logout{
+    background: none;
+	color: inherit;
+	border: none;
+	padding: 0;
+	font: inherit;
+	cursor: pointer;
+	outline: inherit;
+  }
+
+  .navbar-home__logout--user{
+    font-weight: 700;
+  }
+
+  .navbar-options__user{
+    display: flex;
+    flex-direction: column;
+  }
+
+  .navbar-options{
+    flex-grow: 1;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    word-break: break-all;
+  }
+
+  @media screen and (max-width:$break-sm) {
+  .navbar-home{flex-grow: 1; text-align: center;}
+  .navbar { flex-wrap: wrap;  font-size: 1rem;}
 }
 </style>
