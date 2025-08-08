@@ -1,4 +1,5 @@
 <template>
+  <button @click="saleStore.exportSalesCSV()">Télécharger ventes</button>
    <div key="list" class="list-container">
     <table class="min-w-full table-auto border">
       <thead class="bg-gray-100">

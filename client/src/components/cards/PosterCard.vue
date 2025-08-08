@@ -1,7 +1,7 @@
 <template>
   <div v-if="view === 'grid'" class="card-grid">
-    <img v-if="poster.image" :src="`http://localhost:5000/uploads/${poster.image}`" alt="" />
-    <EyeSlashIcon />
+    <img v-if="poster.image" :src="imgUrl" alt="" />
+    <div v-else><EyeSlashIcon /></div>
     <div>
       <h3 class="title-poster">{{ poster.title }}</h3>
       <p>Stock disponible : {{ poster.availableStock }}</p>
@@ -73,6 +73,8 @@ const emit = defineEmits(['edit', 'updated'])
 
 const posterStore = usePosterStore()
 const bookingStore = useBookingStore()
+
+const imgUrl = ref<string>(import.meta.env.VITE_IMG_URL + props.poster.image)
 
 const auth = useAuthStore()
 const canBook = computed(() => auth.user?.role === 'user')

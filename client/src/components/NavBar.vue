@@ -1,15 +1,18 @@
 <template>
   <nav class="navbar">
-    <router-link to="/">Accueil</router-link>
+    <router-link to="/"><img src="@/assets/logo.png"/></router-link>
     <template v-if="!auth.user">
       <router-link to="/login">S'indentifier</router-link>
       <router-link to="/signup">S'inscrire</router-link>
     </template>
     <template v-else>
-      <span>Bienvenue, {{ auth.user.username }}</span>
-      <router-link v-if="auth.user.role === 'admin'" to="/admin">Admin</router-link>
-      <router-link v-if="auth.user.role === 'user'" to="/account">Mes réservations</router-link>
-      <button @click="logout">Déconnexion</button>
+      
+      <router-link v-if="auth.user.role === 'admin'" to="/admin" >Admin</router-link>
+      <router-link v-if="auth.user.role === 'user'" to="/account" >Mes réservations</router-link>
+      <div>
+        <span>{{ auth.user.email }}</span>
+        <button @click="logout">Déconnexion</button>
+      </div>
     </template>
   </nav>
 </template>
@@ -27,21 +30,22 @@ const logout = () => {
 }
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 .navbar {
   display: flex;
+  color:whitesmoke;
+  font: 1.4rem $font-base;
   gap: 1rem;
   padding: 1rem;
-  background-color: #eee;
+  background-color: $red;
   align-items: center;
-}
-a {
+  
   text-decoration: none;
+  max-height: 200px;
 }
-button {
-  background: none;
-  border: none;
-  color: blue;
-  cursor: pointer;
+
+img{
+  max-width:100%;
+  max-height: 180px;
 }
 </style>
