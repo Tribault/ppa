@@ -1,7 +1,14 @@
 <template>
-  <div class="container-home">
-    <div class="header-home">
+  <div class="home-container">
+    <div class="home-header">
       <h2>Affiches de film</h2>
+      <div class="home-filter">
+        <button v-for="l in letters"
+        :class="{ active: selectedLetter === l }"
+        class="btn" 
+        :key="l"
+        @click="selectedLetter = (selectedLetter == null ? l : null)">{{l}}</button>
+      </div>
       <div class="view-toggle">
         <button @click="view = 'grid'" :class="{ active: view === 'grid' }" title="Grid View">
           <Squares2X2Icon class="icon" />
@@ -14,7 +21,7 @@
 
     <transition name="fade" mode="out-in">
       <div v-if="view === 'grid'" key="grid" class="grid-container">
-        <PosterCard v-for="p in posters" :columns="columns" :key="p._id" :poster="p" :view="view" />
+        <PosterCard v-for="p in filteredPosters" :columns="columns" :key="p._id" :poster="p" :view="view" />
       </div>
 
       <div v-else key="list" class="list-container">
@@ -28,7 +35,7 @@
           </thead>
           <tbody>
             <PosterCard
-              v-for="p in posters"
+              v-for="p in filteredPosters"
               :columns="columns"
               :key="p._id"
               :poster="p"
@@ -42,13 +49,15 @@
 </template>
 
 <script setup lang="ts">
-import axios from 'axios'
-import { ref, onMounted, watch } from 'vue'
+import { usePosterStore } from '@/stores/posters'
+import { ref, onMounted, watch, computed } from 'vue'
 import { Squares2X2Icon, ListBulletIcon } from '@heroicons/vue/24/outline'
-import type { Poster } from '../types/models'
+import {Alphabet} from '@/types/models'
 import PosterCard from '@/components/cards/PosterCard.vue'
 
-const posters = ref<Poster[]>([])
+const posterStore = usePosterStore()
+const letters = Object.values(Alphabet);
+
 const view = ref<'grid' | 'list'>((localStorage.getItem('posterView') as 'grid' | 'list') || 'grid')
 
 const columns = ref([
@@ -58,25 +67,47 @@ const columns = ref([
   { key: 'total', label: 'Prix total', manual: true },
 ])
 
+const selectedLetter = ref<Alphabet | null>(null);
+
+
 onMounted(async () => {
-  const res = await axios.get('http://localhost:5000/api/posters')
-  posters.value = res.data
+  const res = await posterStore.fetchPosters()
 })
 
 watch(view, (newView) => {
   localStorage.setItem('posterView', newView)
 })
+
+const filteredPosters = computed(()=> {
+  if (!selectedLetter.value) return posterStore.posters
+  return posterStore.posters.filter((p)=> p.title[0] === selectedLetter.value)
+})
+
 </script>
 
-<style scoped>
-.container-home {
+<style lang="scss" scoped>
+.home-container {
   padding: 0 1rem;
 }
 
-.header-home {
+.home-header {
   display: flex;
   justify-content: space-between;
+  background-color: whitesmoke;
+  color: $red;
 }
+
+.home-filter{
+  display:flex;
+  align-items: center;
+font-weight: 500;
+button.active{
+  border: solid 1px;
+  background-color: $red;
+  color: white;
+}
+}
+
 .view-toggle {
   margin-bottom: 1rem;
   display: flex;
@@ -89,7 +120,8 @@ watch(view, (newView) => {
   cursor: pointer;
 }
 .view-toggle button.active {
-  background-color: #007bff;
+  background-color: $red;
+  text-decoration: underline;
   color: white;
 }
 
@@ -113,13 +145,24 @@ watch(view, (newView) => {
 }
 
 .grid-container {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  align-items: center;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 1rem;
+  padding: 1rem;
 }
 
 .list-container {
   display: flex;
   flex-direction: column;
+}
+
+@media screen and (max-width:$break-sm) {
+  .home-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+  .home-filter { flex-wrap: wrap;  justify-content: center; }
 }
 </style>
