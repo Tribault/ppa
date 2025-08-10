@@ -14,6 +14,7 @@
             <input v-model="form.size" placeholder="Size" class="input" />
             <input v-model.number="form.price" type="number" placeholder="Price" class="input" />
             <input v-model.number="form.totalStock" type="number" placeholder="Stock" class="input" />
+            <input v-model="tagsInput" type="text" placeholder="e.g. vintage, sci-fi" />
 
             <div class="flex justify-between items-center mt-4">
               <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">💾 Save</button>
@@ -39,14 +40,20 @@ const props = defineProps<{
 }>()
 const emit = defineEmits(['close', 'saved'])
 
+const tagsInput = ref("");
+const tags = ref<string[]>([]);
+
 const form = ref({
   title: '',
   size: '',
   price: 0,
   totalStock: 0,
+  tags: tags
 })
 
 const store = usePosterStore()
+
+
 
 watch(
   () => props.posterToEdit,
@@ -54,11 +61,18 @@ watch(
     if (val) {
       form.value = { ...val }
     } else {
-      form.value = { title: '', size: '', price: 0, totalStock: 0 }
+      form.value = { title: '', size: '', price: 0, totalStock: 0, tags: tags }
     }
   },
   { immediate: true },
 )
+
+watch(tagsInput, (val) => {
+  form.value.tags = val
+    .split(",")
+    .map(t => t.trim())
+    .filter(Boolean);
+});
 
 function close() {
   emit('close')
@@ -67,6 +81,7 @@ function close() {
 async function submit() {
   try{
   if (props.posterToEdit?._id) {
+    console.log("form", form.value)
     await store.updatePoster(props.posterToEdit._id, form.value)
      toast.success('Poster updated ✅')
   } else {

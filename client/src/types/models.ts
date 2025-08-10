@@ -15,6 +15,7 @@ export interface Poster {
   note: string
   availableStock: number
   totalStock: number
+  tags: string[]
 }
 
 export interface Booking {

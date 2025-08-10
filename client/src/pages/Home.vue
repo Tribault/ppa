@@ -95,23 +95,29 @@ const filteredPosters = computed(()=> {
   justify-content: space-between;
   background-color: whitesmoke;
   color: $red;
+  padding: $space-sm;
 }
 
 .home-filter{
   display:flex;
   align-items: center;
-font-weight: 500;
-button.active{
-  border: solid 1px;
-  background-color: $red;
-  color: white;
-}
+  flex-wrap: wrap;
+  font-weight: 500;
+
+  button.active{
+    border: solid 1px;
+    background-color: $red;
+    color: white;
+  }
+
 }
 
 .view-toggle {
   margin-bottom: 1rem;
+  align-self: center;
   display: flex;
   gap: 1rem;
+  max-height: 60px;
 }
 .view-toggle button {
   padding: 0.5rem 1rem;
@@ -146,10 +152,11 @@ button.active{
 
 .grid-container {
   display: grid;
-  align-items: center;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  align-items: start;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 1rem;
   padding: 1rem;
+  border-radius: 15px;
 }
 
 .list-container {
@@ -163,6 +170,6 @@ button.active{
   flex-direction: column;
   align-items: center;
 }
-  .home-filter { flex-wrap: wrap;  justify-content: center; }
+  .home-filter { flex-wrap: wrap;  justify-content: center;}
 }
 </style>

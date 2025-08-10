@@ -47,7 +47,7 @@ const logout = () => {
 }
 
   .navbar-home__link > img{
-      max-height:150px;
+      max-height:120px;
     }
   .navbar-home__logout{
     background: none;

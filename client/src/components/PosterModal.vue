@@ -1,15 +1,25 @@
 <template class="poster-card">
   <div v-if="view === 'grid'" class="poster-card-grid">
-    <div v-if="poster.image" class="poster-card-poster">
-      <img :src="imgUrl" alt="" />
-      <div v-if="poster.tags.includes('vintage')" class="poster-card-badge">
-      Collector
-    </div>
-  </div>
-    <div v-else class="poster-card-poster"><EyeSlashIcon /></div>
-    <div class="poster-card-info">
-      <div class="poster-card-title">{{ poster.title }}</div> 
-      <div>{{ poster.price }} €</div>
+    <img v-if="poster.image" :src="imgUrl" alt="" />
+    <div v-else><EyeSlashIcon /></div>
+    <div>
+      <h3 class="title-poster">{{ poster.title }}</h3>
+      <p>Stock disponible : {{ poster.availableStock }}</p>
+      <p v-if="poster.note">{{ poster.note }}</p>
+      <span v-if="canBook">
+        <p>
+          {{ quantity }} affiche
+          <button @click="increment" :disabled="quantity >= poster.availableStock">
+            <PlusIcon class="icon" />
+          </button>
+          <button @click="decrement" :disabled="quantity <= 1">
+            <MinusIcon class="icon" />
+          </button>
+        </p>
+        <p>Prix total : {{ poster.price * quantity }} €</p>
+        <button @click="bookPoster">Réserver</button>
+      </span>
+      <p v-else>{{ poster.price }} €</p>
     </div>
   </div>
   <tr v-else class="card-list, border-t">
@@ -137,49 +147,22 @@ async function doDelete() {
 }
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .poster-card-grid {
-  width: 300px;
-  height: 525px;
-  background-color: $red;
-  color: white;
-  overflow: hidden;
-}
+  width: 200px;
+  height: 400px;
+  border: 1px solid #ccc;
+  padding: 0.5rem;
+  border-radius: 6px;
+  text-align: center;
 
-.poster-card-poster{
-    position: relative;
-      width: 100%;  
   & img {
-  width: 100%;       
-  height: calc(width * (16/9));    
-  object-fit: cover; 
-  display: block;
+    max-width: 150px;
   }
-
 }
 
-.poster-card-badge {
-  position: absolute;
-  bottom: 8px;
-  right: 8px;
-  background-color: rgba(220, 20, 60, 0.9); 
-  color: white;
-  padding: 4px 10px;
-  border-radius: 12px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-  text-transform: uppercase;
-}
-
-.poster-card-info {
-  padding-left: $space-sm;
-}
-
-.poster-card-title {
+.title-poster {
   font-weight: 700;
-  font: $font-size-lg;
 }
 
 .icon {

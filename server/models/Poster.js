@@ -10,6 +10,10 @@ const posterSchema = new mongoose.Schema({
     },
     note : String,
     image : String,
+    tags: {
+        type: [String], 
+        default: []
+    },
     totalStock: Number
 })
 
