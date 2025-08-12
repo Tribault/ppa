@@ -23,7 +23,7 @@
     </div>
   </div>
   <tr v-else class="card-list, border-t">
-    <td><EyeIcon class="icon"/></td>
+    <td><EyeIcon class="icon" /></td>
     <td v-for="column in columns" :key="column.key" class="px-4 py-2 whitespace-nowrap text-sm">
       {{ renderCell(column) }}
     </td>
@@ -41,23 +41,29 @@
       <span @click="confirmDelete"><DocumentMinusIcon class="icon" /></span>
     </td>
   </tr>
-   <ConfirmModal
-  :visible="confirmDeleteVisible"
-  message="This will permanently delete the poster."
-  @confirm="doDelete"
-  @cancel="confirmDeleteVisible = false"
-/>
+  <ConfirmModal
+    :visible="confirmDeleteVisible"
+    message="This will permanently delete the poster."
+    @confirm="doDelete"
+    @cancel="confirmDeleteVisible = false"
+  />
 </template>
 
 <script setup lang="ts">
-
 import type { Poster } from '@/types/models'
 import { usePosterStore } from '@/stores/posters'
 import { useBookingStore } from '@/stores/bookings'
 import { useAuthStore } from '@/stores/auth'
 import ConfirmModal from '@/components/ConfirmModal.vue'
 import { computed, ref } from 'vue'
-import { EyeSlashIcon, EyeIcon, PlusIcon, MinusIcon, PencilIcon, DocumentMinusIcon} from '@heroicons/vue/24/solid'
+import {
+  EyeSlashIcon,
+  EyeIcon,
+  PlusIcon,
+  MinusIcon,
+  PencilIcon,
+  DocumentMinusIcon,
+} from '@heroicons/vue/24/solid'
 
 import { useToast } from 'vue-toastification'
 const toast = useToast()
@@ -101,12 +107,12 @@ function renderCell(column: { key: string; manual?: boolean }) {
 
 const bookPoster = async () => {
   try {
-    if(auth.user)
-    bookingStore.createBooking({
-    posterId: props.poster._id,
-    userId: auth.user._id,
-    quantity: quantity.value,
-})
+    if (auth.user)
+      bookingStore.createBooking({
+        posterId: props.poster._id,
+        userId: auth.user._id,
+        quantity: quantity.value,
+      })
     quantity.value = 1
     toast.success('Booking created!')
     emit('updated')

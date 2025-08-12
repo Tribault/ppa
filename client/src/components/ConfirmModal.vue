@@ -6,7 +6,9 @@
         <p class="mb-4 text-gray-600">{{ message }}</p>
         <div class="flex justify-center gap-4">
           <button @click="cancel" class="px-4 py-2 bg-gray-200 rounded">Cancel</button>
-          <button @click="confirm" class="px-4 py-2 bg-red-600 text-white rounded">Yes, delete</button>
+          <button @click="confirm" class="px-4 py-2 bg-red-600 text-white rounded">
+            Yes, delete
+          </button>
         </div>
       </div>
     </div>
@@ -26,7 +28,6 @@ function cancel() {
 </script>
 
 <style scoped>
-
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -68,7 +69,9 @@ function cancel() {
 }
 
 .modal-popup-enter-active {
-  transition: transform 0.25s ease, opacity 0.25s ease;
+  transition:
+    transform 0.25s ease,
+    opacity 0.25s ease;
 }
 .modal-popup-enter-from {
   transform: scale(0.95);
@@ -78,5 +81,4 @@ function cancel() {
   transform: scale(0.95);
   opacity: 0;
 }
-
 </style>

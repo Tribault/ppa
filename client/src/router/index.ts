@@ -2,15 +2,17 @@ import { createRouter, createWebHistory } from 'vue-router'
 
 import { useAuthStore } from '@/stores/auth'
 
-import Home from '../pages/Home.vue'
-import Login from '../pages/Login.vue'
-import Signup from '../pages/Signup.vue'
-import Admin from '../pages/AdminHome.vue'
-import PosterForm from '../components/edition/posterEdit.vue'
-import Account from '../pages/Account.vue'
+import Home from '@/pages/Home.vue'
+import Login from '@/pages/Login.vue'
+import Signup from '@/pages/Signup.vue'
+import Admin from '@/pages/AdminHome.vue'
+import PosterForm from '@/components/edition/PosterEdit.vue'
+import Account from '@/pages/Account.vue'
+import PosterDetails from '@/pages/PosterDetails.vue'
 
 const routes = [
   { path: '/', component: Home },
+  { path: '/posters/:id', name: 'posters', component: PosterDetails, props: true },
   { path: '/login', component: Login },
   { path: '/signup', component: Signup },
   { path: '/admin', component: Admin },

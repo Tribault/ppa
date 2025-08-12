@@ -34,13 +34,13 @@
 import { useBookingStore } from '@/stores/bookings'
 import { ref, onMounted } from 'vue'
 import BookingCard from '@/components/cards/BookingCard.vue'
-import AdminBookingEdit from '@/components/edition/bookingEdit.vue'
+import AdminBookingEdit from '@/components/edition/BookingEdit.vue'
 
 const bookingStore = useBookingStore()
 
 const columns = ref([
   { key: 'poster.title', label: 'Affiche réservée' },
-  {key: 'user.username', label:'Réservé par'},
+  { key: 'user.username', label: 'Réservé par' },
   { key: 'quantity', label: 'Quantité' },
   { key: 'status', label: 'Statut de la réservation' },
   { key: 'total', label: 'Prix total', manual: true },
@@ -69,8 +69,7 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-
-.new-admin-posters{
+.new-admin-posters {
   text-align: end;
 }
 .container-home {
@@ -127,17 +126,17 @@ onMounted(async () => {
   flex-direction: column;
 }
 
-.poster-form{
+.poster-form {
   position: fixed;
-    top: 0;
-    left: 0;
-    height: 100%;
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   background-color: white;
   border: solid 1px black;
-    padding: 4em 2em;
+  padding: 4em 2em;
 }
 </style>

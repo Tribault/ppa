@@ -28,14 +28,15 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, watch } from 'vue'
 import { useAuthStore } from '@/stores/auth'
+import type { Booking } from '@/types/models'
 import BookingCard from '@/components/cards/BookingCard.vue'
 import axios from 'axios'
 
 const auth = useAuthStore()
-const bookings = ref([])
+const bookings = ref<Booking[]>([])
 const loading = ref(true)
 
 const columns = ref([
@@ -59,7 +60,7 @@ watch(
 
 async function getBookings() {
   try {
-    const res = await axios.get(`http://localhost:5000/api/bookings/user/${auth.user._id}`, {
+    const res = await axios.get(`http://localhost:5000/api/bookings/user/${auth?.user?._id}`, {
       headers: { Authorization: `Bearer ${auth.token}` },
     })
     bookings.value = res.data

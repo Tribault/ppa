@@ -2,18 +2,16 @@
   <div v-if="view === 'grid'" class="poster-card-grid">
     <div v-if="poster.image" class="poster-card-poster">
       <img :src="imgUrl" alt="" />
-      <div v-if="poster.tags.includes('vintage')" class="poster-card-badge">
-      Collector
+      <div v-if="poster.tags.includes('vintage')" class="poster-card-badge">Collector</div>
     </div>
-  </div>
     <div v-else class="poster-card-poster"><EyeSlashIcon /></div>
     <div class="poster-card-info">
-      <div class="poster-card-title">{{ poster.title }}</div> 
+      <div class="poster-card-title">{{ poster.title }}</div>
       <div>{{ poster.price }} €</div>
     </div>
   </div>
   <tr v-else class="card-list, border-t">
-    <td><EyeIcon class="icon"/></td>
+    <td><EyeIcon class="icon" /></td>
     <td v-for="column in columns" :key="column.key" class="px-4 py-2 whitespace-nowrap text-sm">
       {{ renderCell(column) }}
     </td>
@@ -31,23 +29,29 @@
       <span @click="confirmDelete"><DocumentMinusIcon class="icon" /></span>
     </td>
   </tr>
-   <ConfirmModal
-  :visible="confirmDeleteVisible"
-  message="This will permanently delete the poster."
-  @confirm="doDelete"
-  @cancel="confirmDeleteVisible = false"
-/>
+  <ConfirmModal
+    :visible="confirmDeleteVisible"
+    message="This will permanently delete the poster."
+    @confirm="doDelete"
+    @cancel="confirmDeleteVisible = false"
+  />
 </template>
 
 <script setup lang="ts">
-
 import type { Poster } from '@/types/models'
 import { usePosterStore } from '@/stores/posters'
 import { useBookingStore } from '@/stores/bookings'
 import { useAuthStore } from '@/stores/auth'
 import ConfirmModal from '@/components/ConfirmModal.vue'
 import { computed, ref } from 'vue'
-import { EyeSlashIcon, EyeIcon, PlusIcon, MinusIcon, PencilIcon, DocumentMinusIcon} from '@heroicons/vue/24/solid'
+import {
+  EyeSlashIcon,
+  EyeIcon,
+  PlusIcon,
+  MinusIcon,
+  PencilIcon,
+  DocumentMinusIcon,
+} from '@heroicons/vue/24/solid'
 
 import { useToast } from 'vue-toastification'
 const toast = useToast()
@@ -91,12 +95,12 @@ function renderCell(column: { key: string; manual?: boolean }) {
 
 const bookPoster = async () => {
   try {
-    if(auth.user)
-    bookingStore.createBooking({
-    posterId: props.poster._id,
-    userId: auth.user._id,
-    quantity: quantity.value,
-})
+    if (auth.user)
+      bookingStore.createBooking({
+        posterId: props.poster._id,
+        userId: auth.user._id,
+        quantity: quantity.value,
+      })
     quantity.value = 1
     toast.success('Booking created!')
     emit('updated')
@@ -146,30 +150,29 @@ async function doDelete() {
   overflow: hidden;
 }
 
-.poster-card-poster{
-    position: relative;
-      width: 100%;  
+.poster-card-poster {
+  position: relative;
+  width: 100%;
   & img {
-  width: 100%;       
-  height: calc(width * (16/9));    
-  object-fit: cover; 
-  display: block;
+    width: 100%;
+    height: calc(width * (16 / 9));
+    object-fit: cover;
+    display: block;
   }
-
 }
 
 .poster-card-badge {
   position: absolute;
-  bottom: 8px;
+  top: 8px;
   right: 8px;
-  background-color: rgba(220, 20, 60, 0.9); 
+  background-color: rgba(220, 20, 60, 0.9);
   color: white;
   padding: 4px 10px;
   border-radius: 12px;
   font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.5px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
   text-transform: uppercase;
 }
 

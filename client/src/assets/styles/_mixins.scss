@@ -15,15 +15,23 @@
 // 📱 Media Queries
 @mixin respond($break) {
   @if $break == sm {
-    @media (max-width: $break-sm) { @content; }
+    @media (max-width: $break-sm) {
+      @content;
+    }
   }
   @if $break == md {
-    @media (max-width: $break-md) { @content; }
+    @media (max-width: $break-md) {
+      @content;
+    }
   }
   @if $break == lg {
-    @media (max-width: $break-lg) { @content; }
+    @media (max-width: $break-lg) {
+      @content;
+    }
   }
   @if $break == xl {
-    @media (max-width: $break-xl) { @content; }
+    @media (max-width: $break-xl) {
+      @content;
+    }
   }
 }

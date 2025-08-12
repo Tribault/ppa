@@ -34,23 +34,23 @@ export const useBookingStore = defineStore('bookings', {
         throw err
       }
     },
-    async validateBooking(id: string){
-      try{
+    async validateBooking(id: string) {
+      try {
         await api.post(`/bookings/${id}/validate`)
         await this.fetchBookings()
         toast.success('booking validated')
-      }catch(err: any){
+      } catch (err: any) {
         this.error = err.response?.data?.message || 'Failed to validate booking'
         toast.error(this.error)
         throw err
       }
     },
-        async devalidateBooking(id: string){
-      try{
+    async devalidateBooking(id: string) {
+      try {
         await api.post(`/bookings/${id}/devalidate`)
         await this.fetchBookings()
         toast.success('booking devalidated')
-      }catch(err: any){
+      } catch (err: any) {
         this.error = err.response?.data?.message || 'Failed to devalidate booking'
         toast.error(this.error)
         throw err

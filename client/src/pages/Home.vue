@@ -1,15 +1,22 @@
 <template>
   <div class="home-container">
     <div class="home-header">
-      <h2>Affiches de film</h2>
-      <div class="home-filter">
-        <button v-for="l in letters"
-        :class="{ active: selectedLetter === l }"
-        class="btn" 
-        :key="l"
-        @click="selectedLetter = (selectedLetter == null ? l : null)">{{l}}</button>
+      <div class="home-search">
+        <MagnifyingGlassIcon class="icon" />
+        <input type="text" placeholder="Search posters..." @input="onSearchInput" />
       </div>
-      <div class="view-toggle">
+      <div class="home-filter">
+        <button
+          v-for="l in letters"
+          :class="{ active: posterStore.selectedLetter === l }"
+          class="btn"
+          :key="l"
+          @click="posterStore.selectedLetter = posterStore.selectedLetter == null ? l : null"
+        >
+          {{ l }}
+        </button>
+      </div>
+      <div class="home-view-toggle">
         <button @click="view = 'grid'" :class="{ active: view === 'grid' }" title="Grid View">
           <Squares2X2Icon class="icon" />
         </button>
@@ -21,28 +28,23 @@
 
     <transition name="fade" mode="out-in">
       <div v-if="view === 'grid'" key="grid" class="grid-container">
-        <PosterCard v-for="p in filteredPosters" :columns="columns" :key="p._id" :poster="p" :view="view" />
+        <home-poster-card
+          v-for="p in posterStore.filteredPosters"
+          :key="p._id"
+          :poster="p"
+          :view="view"
+          @details="posterDetails(p._id)"
+        />
       </div>
 
       <div v-else key="list" class="list-container">
-        <table class="min-w-full table-auto border">
-          <thead class="bg-gray-100">
-            <tr>
-              <th v-for="column in columns" :key="column.key" class="px-4 py-2 text-left">
-                {{ column.label }}
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <PosterCard
-              v-for="p in filteredPosters"
-              :columns="columns"
-              :key="p._id"
-              :poster="p"
-              :view="view"
-            />
-          </tbody>
-        </table>
+        <home-poster-card
+          v-for="p in posterStore.filteredPosters"
+          :key="p._id"
+          :poster="p"
+          :view="view"
+          @details="posterDetails(p._id)"
+        />
       </div>
     </transition>
   </div>
@@ -50,13 +52,16 @@
 
 <script setup lang="ts">
 import { usePosterStore } from '@/stores/posters'
-import { ref, onMounted, watch, computed } from 'vue'
-import { Squares2X2Icon, ListBulletIcon } from '@heroicons/vue/24/outline'
-import {Alphabet} from '@/types/models'
-import PosterCard from '@/components/cards/PosterCard.vue'
+import { ref, onMounted, watch } from 'vue'
+import { useRouter } from 'vue-router'
+import { Squares2X2Icon, ListBulletIcon, MagnifyingGlassIcon } from '@heroicons/vue/24/outline'
+import { Alphabet } from '@/types/models'
+import HomePosterCard from '@/components/cards/HomePosterCard.vue'
+
+const router = useRouter()
 
 const posterStore = usePosterStore()
-const letters = Object.values(Alphabet);
+const letters = Object.values(Alphabet)
 
 const view = ref<'grid' | 'list'>((localStorage.getItem('posterView') as 'grid' | 'list') || 'grid')
 
@@ -67,22 +72,21 @@ const columns = ref([
   { key: 'total', label: 'Prix total', manual: true },
 ])
 
-const selectedLetter = ref<Alphabet | null>(null);
+function onSearchInput(e: Event) {
+  posterStore.setSearchQuery((e.target as HTMLInputElement).value)
+}
 
+function posterDetails(posterId: string) {
+  router.push({ name: 'posters', params: { id: posterId } })
+}
 
 onMounted(async () => {
-  const res = await posterStore.fetchPosters()
+  await posterStore.fetchPosters()
 })
 
 watch(view, (newView) => {
   localStorage.setItem('posterView', newView)
 })
-
-const filteredPosters = computed(()=> {
-  if (!selectedLetter.value) return posterStore.posters
-  return posterStore.posters.filter((p)=> p.title[0] === selectedLetter.value)
-})
-
 </script>
 
 <style lang="scss" scoped>
@@ -98,43 +102,53 @@ const filteredPosters = computed(()=> {
   padding: $space-sm;
 }
 
-.home-filter{
-  display:flex;
+.home-search {
+  display: flex;
+  align-items: center;
+  > input {
+    margin-left: $space-sm;
+    height: 30px;
+  }
+}
+
+.home-filter {
+  display: flex;
   align-items: center;
   flex-wrap: wrap;
   font-weight: 500;
 
-  button.active{
+  button.active {
     border: solid 1px;
     background-color: $red;
     color: white;
   }
-
 }
 
-.view-toggle {
-  margin-bottom: 1rem;
-  align-self: center;
+.home-view-toggle {
+  align-items: center;
   display: flex;
   gap: 1rem;
-  max-height: 60px;
-}
-.view-toggle button {
-  padding: 0.5rem 1rem;
-  border: 1px solid #aaa;
-  background: white;
-  cursor: pointer;
-}
-.view-toggle button.active {
-  background-color: $red;
-  text-decoration: underline;
-  color: white;
+
+  button {
+    padding: 0.5rem 1rem;
+    border: 1px solid #aaa;
+    background: white;
+    cursor: pointer;
+  }
+
+  button.active {
+    background-color: $red;
+    text-decoration: underline;
+    .icon {
+      color: white;
+    }
+  }
 }
 
 .icon {
   width: 24px;
   height: 24px;
-  color: #333;
+  color: $red;
 }
 
 .view-toggle button.active .icon {
@@ -162,14 +176,18 @@ const filteredPosters = computed(()=> {
 .list-container {
   display: flex;
   flex-direction: column;
+  gap: 0.2rem;
 }
 
-@media screen and (max-width:$break-sm) {
+@media screen and (max-width: $break-sm) {
   .home-header {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-  .home-filter { flex-wrap: wrap;  justify-content: center;}
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .home-filter {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
 }
 </style>

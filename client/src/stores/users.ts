@@ -23,7 +23,7 @@ export const useUserStore = defineStore('users', {
       }
     },
 
-      async fetchUser(id: string) {
+    async fetchUser(id: string) {
       this.loading = true
       try {
         const res = await api.get(`/users/${id}`)

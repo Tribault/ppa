@@ -1,23 +1,27 @@
 <template>
   <tr class="border-t">
-    <td v-for="column in columns" :key="column.key" >
+    <td v-for="column in columns" :key="column.key">
       {{ renderCell(column) }}
     </td>
     <td v-if="booking.status == 'pending'">
-      <span @click="bookingStore.validateBooking(booking._id)"><CurrencyEuroIcon class="icon" /></span>
-     <span @click="$emit('edit', booking)"><PencilIcon class="icon" /></span>
+      <span @click="bookingStore.validateBooking(booking._id)"
+        ><CurrencyEuroIcon class="icon"
+      /></span>
+      <span @click="$emit('edit', booking)"><PencilIcon class="icon" /></span>
       <span @click="confirmDelete"><TrashIcon class="icon" /></span>
     </td>
-     <td v-if="booking.status == 'validated'">
-      <span @click="bookingStore.devalidateBooking(booking._id)"><MinusCircleIcon class="icon" /></span>
-     </td>
+    <td v-if="booking.status == 'validated'">
+      <span @click="bookingStore.devalidateBooking(booking._id)"
+        ><MinusCircleIcon class="icon"
+      /></span>
+    </td>
   </tr>
-<ConfirmModal
-  :visible="confirmDeleteVisible"
-  message="This will permanently delete the poster."
-  @confirm="doDelete"
-  @cancel="confirmDeleteVisible = false"
-/>
+  <ConfirmModal
+    :visible="confirmDeleteVisible"
+    message="This will permanently delete the poster."
+    @confirm="doDelete"
+    @cancel="confirmDeleteVisible = false"
+  />
 </template>
 
 <script setup lang="ts">
@@ -29,7 +33,7 @@ import ConfirmModal from '@/components/ConfirmModal.vue'
 import { useToast } from 'vue-toastification'
 const toast = useToast()
 
-import { CurrencyEuroIcon, MinusCircleIcon, PencilIcon, TrashIcon} from '@heroicons/vue/24/solid'
+import { CurrencyEuroIcon, MinusCircleIcon, PencilIcon, TrashIcon } from '@heroicons/vue/24/solid'
 
 const bookingStore = useBookingStore()
 
@@ -38,8 +42,7 @@ const props = defineProps<{
   admin?: boolean
   columns: { key: string; label: string; manual?: boolean }[]
 }>()
-const emit = defineEmits(['edit', 'validate','updated', 'revert'])
-
+const emit = defineEmits(['edit', 'validate', 'updated', 'revert'])
 
 function resolve(obj: any, path: string): any {
   return path.split('.').reduce((acc, part) => acc?.[part], obj)
@@ -77,7 +80,6 @@ async function doDelete() {
     confirmDeleteVisible.value = false
   }
 }
-
 </script>
 <style>
 .container-booking {

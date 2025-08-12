@@ -1,58 +1,112 @@
 import { defineStore } from 'pinia'
 import type { Poster } from '@/types/models'
+import { ref, computed } from 'vue'
 import api from '@/utils/axios'
+import debounce from 'lodash.debounce'
 
-export const usePosterStore = defineStore('posters', {
-  state: () => ({
-    posters: [] as Poster[],
-    loading: false,
-    error: null as string | null,
-  }),
+export const usePosterStore = defineStore('posters', () => {
+  const posters = ref<Poster[]>([])
+  const poster = ref<Poster | null>(null)
+  const loading = ref(false)
+  const error = ref<string | null>(null)
+  const selectedLetter = ref<string | null>(null)
+  const searchQuery = ref('')
 
-  actions: {
-    async fetchPosters() {
-      this.loading = true
-      try {
-        const res = await api.get('/posters')
-        this.posters = res.data
-      } catch (err: any) {
-        this.error = err.response?.data?.message || 'Failed to fetch posters'
-      } finally {
-        this.loading = false
+  const setSearchQuery = debounce((value: string) => {
+    searchQuery.value = value
+  }, 300)
+
+  const filteredPosters = computed(() => {
+    let result = posters.value
+
+    if (selectedLetter.value) {
+      result = result.filter(
+        (p) => p.title[0].toUpperCase() === selectedLetter.value?.toUpperCase(),
+      )
+    }
+
+    if (searchQuery.value.trim()) {
+      const query = searchQuery.value.toLowerCase()
+      result = result.filter(
+        (p) =>
+          p.title.toLowerCase().includes(query) ||
+          p.tags?.some((tag) => tag.toLowerCase().includes(query)),
+      )
+    }
+
+    return result
+  })
+
+  async function fetchPosters() {
+    loading.value = true
+    try {
+      const res = await api.get('/posters')
+      posters.value = res.data
+    } catch (err: any) {
+      error.value = err.response?.data?.message || 'Failed to fetch posters'
+    } finally {
+      loading.value = false
+    }
+  }
+
+  async function fetchPoster(id: string | string[]) {
+    loading.value = true
+    try {
+      const res = await api.get(`/posters/${id}`)
+      poster.value = res.data
+    } catch (err: any) {
+      error.value = err.response?.data?.message || 'Failed to fetch poster'
+    } finally {
+      loading.value = false
+    }
+  }
+
+  async function createPoster(posterData: Partial<Poster>) {
+    try {
+      const res = await api.post('/posters', posterData)
+      posters.value.push(res.data)
+    } catch (err: any) {
+      error.value = err.response?.data?.message || 'Failed to create poster'
+      throw err
+    }
+  }
+
+  async function updatePoster(id: string, posterData: Partial<Poster>) {
+    try {
+      const res = await api.put(`/posters/${id}`, posterData)
+      const index = posters.value.findIndex((p) => p._id === id)
+      if (index !== -1) {
+        posters.value[index] = res.data
       }
-    },
+    } catch (err: any) {
+      error.value = err.response?.data?.message || 'Failed to update poster'
+      throw err
+    }
+  }
 
-    async createPoster(posterData: Partial<Poster>) {
-      try {
-        const res = await api.post('/posters', posterData)
-        this.posters.push(res.data)
-      } catch (err: any) {
-        this.error = err.response?.data?.message || 'Failed to create poster'
-        throw err
-      }
-    },
+  async function deletePoster(id: string) {
+    try {
+      await api.delete(`/posters/${id}`)
+      posters.value = posters.value.filter((p) => p._id !== id)
+    } catch (err: any) {
+      error.value = err.response?.data?.message || 'Failed to delete poster'
+      throw err
+    }
+  }
 
-    async updatePoster(id: string, posterData: Partial<Poster>) {
-      try {
-        const res = await api.put(`/posters/${id}`, posterData)
-        const index = this.posters.findIndex((p) => p._id === id)
-        if (index !== -1) {
-          this.posters[index] = res.data
-        }
-      } catch (err: any) {
-        this.error = err.response?.data?.message || 'Failed to update poster'
-        throw err
-      }
-    },
-
-    async deletePoster(id: string) {
-      try {
-        await api.delete(`/posters/${id}`)
-        this.posters = this.posters.filter((p) => p._id !== id)
-      } catch (err: any) {
-        this.error = err.response?.data?.message || 'Failed to delete poster'
-        throw err
-      }
-    },
-  },
+  return {
+    posters,
+    poster,
+    loading,
+    error,
+    selectedLetter,
+    searchQuery,
+    setSearchQuery,
+    filteredPosters,
+    fetchPosters,
+    fetchPoster,
+    createPoster,
+    updatePoster,
+    deletePoster,
+  }
 })

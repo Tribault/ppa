@@ -1,7 +1,7 @@
 const Poster = require('../models/Poster')
 
 exports.getAllPosters = async(req, res) => {
-    const posters = await Poster.find()
+    const posters = await Poster.find().sort({ title: 1 })
 
     const withAvailableStock = await Promise.all(
         posters.map(async (poster) => {
@@ -13,6 +13,23 @@ exports.getAllPosters = async(req, res) => {
         })
     )
     res.json(withAvailableStock)
+}
+
+exports.getPoster = async (req, res) => {
+  try {
+    const poster = await Poster.findById(req.params.id)
+    if (!poster) {
+      return res.status(404).json({ error: 'Poster not found' })
+    }
+
+    const availableStock = await poster.getAvailableStock()
+    res.json({
+      ...poster.toObject(),
+      availableStock
+    })
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' })
+  }
 }
 
 exports.createPoster = async (req, res) => {

@@ -35,7 +35,7 @@
 import { usePosterStore } from '@/stores/posters'
 import { ref, onMounted } from 'vue'
 import PosterCard from '@/components/cards/PosterCard.vue'
-import PosterEdit from '@/components/edition/posterEdit.vue'
+import PosterEdit from '@/components/edition/PosterEdit.vue'
 
 const store = usePosterStore()
 
@@ -69,8 +69,7 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-
-.new-admin-posters{
+.new-admin-posters {
   text-align: end;
 }
 .container-home {
@@ -127,17 +126,17 @@ onMounted(async () => {
   flex-direction: column;
 }
 
-.poster-form{
+.poster-form {
   position: fixed;
-    top: 0;
-    left: 0;
-    height: 100%;
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   background-color: white;
   border: solid 1px black;
-    padding: 4em 2em;
+  padding: 4em 2em;
 }
 </style>

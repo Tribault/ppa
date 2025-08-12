@@ -1,9 +1,8 @@
 <template>
   <tr class="border-t">
-    <td v-for="column in columns" :key="column.key" >
+    <td v-for="column in columns" :key="column.key">
       {{ renderCell(column) }}
     </td>
-
   </tr>
 </template>
 
@@ -11,13 +10,11 @@
 import type { Sale } from '@/types/models'
 import { ref } from 'vue'
 
-
 const props = defineProps<{
   sale: Sale
   columns: { key: string; label: string; manual?: boolean }[]
 }>()
-const emit = defineEmits(['edit', 'validate','updated', 'revert'])
-
+const emit = defineEmits(['edit', 'validate', 'updated', 'revert'])
 
 function resolve(obj: any, path: string): any {
   return path.split('.').reduce((acc, part) => acc?.[part], obj)
@@ -35,7 +32,6 @@ function renderCell(column: { key: string; manual?: boolean }) {
       return '—'
   }
 }
-
 </script>
 <style>
 .container-booking {

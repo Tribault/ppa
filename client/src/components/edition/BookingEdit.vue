@@ -3,37 +3,47 @@
     <div v-if="visible" class="modal-overlay">
       <Transition name="modal-popup">
         <div class="modal-box" @click.stop>
-          <button class="absolute top-2 right-2 text-gray-500 hover:text-black" @click="emit('close')">✖</button>
+          <button
+            class="absolute top-2 right-2 text-gray-500 hover:text-black"
+            @click="emit('close')"
+          >
+            ✖
+          </button>
 
           <h2 class="text-xl font-bold mb-4">
             {{ bookingToEdit?._id ? 'Edit Booking' : 'New Booking' }}
           </h2>
 
           <form @submit.prevent="submit" class="space-y-3">
-           <select v-model="form.posterId" required>
-          <option disabled value="">-- Select a poster --</option>
-          <option v-for="p in posterStore.posters" :key="p._id" :value="p._id">{{ p.title }}</option>
-          </select>
+            <select v-model="form.posterId" required>
+              <option disabled value="">-- Select a poster --</option>
+              <option v-for="p in posterStore.posters" :key="p._id" :value="p._id">
+                {{ p.title }}
+              </option>
+            </select>
             <select v-model="form.userId" required>
-            <option disabled value="">-- Select a user --</option>
-            <option v-for="u in userStore.users" :key="u._id" :value="u._id">{{ u.email }}</option>
+              <option disabled value="">-- Select a user --</option>
+              <option v-for="u in userStore.users" :key="u._id" :value="u._id">
+                {{ u.email }}
+              </option>
             </select>
             <input v-model.number="form.quantity" placeholder="Quantity" class="input" />
 
             <div class="flex justify-between items-center mt-4">
-              <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">{{ bookingToEdit ? 'Update' : 'Create' }}</button>
+              <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">
+                {{ bookingToEdit ? 'Update' : 'Create' }}
+              </button>
             </div>
           </form>
         </div>
       </Transition>
     </div>
   </Transition>
-
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue'
-import type { Booking, BookingPayload} from '@/types/models'
+import type { Booking, BookingPayload } from '@/types/models'
 import { useBookingStore } from '@/stores/bookings'
 import { useUserStore } from '@/stores/users'
 import { usePosterStore } from '@/stores/posters'
@@ -57,7 +67,7 @@ const bookingStore = useBookingStore()
 const userStore = useUserStore()
 const posterStore = usePosterStore()
 
-onMounted(async() => {
+onMounted(async () => {
   await userStore.fetchUsers()
   await posterStore.fetchPosters()
 })
@@ -89,9 +99,8 @@ watch(
       }
     }
   },
-  { immediate: true } // run once right away in case the prop is already set
+  { immediate: true }, // run once right away in case the prop is already set
 )
-
 </script>
 
 <style scoped>
@@ -136,7 +145,9 @@ watch(
 }
 
 .modal-popup-enter-active {
-  transition: transform 0.25s ease, opacity 0.25s ease;
+  transition:
+    transform 0.25s ease,
+    opacity 0.25s ease;
 }
 .modal-popup-enter-from {
   transform: scale(0.95);

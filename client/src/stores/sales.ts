@@ -34,11 +34,10 @@ export const useSaleStore = defineStore('sales', {
       } finally {
         this.loading = false
       }
-    
     },
 
     async fetchPosterSales(id: string) {
-     this.loading = true
+      this.loading = true
       try {
         const res = await api.get(`/sales/poster/${id}`)
         this.posterSales = res.data
@@ -49,23 +48,23 @@ export const useSaleStore = defineStore('sales', {
       }
     },
 
-    async exportSalesCSV(filters = {}){
+    async exportSalesCSV(filters = {}) {
       try {
-    const params = new URLSearchParams(filters).toString();
-    const url = `/sales/export/csv${params ? `?${params}` : ''}`;
+        const params = new URLSearchParams(filters).toString()
+        const url = `/sales/export/csv${params ? `?${params}` : ''}`
 
-    const res = await api.get(url);
+        const res = await api.get(url)
 
-    const blobUrl = window.URL.createObjectURL(new Blob([res.data]));
-    const link = document.createElement('a');
-    link.href = blobUrl;
-    link.setAttribute('download', 'sales.csv');
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-  } catch (err) {
-    console.error(err);
-  }
-    }
+        const blobUrl = window.URL.createObjectURL(new Blob([res.data]))
+        const link = document.createElement('a')
+        link.href = blobUrl
+        link.setAttribute('download', 'sales.csv')
+        document.body.appendChild(link)
+        link.click()
+        link.remove()
+      } catch (err) {
+        console.error(err)
+      }
+    },
   },
 })
