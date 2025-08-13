@@ -26,6 +26,8 @@
       </div>
     </div>
 
+    <div class="home-error" v-if="posterStore.filteredPosters.length == 0"> <img src="@/assets/404.svg"><p>Aucune affiche ne correspond à votre recherche. 😭</p></div>
+
     <transition name="fade" mode="out-in">
       <div v-if="view === 'grid'" key="grid" class="grid-container">
         <home-poster-card
@@ -121,6 +123,19 @@ watch(view, (newView) => {
     border: solid 1px;
     background-color: $red;
     color: white;
+  }
+}
+
+.home-error{
+  display: flex;
+  flex-direction: column;
+  width:100%;
+  align-items: center;
+  font-size: $font-size-lg;
+  img{
+    max-width: 500px;
+    width:100%;
+     object-fit: cover;
   }
 }
 

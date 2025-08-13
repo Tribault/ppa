@@ -12,7 +12,7 @@ import PosterDetails from '@/pages/PosterDetails.vue'
 
 const routes = [
   { path: '/', component: Home },
-  { path: '/posters/:id', name: 'posters', component: PosterDetails, props: true },
+  { path: '/posters/:id', name: 'posters', component: PosterDetails, props:true },
   { path: '/login', component: Login },
   { path: '/signup', component: Signup },
   { path: '/admin', component: Admin },
