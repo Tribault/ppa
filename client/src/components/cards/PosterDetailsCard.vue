@@ -1,16 +1,41 @@
 <template >
     <div class="poster-details-card">
+      <div class="poster-details-card-back">
+        <ArrowUturnLeftIcon />
+      </div>
     <div class="poster-details-card-image">
-        <ArrowUturnLeftIcon class="poster-details-card-back"/>
-        <img :src="imgUrl" alt=""></div>
+    <img :src="imgUrl" :class="{greyscale : poster.availableStock == 0 }" alt=""></div>
     <div class="poster-details-card-data">
+      <div>
         <ul>
-        <li class="poster-details-card-data--title title"> {{ poster.title }}</li>
+        <li class="poster-details-card-data--title title"> {{ poster.title }} 
+          <button v-if="auth.isAdmin" class="btn-red-bg"><pencil-icon /></button>
+        </li>
+        <li class="poster-details-card-data--tags"><span v-for="t in poster.tags" class="tag-white">{{ t }}</span></li>
         <li class="poster-details-card-data--price"><b>Prix :</b> {{ poster.price }} €</li>
         <li class="poster-details-card-data--size"><b>Taille :</b> {{ poster.size }}</li>
         <li class="poster-details-card-data--stock"><b>Affiches disponibles :</b> {{ poster.availableStock }}</li>
         <li class="poster-details-card-data--note"><b>Commentaire :</b> <i>{{ poster.note }}</i></li>
         </ul>
+      </div>
+    <div class="poster-details-card-booking" v-if="canBook">
+      <ul> 
+      <li class="title"> Réserver l'affiche</li>
+        <li class="poster-details-card-booking--info">
+          <span><b>Nombre d'affiches :</b> {{quantity}}</span>
+          <button class="btn-white-bg" @click="increment" :disabled="quantity >= poster.availableStock">
+           <PlusIcon class="icon" />
+            </button>
+              <button class="btn-white-bg" @click="decrement" :disabled="quantity <= 1">
+        <MinusIcon class="icon" />
+      </button>
+    </li>
+      <li>
+        <b>Prix total</b> : {{ quantity * poster.price }} € 
+      </li>
+      <li><button class="btn-white-bg" @click="bookPoster">Réserver</button></li>
+    </ul>
+    </div>
     </div>
     </div>
  
@@ -23,7 +48,7 @@ import { useBookingStore } from '@/stores/bookings'
 import { useAuthStore } from '@/stores/auth'
 import { computed, ref } from 'vue'
 import {
-  ArrowUturnLeftIcon
+  ArrowUturnLeftIcon, PlusIcon, MinusIcon, PencilIcon
 } from '@heroicons/vue/24/solid'
 
 import { useToast } from 'vue-toastification'
@@ -31,19 +56,50 @@ const toast = useToast()
 
 const props = defineProps<{
   poster: Poster
-  admin?: boolean
 }>()
 
 const emit = defineEmits(['edit', 'updated'])
 
+
+const auth = useAuthStore()
 const posterStore = usePosterStore()
 const bookingStore = useBookingStore()
 
+const quantity = ref<number>(1)
+
 const imgUrl = ref<string>(import.meta.env.VITE_IMG_URL + props.poster.image)
 
-const auth = useAuthStore()
+const canBook = computed(() => auth.user?.role === 'user' && props.poster.availableStock > 0)
 
-const confirmDeleteVisible = ref(false)
+
+
+const increment = () => {
+  if (quantity.value < props.poster.availableStock) {
+    quantity.value++
+  }
+}
+
+const decrement = () => {
+  if (quantity.value > 1) {
+    quantity.value--
+  }
+}
+
+const bookPoster = async () => {
+  try {
+    if (auth.user)
+      bookingStore.createBooking({
+        posterId: props.poster._id,
+        userId: auth.user._id,
+        quantity: quantity.value,
+      })
+    quantity.value = 1
+    toast.success('Réservation confirmée !')
+    emit('updated')
+  } catch (err: any) {
+    toast.error(err.response?.data?.error || 'Erreur durant la réservation.')
+  }
+}
 
 </script>
 
@@ -51,48 +107,84 @@ const confirmDeleteVisible = ref(false)
 .poster-details-card{
     width:100%;
     display:grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 2rem;
+    grid-template-columns: 100px 1fr 1fr;
     align-items: start;
       @media (max-width: 768px) {
     grid-template-columns: 1fr;
+        gap: unset;
   }
 }
 
 .poster-details-card-back{
-    max-width: 100px;
+  display: flex;
+    max-width: 100%;
     color:$red;
     padding-left: $space-sm;
+    align-self: center;
+
+      @media (max-width: 768px) {
+      padding-left: unset;
+      max-width: 100%;
+      justify-content: center;
+
+      > * {
+        max-width: 25%;
+      }
+  }
 }
 
 .poster-details-card-image{
     display:flex;
     align-items: center;
   justify-content: center;
+  position:relative;
     img{
         height: calc(100vh - 158px);
         width:  100%;
         object-fit: contain;
             border-radius: 8px;
+            display:block;
     }
 }
 
 .poster-details-card-data{
     display:flex;
-    padding: $space-sm;
     flex-direction: column;
     height:100%;
     align-items: start;
   justify-content: center;
-  background: $red;
+  background: $darker-red;
   color: white;
 
   ul{
     list-style-type: none;
+    padding-left:1rem;
+       @media (max-width: 768px) {
+    padding-left: 0.5rem;
+  }
     li{
-        padding: 1rem 0;
+        padding: 0.8rem 0;
     }
 
   }
 }
+
+.poster-details-card-booking{
+  background-color: white;
+  color:$red;
+  width:100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+
+  &--info{
+    display:flex;
+    align-items: center;
+    >* {
+      margin-right: 1rem;
+    }
+  }
+
+}
+
 </style>

@@ -25,10 +25,16 @@
         </button>
       </div>
     </div>
+    <div class="home-error" v-if="loading">
+        <Spinner/>
+    </div>
+    <div class="home-error" v-else-if="posterStore.filteredPosters.length == 0 && !loading"> 
+      <img src="@/assets/404.svg"><p>Aucune affiche ne correspond à votre recherche. 😭</p>
+    </div>
 
-    <div class="home-error" v-if="posterStore.filteredPosters.length == 0"> <img src="@/assets/404.svg"><p>Aucune affiche ne correspond à votre recherche. 😭</p></div>
-
+    <div v-else>
     <transition name="fade" mode="out-in">
+      
       <div v-if="view === 'grid'" key="grid" class="grid-container">
         <home-poster-card
           v-for="p in posterStore.filteredPosters"
@@ -37,6 +43,7 @@
           :view="view"
           @details="posterDetails(p._id)"
         />
+       
       </div>
 
       <div v-else key="list" class="list-container">
@@ -49,6 +56,7 @@
         />
       </div>
     </transition>
+    </div>
   </div>
 </template>
 
@@ -59,11 +67,13 @@ import { useRouter } from 'vue-router'
 import { Squares2X2Icon, ListBulletIcon, MagnifyingGlassIcon } from '@heroicons/vue/24/outline'
 import { Alphabet } from '@/types/models'
 import HomePosterCard from '@/components/cards/HomePosterCard.vue'
+import Spinner from '@/components/Spinner.vue'
 
 const router = useRouter()
 
 const posterStore = usePosterStore()
 const letters = Object.values(Alphabet)
+const loading = ref(true)
 
 const view = ref<'grid' | 'list'>((localStorage.getItem('posterView') as 'grid' | 'list') || 'grid')
 
@@ -84,6 +94,7 @@ function posterDetails(posterId: string) {
 
 onMounted(async () => {
   await posterStore.fetchPosters()
+  loading.value = false
 })
 
 watch(view, (newView) => {

@@ -1,58 +1,71 @@
 import { defineStore } from 'pinia'
-import axios from 'axios'
+import { ref, computed } from 'vue'
 import type { User } from '../types/models'
+import api from '@/utils/axios'
 
-const API = 'http://localhost:5000/api'
+export const useAuthStore = defineStore('auth', () => {
+  const user = ref<User | null>(null)
+  const token = ref<string>(localStorage.getItem('token') || '')
+  const initialized = ref(false)
+  
+  const isAdmin = computed(()=>{ return user.value?.role === 'admin'})
 
-export const useAuthStore = defineStore('auth', {
-  state: () => ({
-    user: null as User | null,
-    token: localStorage.getItem('token') || '',
-    initialized: false,
-  }),
-  actions: {
-    async init() {
-      if (this.token || this.initialized) return
+  async function init() {
+    if (token.value || initialized.value) return
 
-      const saved = localStorage.getItem('token')
-      if (saved) {
-        this.token = saved
-        try {
-          await this.fetchUser() // get user profile
-        } catch (e) {
-          this.token = ''
-        }
-      }
-      this.initialized = true
-    },
-    async login(username: string, password: string) {
-      const res = await axios.post(`${API}/auth/login`, { username, password })
-      this.token = res.data.token
-      this.user = res.data.user
-      localStorage.setItem('token', this.token)
-    },
-    async signup(username: string, password: string, email: string, role: string = 'user') {
-      const res = await axios.post(`${API}/auth/signup`, { username, password, email, role })
-      this.token = res.data.token
-      this.user = res.data.user
-      localStorage.setItem('token', this.token)
-    },
-    async fetchUser() {
-      if (!this.token) return
-
+    const saved = localStorage.getItem('token')
+    if (saved) {
+      token.value = saved
       try {
-        const res = await axios.get('http://localhost:5000/api/auth/me', {
-          headers: { Authorization: `Bearer ${this.token}` },
-        })
-        this.user = res.data
-      } catch {
-        this.logout() // invalid token
+        await fetchUser()
+      } catch (e) {
+        token.value = ''
       }
-    },
-    logout() {
-      this.user = null
-      this.token = ''
-      localStorage.removeItem('token')
-    },
-  },
+    }
+    initialized.value = true
+  }
+
+  async function login(username: string, password: string) {
+    const res = await api.post('/auth/login', { username, password })
+    token.value = res.data.token
+    user.value = res.data.user
+    localStorage.setItem('token', token.value)
+  }
+
+  async function signup(username: string, password: string, email: string, role: string = 'user') {
+    const res = await api.post('/auth/signup', { username, password, email, role })
+    token.value = res.data.token
+    user.value = res.data.user
+    localStorage.setItem('token', token.value)
+  }
+
+  async function fetchUser() {
+    if (!token.value) return
+
+    try {
+      const res = await api.get('/auth/me')
+      user.value = res.data
+    } catch {
+      logout()
+    }
+  }
+
+  function logout() {
+    user.value = null
+    token.value = ''
+    localStorage.removeItem('token')
+  }
+
+
+  return {
+    user,
+    token,
+    initialized,
+    isAdmin,
+    init,
+    login,
+    signup,
+    fetchUser,
+    logout,
+  }
 })

@@ -4,6 +4,7 @@ $secondary: #fbbf24;
 $danger: #dc2626;
 $success: #16a34a;
 $red: #d4352d;
+$darker-red: #c1121f;
 $gray-100: #f3f4f6;
 $gray-300: #d1d5db;
 $gray-500: #6b7280;
@@ -11,11 +12,12 @@ $gray-800: #1f2937;
 $border-color: #e5e7eb;
 
 // 🔠 Typography
-$font-base: 'Inter', sans-serif;
-$font-title: Georgia, serif;
+$font-base: Helvetica, sans-serif;
+$font-title: Helvetica, serif;
 $font-size-sm: 0.875rem;
 $font-size-md: 1rem;
 $font-size-lg: 1.25rem;
+$font-size-xl: 3rem;
 
 // 📏 Breakpoints
 $break-sm: 640px;
