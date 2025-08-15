@@ -4,17 +4,22 @@
         <ArrowUturnLeftIcon />
       </div>
     <div class="poster-details-card-image">
-    <img :src="imgUrl" :class="{greyscale : poster.availableStock == 0 }" alt=""></div>
+    <img :src="imgUrl" :class="{
+      greyscale : poster.availableStock == 0 }" alt="">
+  </img>
+    
+    </div>
     <div class="poster-details-card-data">
       <div>
         <ul>
         <li class="poster-details-card-data--title title"> {{ poster.title }} 
-          <button v-if="auth.isAdmin" class="btn-red-bg"><pencil-icon /></button>
+          <button v-if="auth.isAdmin" class="btn-red-bg" @click="isEditing = true"><pencil-icon /></button>
         </li>
         <li class="poster-details-card-data--tags"><span v-for="t in poster.tags" class="tag-white">{{ t }}</span></li>
         <li class="poster-details-card-data--price"><b>Prix :</b> {{ poster.price }} €</li>
         <li class="poster-details-card-data--size"><b>Taille :</b> {{ poster.size }}</li>
-        <li class="poster-details-card-data--stock"><b>Affiches disponibles :</b> {{ poster.availableStock }}</li>
+        <li v-if ="auth.isAdmin" class="poster-details-card-data--stock"><b>Stock d'affiches :</b> {{ poster.totalStock }}</li>
+         <li v-else class="poster-details-card-data--stock"><b>Affiches disponibles :</b> {{ poster.availableStock }}</li>
         <li class="poster-details-card-data--note"><b>Commentaire :</b> <i>{{ poster.note }}</i></li>
         </ul>
       </div>
@@ -38,7 +43,7 @@
     </div>
     </div>
     </div>
- 
+ <poster-edit :poster-to-edit="posterStore.poster" :visible="isEditing" @close="isEditing = false"/>
 </template>
 
 <script setup lang="ts">
@@ -50,6 +55,8 @@ import { computed, ref } from 'vue'
 import {
   ArrowUturnLeftIcon, PlusIcon, MinusIcon, PencilIcon
 } from '@heroicons/vue/24/solid'
+
+import PosterEdit from '@/components/edition/PosterEdit.vue'
 
 import { useToast } from 'vue-toastification'
 const toast = useToast()
@@ -66,7 +73,7 @@ const posterStore = usePosterStore()
 const bookingStore = useBookingStore()
 
 const quantity = ref<number>(1)
-
+const isEditing = ref<boolean>(false)
 const imgUrl = ref<string>(import.meta.env.VITE_IMG_URL + props.poster.image)
 
 const canBook = computed(() => auth.user?.role === 'user' && props.poster.availableStock > 0)
@@ -137,13 +144,11 @@ const bookPoster = async () => {
     display:flex;
     align-items: center;
   justify-content: center;
-  position:relative;
     img{
         height: calc(100vh - 158px);
         width:  100%;
         object-fit: contain;
             border-radius: 8px;
-            display:block;
     }
 }
 

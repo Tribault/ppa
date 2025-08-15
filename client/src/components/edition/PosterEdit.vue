@@ -1,32 +1,28 @@
-<template class="poster-form">
-  <Transition name="modal-fade">
-    <div v-if="visible" class="modal-overlay">
-      <Transition name="modal-popup">
-        <div class="modal-box" @click.stop>
-          <button class="absolute top-2 right-2 text-gray-500 hover:text-black" @click="close">
-            ✖
-          </button>
+<template class="poster-edit">
+  <Transition name="poster-edit-fade">
+    <div v-if="visible" class="poster-edit-overlay">
+      <Transition name="poster-edit-popup">
+        <div class="poster-edit-box" @click.stop>
+          <button class="poster-edit-close-btn btn-red-bg" @click="close"><x-mark-icon /></button>
 
-          <h2 class="text-xl font-bold mb-4">
+          <h2 class="poster-edit-title">
             {{ posterToEdit?._id ? 'Edit Poster' : 'New Poster' }}
           </h2>
 
-          <form @submit.prevent="submit" class="space-y-3">
-            <input v-model="form.title" placeholder="Title" class="input" />
-            <input v-model="form.size" placeholder="Size" class="input" />
-            <input v-model.number="form.price" type="number" placeholder="Price" class="input" />
+          <form @submit.prevent="submit" class="poster-edit-form">
+            <input v-model="form.title" title = "title" placeholder="Title" class="poster-edit-input" />
+            <input v-model="form.size" placeholder="Size" class="poster-edit-input" />
+            <input v-model.number="form.price" type="number" placeholder="Price" class="poster-edit-input" />
             <input
               v-model.number="form.totalStock"
               type="number"
               placeholder="Stock"
-              class="input"
+              class="poster-edit-input"
             />
-            <input v-model="tagsInput" type="text" placeholder="e.g. vintage, sci-fi" />
+            <input v-model="tagsInput" type="text" placeholder="e.g. vintage, sci-fi" class="poster-edit-input" />
 
-            <div class="flex justify-between items-center mt-4">
-              <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">
-                💾 Save
-              </button>
+            <div class="poster-edit-form--actions">
+              <button type="submit" class="btn-red-bg"> <b>Sauvegarder</b> <folder-arrow-down-icon /></button>
             </div>
           </form>
         </div>
@@ -38,6 +34,9 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import type { Poster } from '@/types/models'
+import {XMarkIcon, FolderArrowDownIcon
+  
+} from '@heroicons/vue/24/solid'
 import { usePosterStore } from '@/stores/posters'
 import { useToast } from 'vue-toastification'
 const toast = useToast()
@@ -70,7 +69,7 @@ watch(
       form.value = { title: '', size: '', price: 0, totalStock: 0, tags: tags }
     }
   },
-  { immediate: true },
+  { immediate: true }
 )
 
 watch(tagsInput, (val) => {
@@ -87,7 +86,6 @@ function close() {
 async function submit() {
   try {
     if (props.posterToEdit?._id) {
-      console.log('form', form.value)
       await store.updatePoster(props.posterToEdit._id, form.value)
       toast.success('Poster updated ✅')
     } else {
@@ -96,14 +94,16 @@ async function submit() {
     }
     emit('saved')
     close()
-  } catch (err) {
+  } catch {
     toast.error('An error occurred ❌')
   }
 }
 </script>
 
-<style scoped>
-.modal-overlay {
+<style scoped lang="scss">
+
+
+  .poster-edit-overlay {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.5);
@@ -113,8 +113,9 @@ async function submit() {
   justify-content: center;
 }
 
-.modal-box {
-  background: white;
+.poster-edit-box {
+  background: $darker-red;
+  color: white;
   border-radius: 12px;
   padding: 24px;
   width: 90%;
@@ -123,36 +124,78 @@ async function submit() {
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
 }
 
-.close-btn {
+.poster-edit-close-btn {
   position: absolute;
   top: 12px;
   right: 16px;
-  background: none;
+}
+
+
+.poster-edit-title {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 16px;
+}
+
+.poster-edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  &--actions{
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+
+  button > b{
+   margin-right: 8px;
+  }
+  }
+}
+
+.poster-edit-input {
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+  width: 100%;
+}
+
+
+.btn-primary {
+  background-color: #2563eb;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 6px;
   border: none;
-  font-size: 24px;
   cursor: pointer;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+  background-color: #1d4ed8;
+}
 }
 
 /* Transitions */
-.modal-fade-enter-active,
-.modal-fade-leave-active {
+.poster-edit-fade-enter-active,
+.poster-edit-fade-leave-active {
   transition: opacity 0.25s ease;
 }
-.modal-fade-enter-from,
-.modal-fade-leave-to {
+.poster-edit-fade-enter-from,
+.poster-edit-fade-leave-to {
   opacity: 0;
 }
 
-.modal-popup-enter-active {
+.poster-edit-popup-enter-active {
   transition:
     transform 0.25s ease,
     opacity 0.25s ease;
 }
-.modal-popup-enter-from {
+.poster-edit-popup-enter-from {
   transform: scale(0.95);
   opacity: 0;
 }
-.modal-popup-leave-to {
+.poster-edit-popup-leave-to {
   transform: scale(0.95);
   opacity: 0;
 }

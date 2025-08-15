@@ -3,7 +3,6 @@
   <div v-else-if="posterStore.poster == null" class="poster-details-error"><img src="@/assets/404.svg"><p>Poster introuvable 😭</p></div>
   <div v-else class="poster-details-container">
     <poster-details-card :poster="posterStore.poster" />
-    <poster-details-edition />
   </div>
 </template>
 
