@@ -3,12 +3,14 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
 import Home from '@/pages/Home.vue'
-import Login from '@/pages/Login.vue'
-import Signup from '@/pages/Signup.vue'
+import Login from '@/pages/auth/Login.vue'
+import Signup from '@/pages/auth/Signup.vue'
 import Admin from '@/pages/AdminHome.vue'
 import PosterForm from '@/components/edition/PosterEdit.vue'
 import Account from '@/pages/Account.vue'
 import PosterDetails from '@/pages/PosterDetails.vue'
+import ForgotPassword from '@/pages/auth/ForgotPassword.vue'
+import ResetPassword from '@/pages/auth/ResetPassword.vue'
 
 const routes = [
   { path: '/', component: Home },
@@ -19,6 +21,8 @@ const routes = [
   { path: '/admin/new', component: PosterForm },
   { path: '/account', component: Account },
   { path: '/admin/edit/:id', component: PosterForm, props: true },
+   { path: '/forgot-password', component: ForgotPassword },
+  { path: '/reset-password', component: ResetPassword }
 ]
 
 const router = createRouter({
