@@ -6,20 +6,32 @@
           <button class="poster-edit-close-btn btn-red-bg" @click="close"><x-mark-icon /></button>
 
           <h2 class="poster-edit-title">
-            {{ posterToEdit?._id ? 'Edit Poster' : 'New Poster' }}
+            {{ posterToEdit?._id ? `Modification d'affiche` : `Création d'affiche` }}
           </h2>
 
           <form @submit.prevent="submit" class="poster-edit-form">
-            <input v-model="form.title" title = "title" placeholder="Title" class="poster-edit-input" />
-            <input v-model="form.size" placeholder="Size" class="poster-edit-input" />
-            <input v-model.number="form.price" type="number" placeholder="Price" class="poster-edit-input" />
-            <input
+            <div class="poster-edit-form--row"><b>Titre</b> <input v-model="form.title" title = "title" placeholder="Title" class="poster-edit-input" /></div>
+            <div class="poster-edit-form--row"><b>Taille</b><input v-model="form.size" placeholder="Size" class="poster-edit-input" /></div>
+            <div class="poster-edit-form--row"><b>Prix</b><input v-model.number="form.price" type="number" placeholder="Price" class="poster-edit-input" /></div>
+            <div class="poster-edit-form--row"><b>Stock</b><input
               v-model.number="form.totalStock"
               type="number"
               placeholder="Stock"
               class="poster-edit-input"
-            />
-            <input v-model="tagsInput" type="text" placeholder="e.g. vintage, sci-fi" class="poster-edit-input" />
+            /></div>
+             <div class="poster-edit-form--row"><b>Commentaire</b><input v-model="form.note" type="text" placeholder="Commentaire" class="poster-edit-input" /></div>
+            <div class="poster-edit-form--row"><b>Etiquettes</b>
+              <div class="tags">
+  <label v-for="tag in tagStore.tags" :key="tag._id">
+    <input
+      type="checkbox"
+      :value="tag._id"
+      v-model="form.tags"
+    />
+    {{ tag.name }}
+  </label>
+</div>
+            </div>
 
             <div class="poster-edit-form--actions">
               <button type="submit" class="btn-red-bg"> <b>Sauvegarder</b> <folder-arrow-down-icon /></button>
@@ -32,12 +44,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
-import type { Poster } from '@/types/models'
+import { ref, watch, onMounted } from 'vue'
+import type { Poster, PosterPayload } from '@/types/models'
 import {XMarkIcon, FolderArrowDownIcon
   
 } from '@heroicons/vue/24/solid'
 import { usePosterStore } from '@/stores/posters'
+import { useTagStore } from '@/stores/tags'
 import { useToast } from 'vue-toastification'
 const toast = useToast()
 
@@ -48,25 +61,33 @@ const props = defineProps<{
 const emit = defineEmits(['close', 'saved'])
 
 const tagsInput = ref('')
-const tags = ref<string[]>([])
 
-const form = ref({
+const form = ref<PosterPayload>({
   title: '',
   size: '',
+  image:'',
   price: 0,
+  note:'',
   totalStock: 0,
-  tags: tags,
+  tags:[]
 })
 
 const store = usePosterStore()
+const tagStore = useTagStore()
+
+onMounted(async () => {
+  await tagStore.fetchTags()
+})
 
 watch(
   () => props.posterToEdit,
   (val) => {
     if (val) {
-      form.value = { ...val }
+      form.value = { ...val ,
+      tags: (val.tags ?? []).map((t) => t._id )
+    }
     } else {
-      form.value = { title: '', size: '', price: 0, totalStock: 0, tags: tags }
+      form.value = { title: '', size: '', image:'', price: 0, totalStock: 0, note: '', tags: [] }
     }
   },
   { immediate: true }
@@ -142,6 +163,13 @@ async function submit() {
   flex-direction: column;
   gap: 12px;
 
+  &--row{
+    display: flex;
+    width:100%;
+    align-items: center;
+    justify-content: space-between;
+  }
+
   &--actions{
   display: flex;
   justify-content: flex-end;
@@ -155,10 +183,12 @@ async function submit() {
 
 .poster-edit-input {
   padding: 8px 10px;
+  margin-left: 8px;
   border-radius: 6px;
   border: 1px solid #ccc;
   font-size: 14px;
-  width: 100%;
+  flex-grow:1;
+  max-width: 90%;
 }
 
 

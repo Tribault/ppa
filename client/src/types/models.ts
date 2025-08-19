@@ -15,7 +15,7 @@ export interface Poster {
   note: string
   availableStock: number
   totalStock: number
-  tags: string[]
+  tags: Tag[]
 }
 
 export interface Booking {
@@ -42,6 +42,21 @@ export interface BookingPayload {
   posterId: string
   quantity: number
   status?: string
+}
+
+export interface PosterPayload {
+  title: string
+  size: string
+  price: number
+  image: string
+  note: string
+  totalStock: number
+  tags: string[] 
+}
+
+export interface Tag {
+  _id: string
+  name: string
 }
 
 export enum Alphabet {

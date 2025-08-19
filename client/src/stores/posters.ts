@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import type { Poster } from '@/types/models'
+import type { Poster, PosterPayload } from '@/types/models'
 import { ref, computed } from 'vue'
 import api from '@/utils/axios'
 import debounce from 'lodash.debounce'
@@ -30,7 +30,7 @@ export const usePosterStore = defineStore('posters', () => {
       result = result.filter(
         (p) =>
           p.title.toLowerCase().includes(query) ||
-          p.tags?.some((tag) => tag.toLowerCase().includes(query)),
+          p.tags?.some((tag) => tag.name.toLowerCase().includes(query)),
       )
     }
 
@@ -61,7 +61,7 @@ export const usePosterStore = defineStore('posters', () => {
     }
   }
 
-  async function createPoster(posterData: Partial<Poster>) {
+  async function createPoster(posterData: PosterPayload) {
     try {
       const res = await api.post('/posters', posterData)
       posters.value.push(res.data)
@@ -71,7 +71,7 @@ export const usePosterStore = defineStore('posters', () => {
     }
   }
 
-  async function updatePoster(id: string, posterData: Partial<Poster>) {
+  async function updatePoster(id: string, posterData: PosterPayload) {
     try {
       const res = await api.put(`/posters/${id}`, posterData)
       const index = posters.value.findIndex((p) => p._id === id)

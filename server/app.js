@@ -5,6 +5,8 @@ const posterRoutes = require('./routes/posters')
 const bookingRoutes = require('./routes/bookings')
 const saleRoutes = require('./routes/sales')
 const userRoutes = require('./routes/users')
+const tagRoutes = require('./routes/tags')
+
 
 
 const app = express()
@@ -17,5 +19,6 @@ app.use('/api/posters', posterRoutes)
 app.use('/api/bookings', bookingRoutes)
 app.use('/api/sales', saleRoutes)
 app.use('/api/users', userRoutes)
+app.use('/api/tags', tagRoutes)
 
 module.exports = app

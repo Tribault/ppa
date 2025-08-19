@@ -1,36 +1,34 @@
-<script setup lang="ts">
-import { ref } from 'vue'
-import AdminPosters from './admin/Posters.vue'
-import AdminBookings from './admin/Bookings.vue'
-import AdminSales from './admin/Sales.vue'
-
-const currentTab = ref<'posters' | 'bookings' | 'sales'>('posters')
-</script>
-
 <template>
-  <div class="p-4">
-    <h1 class="text-2xl font-bold mb-4">Page d'administration</h1>
-
-    <nav class="mb-4 flex gap-4">
-      <button
+  <div class="admin-home">
+    <div class="admin-home-header">
+      <h1>Administration</h1>
+      <nav class="admin-home-header--nav">
+      <button class="btn-white-bg"
         @click="currentTab = 'posters'"
-        :class="{ 'font-bold underline': currentTab === 'posters' }"
+        :class="{ 'selected-btn': currentTab === 'posters' }"
       >
-        Posters
+        <PhotoIcon/> Affiches
       </button>
-      <button
+      <button class="btn-white-bg"
         @click="currentTab = 'bookings'"
-        :class="{ 'font-bold underline': currentTab === 'bookings' }"
+        :class="{ 'selected-btn': currentTab === 'bookings' }"
       >
-        Réservations
+        <FaceSmileIcon/>Réservations
       </button>
-      <button
+      <button class="btn-white-bg"
         @click="currentTab = 'sales'"
-        :class="{ 'font-bold underline': currentTab === 'sales' }"
+        :class="{ 'selected-btn': currentTab === 'sales' }"
       >
-        Ventes
+        <DocumentCurrencyEuroIcon/>Ventes
+      </button>
+      <button class="btn-white-bg"
+        @click="currentTab = 'sales'"
+        :class="{ 'selected-btn': currentTab === 'sales' }"
+      >
+        <UserGroupIcon/>Utilisateurs
       </button>
     </nav>
+    </div>
 
     <div>
       <AdminPosters v-if="currentTab === 'posters'" />
@@ -40,11 +38,48 @@ const currentTab = ref<'posters' | 'bookings' | 'sales'>('posters')
   </div>
 </template>
 
-<style scoped>
-button {
-  padding: 0.5rem 1rem;
-  border: none;
-  background: none;
-  cursor: pointer;
+<script setup lang="ts">
+import { ref } from 'vue'
+import AdminPosters from './admin/Posters.vue'
+import AdminBookings from './admin/Bookings.vue'
+import AdminSales from './admin/Sales.vue'
+import { PhotoIcon, FaceSmileIcon, DocumentCurrencyEuroIcon, UserGroupIcon} from '@heroicons/vue/24/solid'
+
+const currentTab = ref<'posters' | 'bookings' | 'sales'>('posters')
+</script>
+
+<style scoped lang="scss">
+
+.admin-home-header{
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  color: $red;
+  gap: 1rem;
+
+  &--nav{
+    display:grid;
+    width:100%;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    > * {
+    margin-right: 1rem;
+  }
+  svg{
+    margin-right: 0.5rem;
+  }
+  }
+
+  @media screen and (max-width: $break-sm) {
+    flex-direction: column;
+  }
 }
+
+.selected-btn{
+   background-color: $red; /* light gray background */
+    color:white;
+    svg {
+      color: white; /* darker gray on hover */
+    }
+}
+
 </style>

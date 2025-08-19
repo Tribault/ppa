@@ -2,7 +2,7 @@
   <div v-if="loading">Loading...</div>
   <div v-else-if="posterStore.poster == null" class="poster-details-error"><img src="@/assets/404.svg"><p>Poster introuvable 😭</p></div>
   <div v-else class="poster-details-container">
-    <poster-details-card :poster="posterStore.poster" />
+    <poster-details-card :poster="posterStore.poster" :updated="getData"/>
   </div>
 </template>
 
@@ -17,9 +17,14 @@ const route = useRoute()
 const loading = ref(true)
 
 onMounted(async () => {
+  getData()
+})
+
+async function getData(){
+  loading.value = true
   await posterStore.fetchPoster(route.params.id)
   loading.value = false
-})
+}
 </script>
 
 <style lang="scss" scoped>

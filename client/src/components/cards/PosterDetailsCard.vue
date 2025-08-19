@@ -1,8 +1,8 @@
 <template >
     <div class="poster-details-card">
-      <div class="poster-details-card-back">
+      <router-link to="/" class="poster-details-card-back">
         <ArrowUturnLeftIcon />
-      </div>
+      </router-link>
     <div class="poster-details-card-image">
     <img :src="imgUrl" :class="{
       greyscale : poster.availableStock == 0 }" alt="">
@@ -15,7 +15,7 @@
         <li class="poster-details-card-data--title title"> {{ poster.title }} 
           <button v-if="auth.isAdmin" class="btn-red-bg" @click="isEditing = true"><pencil-icon /></button>
         </li>
-        <li class="poster-details-card-data--tags"><span v-for="t in poster.tags" class="tag-white">{{ t }}</span></li>
+        <li class="poster-details-card-data--tags"><span v-for="t in poster.tags" class="tag-white">{{ t.name }}</span></li>
         <li class="poster-details-card-data--price"><b>Prix :</b> {{ poster.price }} €</li>
         <li class="poster-details-card-data--size"><b>Taille :</b> {{ poster.size }}</li>
         <li v-if ="auth.isAdmin" class="poster-details-card-data--stock"><b>Stock d'affiches :</b> {{ poster.totalStock }}</li>

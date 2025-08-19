@@ -6,7 +6,7 @@
       <div><b>Identifiant :</b> <input v-model="username" type="text" placeholder="Identifiant" required /></div>
       <div><b>Mot de passe :</b> <input v-model="password" type="password" placeholder="Mot de passe" required /></div>
       <button type="submit" class="btn-red-bg"><b>Se connecter</b></button>
-      <p v-if="error" class="error">{{ error }}</p>
+      <p v-if="error">{{ error }}</p>
     </form>
     <router-link to="/signup">
       <p class="signup">Créer un compte</p></router-link>
@@ -41,9 +41,7 @@ const handleLogin = async () => {
 </script>
 
 <style scoped lang="scss">
-.error {
-  color: red;
-}
+
 
 .login{
   display:flex;
