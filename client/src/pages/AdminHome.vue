@@ -61,8 +61,9 @@ const currentTab = ref<'posters' | 'bookings' | 'sales'>('posters')
     display:grid;
     width:100%;
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 0.2rem;
     > * {
-    margin-right: 1rem;
+    font-weight: 700;
   }
   svg{
     margin-right: 0.5rem;

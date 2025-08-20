@@ -8,7 +8,7 @@
       <router-link to="/signup">S'inscrire</router-link>
     </div>
     <div v-else class="navbar-options">
-      <router-link v-if="auth.user.role === 'admin'" to="/admin">Admin</router-link>
+      <router-link v-if="(auth.user.role === 'admin') && ($route.path !== '/admin')" to="/admin">Admin</router-link>
       <router-link v-if="auth.user.role === 'user'" to="/account">Mes réservations</router-link>
       <div class="navbar-options__user">
         <span class="navbar-home__logout--user">Compte : {{ auth.user.username }}</span>
@@ -67,6 +67,7 @@ const logout = () => {
 .navbar-options__user {
   display: flex;
   flex-direction: column;
+  justify-self:flex-end;
 }
 
 .navbar-options {

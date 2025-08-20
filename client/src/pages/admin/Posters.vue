@@ -1,50 +1,52 @@
 <template>
-  <div class="new-admin-posters"><button @click="openNewPoster">Nouveau Poster</button></div>
-  <div key="list" class="list-container">
-    <table class="min-w-full table-auto border">
-      <thead class="bg-gray-100">
-        <tr>
-          <th v-for="column in columns" :key="column.key" class="px-4 py-2 text-left">
-            {{ column.label }}
-          </th>
-        </tr>
-      </thead>
-      <tbody>
-        <poster-card
-          v-for="p in store.posters"
-          :columns="columns"
-          :key="p._id"
-          :poster="p"
-          admin
-          view="list"
-          @updated="store.fetchPosters()"
-          @edit="openEditPoster"
-        />
-      </tbody>
-    </table>
-  </div>
+  <div class="admin-posters-header">
+       <div class="home-search">
+        <MagnifyingGlassIcon class="icon" />
+        <input type="text" placeholder="Search posters..." @input="onSearchInput" />
+      </div>
+      <div class="home-filter">
+        <button
+          v-for="l in letters"
+          :class="{ active: posterStore.selectedLetter === l }"
+          class="btn"
+          :key="l"
+          @click="posterStore.selectedLetter = posterStore.selectedLetter == null ? l : null"
+        >
+          {{ l }}
+        </button>
+    </div>
+      <button class="btn-red-bg"
+        @click="openNewPoster"
+      >
+        <NewspaperIcon/> Nouveau Poster
+      </button>
+      <button class="btn-red-bg"
+        @click="openNewPoster"
+      >
+        <TagIcon/>Etiquettes
+      </button>
+    </div>
+  
+  <admin-poster-table :posters="posterStore.posters"/>
   <poster-edit
     :visible="showModal"
     :posterToEdit="editingPoster"
     @close="closeModal"
-    @saved="store.fetchPosters"
+    @saved="posterStore.fetchPosters"
   />
 </template>
 
 <script setup lang="ts">
 import { usePosterStore } from '@/stores/posters'
 import { ref, onMounted } from 'vue'
-import PosterCard from '@/components/cards/PosterCard.vue'
+import { Alphabet } from '@/types/models'
+import AdminPosterTable from '@/components/AdminPosterTable.vue'
 import PosterEdit from '@/components/edition/PosterEdit.vue'
+import { MagnifyingGlassIcon, TagIcon, NewspaperIcon} from '@heroicons/vue/24/solid'
 
-const store = usePosterStore()
+const posterStore = usePosterStore()
 
-const columns = ref([
-  { key: 'title', label: 'Titre' },
-  { key: 'availableStock', label: 'Stock disponible' },
-  { key: 'note', label: 'Commentaire' },
-  { key: 'total', label: 'Prix total', manual: true },
-])
+const letters = Object.values(Alphabet)
 
 const showModal = ref(false)
 const editingPoster = ref(null)
@@ -64,11 +66,56 @@ const closeModal = () => {
 }
 
 onMounted(async () => {
-  store.fetchPosters()
+  posterStore.fetchPosters()
 })
+
+function onSearchInput(e: Event) {
+  posterStore.setSearchQuery((e.target as HTMLInputElement).value)
+}
 </script>
 
-<style scoped>
+<style scoped lang="scss">
+
+.admin-posters-header{
+background-color: $red;
+    display:grid;
+    width:100%;
+   
+    gap: 0.5rem;
+    justify-content: end;
+    padding: 0.5rem 1rem;
+    > * {
+    font-weight: 700;
+   
+  }
+  svg{
+    margin-right: 0.5rem;
+  }
+}
+
+.home-search {
+  display: flex;
+  align-items: center;
+  > input {
+    margin-left: $space-sm;
+    height: 30px;
+  }
+}
+
+.home-filter {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  font-weight: 500;
+
+  button.active {
+    border: solid 1px;
+    background-color: $red;
+    color: white;
+  }
+}
+
+
 .new-admin-posters {
   text-align: end;
 }

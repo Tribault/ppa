@@ -77,12 +77,6 @@ const loading = ref(true)
 
 const view = ref<'grid' | 'list'>((localStorage.getItem('posterView') as 'grid' | 'list') || 'grid')
 
-const columns = ref([
-  { key: 'title', label: 'Titre' },
-  { key: 'availableStock', label: 'Stock disponible' },
-  { key: 'note', label: 'Commentaire' },
-  { key: 'total', label: 'Prix total', manual: true },
-])
 
 function onSearchInput(e: Event) {
   posterStore.setSearchQuery((e.target as HTMLInputElement).value)

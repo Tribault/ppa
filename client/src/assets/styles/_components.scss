@@ -151,3 +151,94 @@
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   }
 }
+
+
+/* Wrapper enables horizontal scroll on narrow screens */
+.table-container{
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border: 1px solid var(--border);
+}
+
+/* Table base */
+.sticky-table{
+  border-collapse: separate;   /* improves sticky rendering */
+  border-spacing: 0;
+  width: 100%;
+  min-width: 720px;            /* force scroll when too narrow */
+  font-size: 0.95rem;
+}
+
+/* Header */
+.sticky-table thead th{
+  position: sticky;
+  top: 0;
+  z-index: 3;                  /* above body cells */
+  text-align: left;
+  font-weight: 600;
+  font-size: $font-size-lg;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+  background:#ffffff;
+  color:$red;
+
+}
+
+/* Cells */
+.sticky-table td, .sticky-table th[scope="row"]{
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+/* Sticky first column (header + body) */
+.sticky-table .sticky-col{
+  text-align: left;
+  position: sticky;
+  left: 0;                     /* pin to left edge */
+  z-index: 2;                  /* below thead but above other cells */
+  box-shadow: 1px 0 0 0 var(--border); /* divider line on right */
+  white-space: nowrap;
+  background: white;
+
+
+}
+
+/* When first header cell is also sticky, layer it above others */
+.sticky-table thead .sticky-col{
+  z-index: 4;
+background-color: white;
+  
+}
+
+.sticky-table tr {
+  color: $darker-red;
+
+  svg {
+    color: $darker-red;
+  }
+}
+
+.sticky-table tbody tr:nth-child(odd) {
+  background-color: $darker-red;
+  color: white;
+
+  .sticky-col{
+    background-color: $red;
+  }
+
+  svg {
+    color: white;
+  }
+
+}
+
+/* Compact mode on very small screens */
+@media (max-width: 480px){
+  .sticky-table{
+    font-size: 0.9rem;
+    min-width: 600px;
+  }
+}
+
