@@ -1,10 +1,10 @@
 <template>
   <div class="admin-posters-header">
-       <div class="home-search">
+       <div class="admin-posters-header--search">
         <MagnifyingGlassIcon class="icon" />
-        <input type="text" placeholder="Search posters..." @input="onSearchInput" />
+        <input type="text" placeholder="Chercher affiche..." @input="onSearchInput" />
       </div>
-      <div class="home-filter">
+      <div class="admin-posters-header--filter">
         <button
           v-for="l in letters"
           :class="{ active: posterStore.selectedLetter === l }"
@@ -15,33 +15,39 @@
           {{ l }}
         </button>
     </div>
+    <div class="admin-posters-header--actions">
       <button class="btn-red-bg"
         @click="openNewPoster"
       >
         <NewspaperIcon/> Nouveau Poster
       </button>
       <button class="btn-red-bg"
-        @click="openNewPoster"
+        @click="showTagModal = true"
       >
         <TagIcon/>Etiquettes
       </button>
     </div>
+    </div>
   
-  <admin-poster-table :posters="posterStore.posters"/>
+  <admin-poster-table :posters="posterStore.filteredPosters" @edit="(p) => openEditPoster(p)" @delete="(p) => deletePoster(p)"/>
   <poster-edit
     :visible="showModal"
     :posterToEdit="editingPoster"
     @close="closeModal"
     @saved="posterStore.fetchPosters"
   />
+  <tag-edit :visible="showTagModal" @close="closeTagModal"/>
+  
 </template>
 
 <script setup lang="ts">
 import { usePosterStore } from '@/stores/posters'
 import { ref, onMounted } from 'vue'
 import { Alphabet } from '@/types/models'
+import type {Poster} from '@/types/models'
 import AdminPosterTable from '@/components/AdminPosterTable.vue'
 import PosterEdit from '@/components/edition/PosterEdit.vue'
+import TagEdit from '@/components/edition/TagEdit.vue'
 import { MagnifyingGlassIcon, TagIcon, NewspaperIcon} from '@heroicons/vue/24/solid'
 
 const posterStore = usePosterStore()
@@ -49,6 +55,8 @@ const posterStore = usePosterStore()
 const letters = Object.values(Alphabet)
 
 const showModal = ref(false)
+const showTagModal = ref(false)
+
 const editingPoster = ref(null)
 
 const openNewPoster = () => {
@@ -65,12 +73,20 @@ const closeModal = () => {
   showModal.value = false
 }
 
+const closeTagModal = () => {
+  showTagModal.value = false
+}
+
 onMounted(async () => {
   posterStore.fetchPosters()
 })
 
 function onSearchInput(e: Event) {
   posterStore.setSearchQuery((e.target as HTMLInputElement).value)
+}
+
+function deletePoster(poster: Poster){
+  posterStore.deletePoster(poster._id)
 }
 </script>
 
@@ -80,40 +96,56 @@ function onSearchInput(e: Event) {
 background-color: $red;
     display:grid;
     width:100%;
-   
+    grid-template-columns: 1fr;
     gap: 0.5rem;
-    justify-content: end;
+    
     padding: 0.5rem 1rem;
     > * {
     font-weight: 700;
    
   }
+
+    @media screen and (min-width: $break-md) {
+        grid-template-columns: 0.5fr 3fr auto;
+  }
   svg{
     margin-right: 0.5rem;
   }
-}
 
-.home-search {
+  &--search {
   display: flex;
   align-items: center;
   > input {
     margin-left: $space-sm;
     height: 30px;
   }
+  svg{
+    color:white;
+  }
 }
 
-.home-filter {
+  &--actions{
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  }
+
+  &--filter {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   font-weight: 500;
+  color: white;
 
   button.active {
     border: solid 1px;
-    background-color: $red;
-    color: white;
+    background-color: white;
+    color: $red;
+  }
   }
 }
+
+
 
 
 .new-admin-posters {

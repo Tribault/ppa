@@ -1,4 +1,6 @@
 const Poster = require('../models/Poster')
+const fs = require('fs')
+const path = require('path')
 
 exports.getAllPosters = async(req, res) => {
     const posters = await Poster.find().populate('tags').sort({ title: 1 })
@@ -40,8 +42,24 @@ exports.createPoster = async (req, res) => {
 }
 
 exports.updatePoster = async (req, res) => {
-    const updated = await Poster.findByIdAndUpdate(req.params.id, req.body, {new: true})
-    res.json(updated)
+ const { id } = req.params
+    const poster = await Poster.findById(id)
+    if (!poster) return res.status(404).json({ message: "Poster not found" })
+
+    if (req.file) {
+      if (poster.image) {
+        const oldPath = path.join("uploads", poster.image)
+        if (fs.existsSync(oldPath)) {
+          fs.unlinkSync(oldPath)
+        }
+      }
+      poster.image = req.file.filename
+    }
+
+    Object.assign(poster, req.body)
+
+    await poster.save()
+    res.json(poster)
 }
 
 exports.deletePoster = async (req, res) => {

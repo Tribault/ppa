@@ -10,8 +10,26 @@
           </h2>
 
           <form @submit.prevent="submit" class="poster-edit-form">
+            <div class="poster-edit-form--row">
+    <div v-if="form.image" class="poster-edit-preview">
+  <img :src="previewUrl" alt="Poster preview" />
+</div>
+  <input 
+    type="file" 
+    accept="image/*" 
+    @change="handleFileUpload" 
+    class="poster-edit-input"
+  />
+
+</div>
             <div class="poster-edit-form--row"><b>Titre</b> <input v-model="form.title" title = "title" placeholder="Title" class="poster-edit-input" /></div>
-            <div class="poster-edit-form--row"><b>Taille</b><input v-model="form.size" placeholder="Size" class="poster-edit-input" /></div>
+            <div class="poster-edit-form--row"><b>Taille</b>
+  <input type="radio" id="sizeL" value="120*160 cm" v-model="form.size" />
+  <label for="sizeL">120x160 cm</label>
+
+  <input type="radio" id="sizeM" value="60*80 cm" v-model="form.size" />
+  <label for="sizeM">60x80 cm</label>
+             </div>
             <div class="poster-edit-form--row"><b>Prix</b><input v-model.number="form.price" type="number" placeholder="Price" class="poster-edit-input" /></div>
             <div class="poster-edit-form--row"><b>Stock</b><input
               v-model.number="form.totalStock"
@@ -45,7 +63,7 @@
 
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue'
-import type { Poster, PosterPayload } from '@/types/models'
+import type { Poster } from '@/types/models'
 import {XMarkIcon, FolderArrowDownIcon
   
 } from '@heroicons/vue/24/solid'
@@ -60,20 +78,28 @@ const props = defineProps<{
 }>()
 const emit = defineEmits(['close', 'saved'])
 
-const tagsInput = ref('')
-
-const form = ref<PosterPayload>({
-  title: '',
-  size: '',
-  image:'',
-  price: 0,
-  note:'',
-  totalStock: 0,
-  tags:[]
-})
-
 const store = usePosterStore()
 const tagStore = useTagStore()
+
+const form = ref<{
+  title: string
+  size: string
+  price: number
+  note: string
+  totalStock: number
+  tags: string[]
+  image: File | string | null
+}>({
+  title: '',
+  size: '120*160 cm',
+  price: 0,
+  note: '',
+  totalStock: 0,
+  tags: [],
+  image: null
+})
+
+const previewUrl = ref<string>('')
 
 onMounted(async () => {
   await tagStore.fetchTags()
@@ -83,39 +109,59 @@ watch(
   () => props.posterToEdit,
   (val) => {
     if (val) {
-      form.value = { ...val ,
-      tags: (val.tags ?? []).map((t) => t._id )
+      form.value = { 
+      ...val ,
+      tags: (val.tags ?? []).map((t) => t._id),
+      image: val.image || null 
     }
+    previewUrl.value = val.image ? import.meta.env.VITE_IMG_URL + val.image : ''
     } else {
-      form.value = { title: '', size: '', image:'', price: 0, totalStock: 0, note: '', tags: [] }
+      form.value = { title: '', size: '', price: 0, totalStock: 0, note: '', tags: [], image: null }
+       previewUrl.value = ''
     }
   },
   { immediate: true }
 )
 
-watch(tagsInput, (val) => {
-  form.value.tags = val
-    .split(',')
-    .map((t) => t.trim())
-    .filter(Boolean)
-})
 
 function close() {
   emit('close')
 }
 
+function handleFileUpload(event: Event) {
+  const file = (event.target as HTMLInputElement).files?.[0]
+  if (file) {
+    form.value.image = file 
+    previewUrl.value = URL.createObjectURL(file) 
+  }
+}
+
 async function submit() {
-  try {
+  try{
+  const formData = new FormData()
+    formData.append('title', form.value.title)
+    formData.append('size', form.value.size)
+    formData.append('price', form.value.price.toString())
+    formData.append('note', form.value.note)
+    formData.append('totalStock', form.value.totalStock.toString())
+    form.value.tags.forEach((tag) => formData.append('tags[]', tag))
+
+    if (form.value.image instanceof File) {
+      formData.append('image', form.value.image)
+    }
+
     if (props.posterToEdit?._id) {
-      await store.updatePoster(props.posterToEdit._id, form.value)
+      await store.updatePoster(props.posterToEdit._id, formData)
       toast.success('Poster updated ✅')
     } else {
-      await store.createPoster(form.value)
+      await store.createPoster(formData)
       toast.success('Poster created 🎉')
     }
+
     emit('saved')
     close()
-  } catch {
+  } catch (err) {
+    console.error(err)
     toast.error('An error occurred ❌')
   }
 }
@@ -145,6 +191,18 @@ async function submit() {
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
 }
 
+.poster-edit-preview{
+   margin-top: 8px;
+  
+  img {
+    max-width: 120px;
+    max-height: 120px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+  }
+}
+
 .poster-edit-close-btn {
   position: absolute;
   top: 12px;
@@ -168,6 +226,12 @@ async function submit() {
     width:100%;
     align-items: center;
     justify-content: space-between;
+
+    &:first-of-type{
+      input{
+        border:unset;
+      }
+    }
   }
 
   &--actions{

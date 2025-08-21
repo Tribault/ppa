@@ -4,7 +4,7 @@
         <ArrowUturnLeftIcon />
       </router-link>
     <div class="poster-details-card-image">
-    <img :src="imgUrl" :class="{
+    <img :src="imgUrl.value" :class="{
       greyscale : poster.availableStock == 0 }" alt="">
   </img>
     
@@ -43,7 +43,7 @@
     </div>
     </div>
     </div>
- <poster-edit :poster-to-edit="posterStore.poster" :visible="isEditing" @close="isEditing = false"/>
+ <poster-edit :poster-to-edit="posterStore.poster" :visible="isEditing" @saved="refreshData" @close="isEditing = false"/>
 </template>
 
 <script setup lang="ts">
@@ -74,11 +74,13 @@ const bookingStore = useBookingStore()
 
 const quantity = ref<number>(1)
 const isEditing = ref<boolean>(false)
-const imgUrl = ref<string>(import.meta.env.VITE_IMG_URL + props.poster.image)
+const imgUrl = computed(() => ref<string>(import.meta.env.VITE_IMG_URL + props.poster.image))
 
 const canBook = computed(() => auth.user?.role === 'user' && props.poster.availableStock > 0)
 
-
+function refreshData(){
+  posterStore.fetchPoster(props.poster._id)
+}
 
 const increment = () => {
   if (quantity.value < props.poster.availableStock) {

@@ -22,15 +22,18 @@
         <td>{{p.note}}</td>
         <td>
           <eye-icon v-if="p.image" class="icon" @click="viewImage(p.image)"/> 
-          <pencil-icon class="icon" /> 
-          <trash-icon class="icon" /></td>
+          <pencil-icon class="icon" @click="$emit('edit', p)"/> 
+          <trash-icon class="icon" @click="deleteConfirmation(p)"/></td>
       </tr>
     </tbody>
   </table>
 </div>
+<confirm-modal message="Supprimer cette affiche.":visible="showDeleteModal" @cancel="showDeleteModal=false" @confirm="$emit('delete', posterToDelete)"/>
 </template>
+
 <script setup lang="ts">
 import type { Poster } from '@/types/models'
+import {ref} from 'vue'
 import {
   EyeIcon,
   PencilIcon,
@@ -41,11 +44,19 @@ const props = defineProps<{
   posters: Poster[]
 }>()
 
+const emit = defineEmits(['edit', 'delete'])
+
+const showDeleteModal = ref(false)
+const posterToDelete = ref<Poster | null>(null)
+
 function viewImage(image: string) {
     window.open(import.meta.env.VITE_IMG_URL + image,'_blank')
 }
 
-
+function deleteConfirmation(poster: Poster){
+  showDeleteModal.value = true;
+  posterToDelete.value = poster
+}
 </script>
 <style lang="scss" scoped>
 

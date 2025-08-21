@@ -9,7 +9,7 @@ const {
 router.get('/', getAllPosters)
 router.get('/:id', getPoster)
 router.post('/', authenticate, authorize('admin'), upload.single('image'), createPoster)
-router.put('/:id', authenticate, authorize('admin'), updatePoster)
+router.put('/:id', authenticate, authorize('admin'), upload.single('image'), updatePoster)
 router.delete('/:id', authenticate, authorize('admin'), deletePoster)
 
 module.exports = router

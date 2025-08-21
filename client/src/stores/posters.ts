@@ -61,9 +61,9 @@ export const usePosterStore = defineStore('posters', () => {
     }
   }
 
-  async function createPoster(posterData: PosterPayload) {
+  async function createPoster(posterData: FormData) {
     try {
-      const res = await api.post('/posters', posterData)
+      const res = await api.post('/posters', posterData,  {headers: { 'Content-Type': 'multipart/form-data' }})
       posters.value.push(res.data)
     } catch (err: any) {
       error.value = err.response?.data?.message || 'Failed to create poster'
@@ -71,9 +71,9 @@ export const usePosterStore = defineStore('posters', () => {
     }
   }
 
-  async function updatePoster(id: string, posterData: PosterPayload) {
+  async function updatePoster(id: string, posterData: FormData) {
     try {
-      const res = await api.put(`/posters/${id}`, posterData)
+      const res = await api.put(`/posters/${id}`, posterData,{headers: { 'Content-Type': 'multipart/form-data' }})
       const index = posters.value.findIndex((p) => p._id === id)
       if (index !== -1) {
         posters.value[index] = res.data

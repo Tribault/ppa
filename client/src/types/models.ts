@@ -48,7 +48,7 @@ export interface PosterPayload {
   title: string
   size: string
   price: number
-  image: string
+  image?: File
   note: string
   totalStock: number
   tags: string[] 
