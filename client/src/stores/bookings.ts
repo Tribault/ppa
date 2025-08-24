@@ -1,82 +1,120 @@
 import { defineStore } from 'pinia'
 import type { Booking, BookingPayload } from '@/types/models'
+import debounce from 'lodash.debounce'
 import api from '@/utils/axios'
+import { ref, computed } from 'vue'
 
-import { useToast } from 'vue-toastification'
-const toast = useToast()
+export const useBookingStore = defineStore('bookings', () => {
+  const bookings = ref<Booking[]>([])
+  const booking = ref<Booking | null>(null)
+  const loading = ref(false)
+  const error = ref<string | null>(null)
+  const selectedLetter = ref<string | null>(null)
+  const searchQuery = ref('')
 
-export const useBookingStore = defineStore('bookings', {
-  state: () => ({
-    bookings: [] as Booking[],
-    loading: false,
-    error: null as string | null,
-  }),
+  const setSearchQuery = debounce((value: string) => {
+    searchQuery.value = value
+  }, 300)
 
-  actions: {
-    async fetchBookings() {
-      this.loading = true
-      try {
-        const res = await api.get('/bookings')
-        this.bookings = res.data
-      } catch (err: any) {
-        this.error = err.response?.data?.message || 'Failed to fetch bookings'
-      } finally {
-        this.loading = false
-      }
-    },
+  const filteredBookings = computed(() => {
+    let result = bookings.value
 
-    async createBooking(bookingData: BookingPayload) {
-      try {
-        const res = await api.post('/bookings', bookingData)
-        this.bookings.push(res.data)
-      } catch (err: any) {
-        this.error = err.response?.data?.message || 'Failed to create booking'
-        throw err
-      }
-    },
-    async validateBooking(id: string) {
-      try {
-        await api.post(`/bookings/${id}/validate`)
-        await this.fetchBookings()
-        toast.success('booking validated')
-      } catch (err: any) {
-        this.error = err.response?.data?.message || 'Failed to validate booking'
-        toast.error(this.error)
-        throw err
-      }
-    },
-    async devalidateBooking(id: string) {
-      try {
-        await api.post(`/bookings/${id}/devalidate`)
-        await this.fetchBookings()
-        toast.success('booking devalidated')
-      } catch (err: any) {
-        this.error = err.response?.data?.message || 'Failed to devalidate booking'
-        toast.error(this.error)
-        throw err
-      }
-    },
-    async updateBooking(id: string, bookingData: BookingPayload) {
-      try {
-        const res = await api.put(`/bookings/${id}`, bookingData)
-        const index = this.bookings.findIndex((p) => p._id === id)
-        if (index !== -1) {
-          this.bookings[index] = res.data
-        }
-      } catch (err: any) {
-        this.error = err.response?.data?.message || 'Failed to update booking'
-        throw err
-      }
-    },
+    if (selectedLetter.value) {
+      result = result.filter(
+        (b) => b.user.email[0].toUpperCase() === selectedLetter.value?.toUpperCase(),
+      )
+    }
 
-    async deleteBooking(id: string) {
-      try {
-        await api.delete(`/bookings/${id}`)
-        this.bookings = this.bookings.filter((p) => p._id !== id)
-      } catch (err: any) {
-        this.error = err.response?.data?.message || 'Failed to delete poster'
-        throw err
+    if (searchQuery.value.trim()) {
+      const query = searchQuery.value.toLowerCase()
+      result = result.filter(
+        (b) => b.user.email.toLowerCase().includes(query) || b.poster.title.includes(query),
+      )
+    }
+
+    return result
+  })
+
+  async function fetchBookings() {
+    loading.value = true
+    try {
+      const res = await api.get('/bookings')
+      bookings.value = res.data
+    } catch (err: any) {
+      error.value = err.response?.data?.message || 'Failed to fetch bookings'
+    } finally {
+      loading.value = false
+    }
+  }
+
+  async function createBooking(bookingData: BookingPayload) {
+    try {
+      console.log("form", bookingData)
+      const res = await api.post('/bookings', bookingData)
+      bookings.value.push(res.data)
+    } catch (err: any) {
+      error.value = err.response?.data?.message || 'Failed to create booking'
+      throw err
+    }
+  }
+
+  async function validateBooking(id: string) {
+    try {
+      await api.post(`/bookings/${id}/validate`)
+      await fetchBookings()
+    } catch (err: any) {
+      error.value = err.response?.data?.message || 'Failed to validate booking'
+      throw err
+    }
+  }
+
+  async function devalidateBooking(id: string) {
+    try {
+      await api.post(`/bookings/${id}/devalidate`)
+      await fetchBookings()
+    } catch (err: any) {
+      error.value = err.response?.data?.message || 'Failed to devalidate booking'
+      throw err
+    }
+  }
+
+  async function updateBooking(id: string, bookingData: BookingPayload) {
+    try {
+      const res = await api.put(`/bookings/${id}`, bookingData)
+      const index = bookings.value.findIndex((p) => p._id === id)
+      if (index !== -1) {
+        bookings.value[index] = res.data
       }
-    },
-  },
+    } catch (err: any) {
+      error.value = err.response?.data?.message || 'Failed to update booking'
+      throw err
+    }
+  }
+
+  async function deleteBooking(id: string) {
+    try {
+      await api.delete(`/bookings/${id}`)
+      bookings.value = bookings.value.filter((p) => p._id !== id)
+    } catch (err: any) {
+      error.value = err.response?.data?.message || 'Failed to delete booking'
+      throw err
+    }
+  }
+
+  return {
+    bookings,
+    booking,
+    loading,
+    error,
+    selectedLetter,
+    searchQuery,
+    setSearchQuery,
+    filteredBookings,
+    fetchBookings,
+    deleteBooking,
+    updateBooking,
+    createBooking,
+    devalidateBooking,
+    validateBooking,
+  }
 })

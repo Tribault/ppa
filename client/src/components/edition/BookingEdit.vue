@@ -1,37 +1,43 @@
-<template class="poster-form">
-  <Transition name="modal-fade">
-    <div v-if="visible" class="modal-overlay">
-      <Transition name="modal-popup">
-        <div class="modal-box" @click.stop>
-          <button
-            class="absolute top-2 right-2 text-gray-500 hover:text-black"
-            @click="emit('close')"
-          >
-            ✖
-          </button>
+<template class="booking-edit">
+  <Transition name="booking-edit-fade">
+    <div v-if="visible" class="booking-edit-overlay">
+      <Transition name="booking-edit-popup">
+        <div class="booking-edit-box" @click.stop>
+          <button class="booking-edit-close-btn btn-red-bg" @click="close"><x-mark-icon /></button>
 
-          <h2 class="text-xl font-bold mb-4">
-            {{ bookingToEdit?._id ? 'Edit Booking' : 'New Booking' }}
+          <h2 class="booking-edit-title">
+            {{ bookingToEdit?._id ? `Modification de réservation` : `Création de réservation` }}
           </h2>
 
-          <form @submit.prevent="submit" class="space-y-3">
-            <select v-model="form.posterId" required>
-              <option disabled value="">-- Select a poster --</option>
-              <option v-for="p in posterStore.posters" :key="p._id" :value="p._id">
-                {{ p.title }}
-              </option>
-            </select>
-            <select v-model="form.userId" required>
-              <option disabled value="">-- Select a user --</option>
-              <option v-for="u in userStore.users" :key="u._id" :value="u._id">
-                {{ u.email }}
-              </option>
-            </select>
-            <input v-model.number="form.quantity" placeholder="Quantity" class="input" />
+          <form @submit.prevent="submit" class="booking-edit-form">
+            <div class="booking-edit-form--row">
+              <b>Affiche</b>
+             <database-search  search-type="poster" @value-selected="(p) => form.posterId = p" />
+            </div>
+            <div class="booking-edit-form--row">
+              <b>Client</b>
+             <database-search  search-type="user" @value-selected="(u) => form.userId = u" />
+            </div>
+             <div class="booking-edit-form--row">
+              <b>Quantité</b
+              ><input
+                v-model.number="form.quantity"
+                type="number"
+                placeholder="Quantity"
+                class="booking-edit-input"
+              />
+            </div>
+            <div v-if="bookingToEdit?._id" class="booking-edit-form--row">
+              <b>Status</b>
+              <input type="radio" id="pending" value="pending" v-model="form.status" />
+              <label for="pending">En cours</label>
+              <input type="radio" id="validated" value="validated" v-model="form.status" />
+              <label for="validated">Validée</label>
+            </div>
 
-            <div class="flex justify-between items-center mt-4">
-              <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">
-                {{ bookingToEdit ? 'Update' : 'Create' }}
+            <div class="booking-edit-form--actions">
+              <button type="submit" class="btn-red-bg">
+                <b>Sauvegarder</b> <folder-arrow-down-icon />
               </button>
             </div>
           </form>
@@ -42,69 +48,86 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
-import type { Booking, BookingPayload } from '@/types/models'
+import { ref, watch, onMounted } from 'vue'
+import type { Booking } from '@/types/models'
+import { XMarkIcon, FolderArrowDownIcon } from '@heroicons/vue/24/solid'
 import { useBookingStore } from '@/stores/bookings'
 import { useUserStore } from '@/stores/users'
-import { usePosterStore } from '@/stores/posters'
 import { useToast } from 'vue-toastification'
+import DatabaseSearch from '@/components/utils/DatabaseSearch.vue'
 const toast = useToast()
 
 const props = defineProps<{
   visible: boolean
   bookingToEdit: Booking | null
 }>()
-
 const emit = defineEmits(['close', 'saved'])
-
-const form = ref<BookingPayload>({
-  posterId: '' as string,
-  userId: '' as string,
-  quantity: 1,
-})
 
 const bookingStore = useBookingStore()
 const userStore = useUserStore()
-const posterStore = usePosterStore()
+
+const form = ref<{
+  userId: string
+  posterId: string
+  quantity: number
+  status: string
+}>({
+  userId: '',
+  posterId: '',
+  quantity: 1,
+  status: 'pending',
+})
+
+const previewUrl = ref<string>('')
 
 onMounted(async () => {
   await userStore.fetchUsers()
-  await posterStore.fetchPosters()
 })
-
-async function submit() {
-  if (props.bookingToEdit) {
-    await bookingStore.updateBooking(props.bookingToEdit._id, form.value)
-  } else {
-    await bookingStore.createBooking(form.value)
-  }
-  emit('saved')
-  emit('close')
-}
 
 watch(
   () => props.bookingToEdit,
-  (booking) => {
-    if (booking) {
+  (val) => {
+    if (val) {
       form.value = {
-        userId: booking.user._id,
-        posterId: booking.poster._id,
-        quantity: booking.quantity,
+        userId: val.user._id,
+        posterId: val.poster._id,
+        quantity: val.quantity,
+        status: val.status,
       }
     } else {
-      form.value = {
-        userId: '',
-        posterId: '',
-        quantity: 1,
-      }
+      form.value = { userId: '', posterId: '', quantity: 1, status: 'pending' }
+      previewUrl.value = ''
     }
   },
-  { immediate: true }, // run once right away in case the prop is already set
+  { immediate: true },
 )
+
+function close() {
+  emit('close')
+}
+
+async function submit() {
+  try {
+
+    if (props.bookingToEdit?._id) {
+      await bookingStore.updateBooking(props.bookingToEdit._id, form.value)
+      toast.success('Poster updated ✅')
+    } else {
+      await bookingStore.createBooking(form.value)
+      toast.success('Poster created 🎉')
+    }
+
+    emit('saved')
+    close()
+  } catch (err) {
+    console.error(err)
+    toast.error('An error occurred ❌')
+  }
+}
 </script>
 
-<style scoped>
-.modal-overlay {
+<style scoped lang="scss">
+.booking-edit-overlay {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.5);
@@ -114,8 +137,9 @@ watch(
   justify-content: center;
 }
 
-.modal-box {
-  background: white;
+.booking-edit-box {
+  background: $darker-red;
+  color: white;
   border-radius: 12px;
   padding: 24px;
   width: 90%;
@@ -124,36 +148,91 @@ watch(
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
 }
 
-.close-btn {
+.booking-edit-close-btn {
   position: absolute;
   top: 12px;
   right: 16px;
-  background: none;
+}
+
+.booking-edit-title {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 16px;
+}
+
+.booking-edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  &--row {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: space-between;
+
+    &:first-of-type {
+      input {
+        border: unset;
+      }
+    }
+  }
+
+  &--actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 16px;
+
+    button > b {
+      margin-right: 8px;
+    }
+  }
+}
+
+.booking-edit-input {
+  padding: 8px 10px;
+  margin-left: 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+  flex-grow: 1;
+  max-width: 90%;
+}
+
+.btn-primary {
+  background-color: #2563eb;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 6px;
   border: none;
-  font-size: 24px;
   cursor: pointer;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: #1d4ed8;
+  }
 }
 
 /* Transitions */
-.modal-fade-enter-active,
-.modal-fade-leave-active {
+.booking-edit-fade-enter-active,
+.booking-edit-fade-leave-active {
   transition: opacity 0.25s ease;
 }
-.modal-fade-enter-from,
-.modal-fade-leave-to {
+.booking-edit-fade-enter-from,
+.booking-edit-fade-leave-to {
   opacity: 0;
 }
 
-.modal-popup-enter-active {
+.booking-edit-popup-enter-active {
   transition:
     transform 0.25s ease,
     opacity 0.25s ease;
 }
-.modal-popup-enter-from {
+.booking-edit-popup-enter-from {
   transform: scale(0.95);
   opacity: 0;
 }
-.modal-popup-leave-to {
+.booking-edit-popup-leave-to {
   transform: scale(0.95);
   opacity: 0;
 }

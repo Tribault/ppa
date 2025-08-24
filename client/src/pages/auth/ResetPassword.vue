@@ -2,14 +2,9 @@
   <div class="reset-password">
     <h2>Réinitialiser le mot de passe</h2>
     <form @submit.prevent="submit">
-      <input
-        v-model="password"
-        type="password"
-        placeholder="Nouveau mot de passe"
-        required
-      />
+      <input v-model="password" type="password" placeholder="Nouveau mot de passe" required />
       <button type="submit" :disabled="loading">
-        {{ loading ? "Envoi en cours..." : "Réinitialiser le mot de passe" }}
+        {{ loading ? 'Envoi en cours...' : 'Réinitialiser le mot de passe' }}
       </button>
     </form>
     <p v-if="message">{{ message }}</p>
@@ -38,9 +33,8 @@ async function submit() {
   } catch (err: any) {
     message.value = err.response?.data?.message || 'Error resetting password'
   }
-   loading.value = false
+  loading.value = false
 }
-
 </script>
 
 <style scoped>

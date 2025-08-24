@@ -42,7 +42,7 @@ import type { Poster } from '@/types/models'
 import { usePosterStore } from '@/stores/posters'
 import { useBookingStore } from '@/stores/bookings'
 import { useAuthStore } from '@/stores/auth'
-import ConfirmModal from '@/components/ConfirmModal.vue'
+import ConfirmModal from '@/components/utils/ConfirmModal.vue'
 import { computed, ref } from 'vue'
 import {
   EyeSlashIcon,

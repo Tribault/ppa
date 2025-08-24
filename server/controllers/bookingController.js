@@ -5,16 +5,20 @@ const User = require('../models/User')
 
 exports.createBooking =  async (req, res) => {
   const { posterId, quantity, userId } = req.body;
-  console.log("heyyyy", req.body)
 
   const poster = await Poster.findById(posterId);
-  if (!poster) return res.status(404).json({ error: 'Poster not found' });
+  if (!poster) return res.status(404).json({ error: 'Affiche introuvable' });
 
   const user = await User.findById(userId);
-  if (!user) return res.status(404).json({ error: 'User not found' });
+  if (!user) return res.status(404).json({ error: 'Client introuvable' });
+
+  const existing = await Booking.findOne({ user, poster })
+    if (existing) {
+      return res.status(400).json({ message: "La réservation existe déjà." })
+    }
 
   if (quantity > poster.totalStock)
-    return res.status(400).json({ error: 'Not enough stock' });
+    return res.status(400).json({ error: 'Pas assez de stock pour réserver.' });
 
   const booking = new Booking({
     user: user._id,

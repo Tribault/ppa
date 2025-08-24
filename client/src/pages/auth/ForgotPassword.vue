@@ -2,14 +2,9 @@
   <div class="forgot-password">
     <h2>Mot de passe oublié ?</h2>
     <form @submit.prevent="submit">
-      <input
-        v-model="email"
-        type="email"
-        placeholder="Entrez votre e-mail"
-        required
-      />
+      <input v-model="email" type="email" placeholder="Entrez votre e-mail" required />
       <button type="submit" class="btn-red-bg" :disabled="loading">
-        {{ loading ? "Envoi en cours..." : "Envoyer le lien" }}
+        {{ loading ? 'Envoi en cours...' : 'Envoyer le lien' }}
       </button>
     </form>
     <p v-if="message">{{ message }}</p>
@@ -26,21 +21,21 @@ const loading = ref(false)
 const message = ref('')
 
 async function submit() {
-    loading.value = true
-    message.value = ''
-    try{
+  loading.value = true
+  message.value = ''
+  try {
     message.value = await authStore.forgotPassword(email.value)
-    }catch(err:any){
-        message.value = err.response?.data?.message || 'Error sending reset link'
-    }
-    loading.value = false
+  } catch (err: any) {
+    message.value = err.response?.data?.message || 'Error sending reset link'
+  }
+  loading.value = false
 }
 </script>
 
 <style scoped lang="scss">
 .forgot-password {
-    background-color: $red;
-    color: white;
+  background-color: $red;
+  color: white;
   max-width: 400px;
   margin: 2rem auto;
   padding: 2rem;

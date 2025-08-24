@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import type { Poster, PosterPayload } from '@/types/models'
+import type { Poster } from '@/types/models'
 import { ref, computed } from 'vue'
 import api from '@/utils/axios'
 import debounce from 'lodash.debounce'
@@ -37,10 +37,10 @@ export const usePosterStore = defineStore('posters', () => {
     return result
   })
 
-  async function fetchPosters() {
+  async function fetchPosters(params? : Record<string, string>) {
     loading.value = true
     try {
-      const res = await api.get('/posters')
+      const res = await api.get('/posters', {params})
       posters.value = res.data
     } catch (err: any) {
       error.value = err.response?.data?.message || 'Failed to fetch posters'
@@ -63,7 +63,9 @@ export const usePosterStore = defineStore('posters', () => {
 
   async function createPoster(posterData: FormData) {
     try {
-      const res = await api.post('/posters', posterData,  {headers: { 'Content-Type': 'multipart/form-data' }})
+      const res = await api.post('/posters', posterData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })
       posters.value.push(res.data)
     } catch (err: any) {
       error.value = err.response?.data?.message || 'Failed to create poster'
@@ -73,7 +75,9 @@ export const usePosterStore = defineStore('posters', () => {
 
   async function updatePoster(id: string, posterData: FormData) {
     try {
-      const res = await api.put(`/posters/${id}`, posterData,{headers: { 'Content-Type': 'multipart/form-data' }})
+      const res = await api.put(`/posters/${id}`, posterData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })
       const index = posters.value.findIndex((p) => p._id === id)
       if (index !== -1) {
         posters.value[index] = res.data

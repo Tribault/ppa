@@ -9,8 +9,10 @@ export const useAuthStore = defineStore('auth', () => {
   const initialized = ref(false)
   const message = ref('')
   const loading = ref(false)
-  
-  const isAdmin = computed(()=>{ return user.value?.role === 'admin'})
+
+  const isAdmin = computed(() => {
+    return user.value?.role === 'admin'
+  })
 
   async function init() {
     if (token.value || initialized.value) return
@@ -52,12 +54,12 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  async function forgotPassword(email: string){
+  async function forgotPassword(email: string) {
     const res = await api.post('/auth/forgot-password', { email })
     return res.data.message
   }
 
-   async function resetPassword(tokenParam: string, password: string) {
+  async function resetPassword(tokenParam: string, password: string) {
     const res = await api.post('/auth/reset-password', {
       token: tokenParam,
       password,
@@ -70,7 +72,6 @@ export const useAuthStore = defineStore('auth', () => {
     token.value = ''
     localStorage.removeItem('token')
   }
-
 
   return {
     user,

@@ -51,7 +51,7 @@ export interface PosterPayload {
   image?: File
   note: string
   totalStock: number
-  tags: string[] 
+  tags: string[]
 }
 
 export interface Tag {

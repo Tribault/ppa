@@ -13,12 +13,7 @@
 
       <!-- Create new tag -->
       <form @submit.prevent="createTag" class="tag-form">
-        <input
-          v-model="newTag"
-          type="text"
-          placeholder="Nouvelle étiquette"
-          class="tag-input"
-        />
+        <input v-model="newTag" type="text" placeholder="Nouvelle étiquette" class="tag-input" />
         <button type="submit" class="btn-red-bg">Ajouter</button>
       </form>
     </div>
@@ -26,30 +21,30 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from "vue"
-import { useTagStore } from "@/stores/tags"
+import { ref, onMounted } from 'vue'
+import { useTagStore } from '@/stores/tags'
 
 const props = defineProps<{
   visible: boolean
 }>()
-const emit = defineEmits(["close"])
+const emit = defineEmits(['close'])
 
 const tagStore = useTagStore()
-const newTag = ref("")
+const newTag = ref('')
 
 onMounted(async () => {
   await tagStore.fetchTags()
 })
 
 function close() {
-  emit("close")
+  emit('close')
 }
 
 async function createTag() {
   if (!newTag.value.trim()) return
   try {
     await tagStore.createTag({ name: newTag.value })
-    newTag.value = ""
+    newTag.value = ''
   } catch (err) {
     console.error("Impossible de créer l'étiquette", err)
   }
@@ -83,7 +78,7 @@ async function createTag() {
   top: 8px;
   right: 8px;
   background: transparent;
-  color:white;
+  color: white;
   border: none;
   font-size: 20px;
   cursor: pointer;

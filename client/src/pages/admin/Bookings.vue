@@ -1,28 +1,37 @@
 <template>
-  <div class="new-admin-booking"><button @click="openNewPoster">Nouvelle Réservation</button></div>
-  <div key="list" class="list-container">
-    <table class="min-w-full table-auto border">
-      <thead class="bg-gray-100">
-        <tr>
-          <th v-for="column in columns" :key="column.key" class="px-4 py-2 text-left">
-            {{ column.label }}
-          </th>
-        </tr>
-      </thead>
-      <tbody>
-        <booking-card
-          v-for="b in bookingStore.bookings"
-          :columns="columns"
-          :key="b._id"
-          :booking="b"
-          admin
-          @updated="bookingStore.fetchBookings()"
-          @edit="openEditPoster"
-        />
-      </tbody>
-    </table>
+  <div class="admin-bookings-header">
+    <div class="admin-bookings-header--search">
+      <MagnifyingGlassIcon class="icon" />
+      <input type="text" placeholder="Chercher réservation..." @input="onSearchInput" />
+    </div>
+    <div class="admin-bookings-header--filter">
+      <button
+        v-for="l in letters"
+        :class="{ active: bookingStore.selectedLetter === l }"
+        class="btn"
+        :key="l"
+        @click="bookingStore.selectedLetter = bookingStore.selectedLetter == null ? l : null"
+      >
+        {{ l }}
+      </button>
+    </div>
+    <div class="admin-bookings-header--actions">
+      <button class="btn-red-bg" @click="openNewBooking">
+        <NewspaperIcon /> Nouvelle réservation
+      </button>
+      <button class="btn-red-bg" @click="toggleBookings">
+        <span v-if="isBookingAllowed"><BellSlashIcon />Bloquer les réservations</span>
+        <span v-else><BellAlertIcon />Autoriser les réservations</span>
+      </button>
+    </div>
   </div>
-  <admin-booking-edit
+
+  <admin-booking-table
+    :bookings="bookingStore.filteredBookings"
+    @edit="(p) => openEditBooking(p)"
+    @delete="(p) => deleteBooking(p)"
+  />
+  <booking-edit
     :visible="showModal"
     :bookingToEdit="editingBooking"
     @close="closeModal"
@@ -33,29 +42,33 @@
 <script setup lang="ts">
 import { useBookingStore } from '@/stores/bookings'
 import { ref, onMounted } from 'vue'
-import BookingCard from '@/components/cards/BookingCard.vue'
-import AdminBookingEdit from '@/components/edition/BookingEdit.vue'
+import { Alphabet } from '@/types/models'
+import type { Booking } from '@/types/models'
+import AdminBookingTable from '@/components/AdminBookingTable.vue'
+import BookingEdit from '@/components/edition/BookingEdit.vue'
+import {
+  MagnifyingGlassIcon,
+  NewspaperIcon,
+  BellSlashIcon,
+  BellAlertIcon,
+} from '@heroicons/vue/24/solid'
 
 const bookingStore = useBookingStore()
 
-const columns = ref([
-  { key: 'poster.title', label: 'Affiche réservée' },
-  { key: 'user.username', label: 'Réservé par' },
-  { key: 'quantity', label: 'Quantité' },
-  { key: 'status', label: 'Statut de la réservation' },
-  { key: 'total', label: 'Prix total', manual: true },
-])
+const letters = Object.values(Alphabet)
 
 const showModal = ref(false)
+const isBookingAllowed = ref(true)
+
 const editingBooking = ref(null)
 
-const openNewPoster = () => {
+const openNewBooking = () => {
   editingBooking.value = null
   showModal.value = true
 }
 
-const openEditPoster = (booking: any) => {
-  editingBooking.value = booking
+const openEditBooking = (poster: any) => {
+  editingBooking.value = poster
   showModal.value = true
 }
 
@@ -66,10 +79,79 @@ const closeModal = () => {
 onMounted(async () => {
   bookingStore.fetchBookings()
 })
+
+function onSearchInput(e: Event) {
+  bookingStore.setSearchQuery((e.target as HTMLInputElement).value)
+}
+
+function deleteBooking(booking: Booking) {
+  bookingStore.deleteBooking(booking._id)
+}
+
+function toggleBookings() {
+  isBookingAllowed.value = !isBookingAllowed.value
+}
 </script>
 
-<style scoped>
-.new-admin-posters {
+<style scoped lang="scss">
+.admin-bookings-header {
+  background-color: $red;
+  display: grid;
+  width: 100%;
+  grid-template-columns: 1fr;
+  gap: 0.5rem;
+
+  padding: 0.5rem 1rem;
+  > * {
+    font-weight: 700;
+  }
+
+  @media screen and (min-width: $break-md) {
+    grid-template-columns: 0.5fr 3fr auto;
+  }
+  svg {
+    margin-right: 0.5rem;
+  }
+
+  &--search {
+    display: flex;
+    align-items: center;
+    > input {
+      margin-left: $space-sm;
+      height: 30px;
+    }
+    svg {
+      color: white;
+    }
+  }
+
+  &--actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+
+    button span {
+      display: inline-flex;
+      align-items: center;
+    }
+  }
+
+  &--filter {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    font-weight: 500;
+    color: white;
+
+    button.active {
+      border: solid 1px;
+      background-color: white;
+      color: $red;
+    }
+  }
+}
+
+.new-admin-bookings {
   text-align: end;
 }
 .container-home {
@@ -126,7 +208,7 @@ onMounted(async () => {
   flex-direction: column;
 }
 
-.poster-form {
+.bookings-form {
   position: fixed;
   top: 0;
   left: 0;

@@ -28,7 +28,7 @@
 import type { Booking } from '@/types/models'
 import { ref } from 'vue'
 import { useBookingStore } from '@/stores/bookings'
-import ConfirmModal from '@/components/ConfirmModal.vue'
+import ConfirmModal from '@/components/utils/ConfirmModal.vue'
 
 import { useToast } from 'vue-toastification'
 const toast = useToast()

@@ -26,36 +26,35 @@
       </div>
     </div>
     <div class="home-error" v-if="loading">
-        <Spinner/>
+      <Spinner />
     </div>
-    <div class="home-error" v-else-if="posterStore.filteredPosters.length == 0 && !loading"> 
-      <img src="@/assets/404.svg"><p>Aucune affiche ne correspond à votre recherche. 😭</p>
+    <div class="home-error" v-else-if="posterStore.filteredPosters.length == 0 && !loading">
+      <img src="@/assets/404.svg" />
+      <p>Aucune affiche ne correspond à votre recherche. 😭</p>
     </div>
 
     <div v-else>
-    <transition name="fade" mode="out-in">
-      
-      <div v-if="view === 'grid'" key="grid" class="grid-container">
-        <home-poster-card
-          v-for="p in posterStore.filteredPosters"
-          :key="p._id"
-          :poster="p"
-          :view="view"
-          @details="posterDetails(p._id)"
-        />
-       
-      </div>
+      <transition name="fade" mode="out-in">
+        <div v-if="view === 'grid'" key="grid" class="grid-container">
+          <home-poster-card
+            v-for="p in posterStore.filteredPosters"
+            :key="p._id"
+            :poster="p"
+            :view="view"
+            @details="posterDetails(p._id)"
+          />
+        </div>
 
-      <div v-else key="list" class="list-container">
-        <home-poster-card
-          v-for="p in posterStore.filteredPosters"
-          :key="p._id"
-          :poster="p"
-          :view="view"
-          @details="posterDetails(p._id)"
-        />
-      </div>
-    </transition>
+        <div v-else key="list" class="list-container">
+          <home-poster-card
+            v-for="p in posterStore.filteredPosters"
+            :key="p._id"
+            :poster="p"
+            :view="view"
+            @details="posterDetails(p._id)"
+          />
+        </div>
+      </transition>
     </div>
   </div>
 </template>
@@ -67,7 +66,7 @@ import { useRouter } from 'vue-router'
 import { Squares2X2Icon, ListBulletIcon, MagnifyingGlassIcon } from '@heroicons/vue/24/outline'
 import { Alphabet } from '@/types/models'
 import HomePosterCard from '@/components/cards/HomePosterCard.vue'
-import Spinner from '@/components/Spinner.vue'
+import Spinner from '@/components/utils/Spinner.vue'
 
 const router = useRouter()
 
@@ -76,7 +75,6 @@ const letters = Object.values(Alphabet)
 const loading = ref(true)
 
 const view = ref<'grid' | 'list'>((localStorage.getItem('posterView') as 'grid' | 'list') || 'grid')
-
 
 function onSearchInput(e: Event) {
   posterStore.setSearchQuery((e.target as HTMLInputElement).value)
@@ -131,16 +129,16 @@ watch(view, (newView) => {
   }
 }
 
-.home-error{
+.home-error {
   display: flex;
   flex-direction: column;
-  width:100%;
+  width: 100%;
   align-items: center;
   font-size: $font-size-lg;
-  img{
+  img {
     max-width: 500px;
-    width:100%;
-     object-fit: cover;
+    width: 100%;
+    object-fit: cover;
   }
 }
 

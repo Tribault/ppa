@@ -14,15 +14,15 @@ import ResetPassword from '@/pages/auth/ResetPassword.vue'
 
 const routes = [
   { path: '/', component: Home },
-  { path: '/posters/:id', name: 'posters', component: PosterDetails, props:true },
+  { path: '/posters/:id', name: 'posters', component: PosterDetails, props: true },
   { path: '/login', component: Login },
   { path: '/signup', component: Signup },
   { path: '/admin', component: Admin },
   { path: '/admin/new', component: PosterForm },
   { path: '/account', component: Account },
   { path: '/admin/edit/:id', component: PosterForm, props: true },
-   { path: '/forgot-password', component: ForgotPassword },
-  { path: '/reset-password', component: ResetPassword }
+  { path: '/forgot-password', component: ForgotPassword },
+  { path: '/reset-password', component: ResetPassword },
 ]
 
 const router = createRouter({

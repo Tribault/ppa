@@ -2,7 +2,11 @@ const User = require('../models/User')
 
 exports.getUsers = async(req, res) => {
     try {
-    const users = await User.find().select('-password')
+    const {q} = req.query
+    const filter = {}
+
+    if(q) filter.email = {$regex:q, $options:"i"}
+    const users = await User.find(filter).select('-password')
     res.json(users)
     } catch (err) {
     res.status(500).json({ error: 'Failed to fetch users' })

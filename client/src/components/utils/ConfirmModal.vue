@@ -1,14 +1,12 @@
 <template>
   <Transition name="modal-fade">
-    <div v-if="visible" class="modal-overlay">
-      <div class="modal-box">
-        <h2 class="text-lg font-bold mb-2">Êtes-vous sûr de vouloir faire cette action ?</h2>
-        <p class="mb-4 text-gray-600">{{ message }}</p>
-        <div class="flex justify-center gap-4">
-          <button @click="cancel" class="px-4 py-2 bg-gray-200 rounded">Cancel</button>
-          <button @click="confirm" class="px-4 py-2 bg-red-600 text-white rounded">
-            Yes, delete
-          </button>
+    <div v-if="visible" class="confirm-modal">
+      <div class="confirm-modal-box">
+        <h2>Êtes-vous sûr de vouloir faire cette action ?</h2>
+        <p>{{ message }}</p>
+        <div class="confirm-modal-actions">
+          <button class="btn-white-bg" @click="cancel">Annuler</button>
+          <button class="btn-white-bg" @click="confirm">Oui</button>
         </div>
       </div>
     </div>
@@ -27,8 +25,8 @@ function cancel() {
 }
 </script>
 
-<style scoped>
-.modal-overlay {
+<style scoped lang="scss">
+.confirm-modal {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.5);
@@ -36,26 +34,26 @@ function cancel() {
   display: flex;
   align-items: center;
   justify-content: center;
-}
 
-.modal-box {
-  background: white;
-  border-radius: 12px;
-  padding: 24px;
-  width: 90%;
-  max-width: 500px;
-  position: relative;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-}
+  &-box {
+    background: white;
+    color: $red;
+    border-radius: 12px;
+    padding: 24px;
+    width: 90%;
+    max-width: 500px;
+    position: relative;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  }
 
-.close-btn {
-  position: absolute;
-  top: 12px;
-  right: 16px;
-  background: none;
-  border: none;
-  font-size: 24px;
-  cursor: pointer;
+  &-actions {
+    button {
+      width: 75px;
+    }
+    :first-child {
+      margin-right: 8px;
+    }
+  }
 }
 
 /* Transitions */

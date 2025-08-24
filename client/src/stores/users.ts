@@ -11,10 +11,10 @@ export const useUserStore = defineStore('users', {
   }),
 
   actions: {
-    async fetchUsers() {
+    async fetchUsers(params? : Record<string, string>) {
       this.loading = true
       try {
-        const res = await api.get('/users')
+        const res = await api.get('/users', {params})
         this.users = res.data
       } catch (err: any) {
         this.error = err.response?.data?.message || 'Failed to fetch users'

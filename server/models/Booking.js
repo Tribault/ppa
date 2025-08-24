@@ -9,4 +9,6 @@ const bookingSchema = new mongoose.Schema({
   priceAtBooking: { type: Number, required: true }
 });
 
+bookingSchema.index({ user: 1, poster: 1 }, { unique: true })
+
 module.exports = mongoose.model('Booking', bookingSchema)

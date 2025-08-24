@@ -11,9 +11,9 @@ export const useTagStore = defineStore('tags', () => {
   }
 
   async function createTag(payload: { name: string }) {
-  const res = await api.post("/tags", payload)
-  tags.value.push(res.data)
-}
+    const res = await api.post('/tags', payload)
+    tags.value.push(res.data)
+  }
 
   return { tags, fetchTags, createTag }
 })

@@ -3,31 +3,35 @@
     <div class="admin-home-header">
       <h1>Administration</h1>
       <nav class="admin-home-header--nav">
-      <button class="btn-white-bg"
-        @click="currentTab = 'posters'"
-        :class="{ 'selected-btn': currentTab === 'posters' }"
-      >
-        <PhotoIcon/> Affiches
-      </button>
-      <button class="btn-white-bg"
-        @click="currentTab = 'bookings'"
-        :class="{ 'selected-btn': currentTab === 'bookings' }"
-      >
-        <FaceSmileIcon/>Réservations
-      </button>
-      <button class="btn-white-bg"
-        @click="currentTab = 'sales'"
-        :class="{ 'selected-btn': currentTab === 'sales' }"
-      >
-        <DocumentCurrencyEuroIcon/>Ventes
-      </button>
-      <button class="btn-white-bg"
-        @click="currentTab = 'sales'"
-        :class="{ 'selected-btn': currentTab === 'sales' }"
-      >
-        <UserGroupIcon/>Utilisateurs
-      </button>
-    </nav>
+        <button
+          class="btn-white-bg"
+          @click="currentTab = 'posters'"
+          :class="{ 'selected-btn': currentTab === 'posters' }"
+        >
+          <PhotoIcon /> Affiches
+        </button>
+        <button
+          class="btn-white-bg"
+          @click="currentTab = 'bookings'"
+          :class="{ 'selected-btn': currentTab === 'bookings' }"
+        >
+          <FaceSmileIcon />Réservations
+        </button>
+        <button
+          class="btn-white-bg"
+          @click="currentTab = 'sales'"
+          :class="{ 'selected-btn': currentTab === 'sales' }"
+        >
+          <DocumentCurrencyEuroIcon />Ventes
+        </button>
+        <button
+          class="btn-white-bg"
+          @click="currentTab = 'sales'"
+          :class="{ 'selected-btn': currentTab === 'sales' }"
+        >
+          <UserGroupIcon />Utilisateurs
+        </button>
+      </nav>
     </div>
 
     <div>
@@ -43,31 +47,35 @@ import { ref } from 'vue'
 import AdminPosters from './admin/Posters.vue'
 import AdminBookings from './admin/Bookings.vue'
 import AdminSales from './admin/Sales.vue'
-import { PhotoIcon, FaceSmileIcon, DocumentCurrencyEuroIcon, UserGroupIcon} from '@heroicons/vue/24/solid'
+import {
+  PhotoIcon,
+  FaceSmileIcon,
+  DocumentCurrencyEuroIcon,
+  UserGroupIcon,
+} from '@heroicons/vue/24/solid'
 
 const currentTab = ref<'posters' | 'bookings' | 'sales'>('posters')
 </script>
 
 <style scoped lang="scss">
-
-.admin-home-header{
+.admin-home-header {
   display: flex;
   align-items: center;
   padding: 1rem;
   color: $red;
   gap: 1rem;
 
-  &--nav{
-    display:grid;
-    width:100%;
+  &--nav {
+    display: grid;
+    width: 100%;
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     gap: 0.2rem;
     > * {
-    font-weight: 700;
-  }
-  svg{
-    margin-right: 0.5rem;
-  }
+      font-weight: 700;
+    }
+    svg {
+      margin-right: 0.5rem;
+    }
   }
 
   @media screen and (max-width: $break-sm) {
@@ -75,12 +83,11 @@ const currentTab = ref<'posters' | 'bookings' | 'sales'>('posters')
   }
 }
 
-.selected-btn{
-   background-color: $red; /* light gray background */
-    color:white;
-    svg {
-      color: white; /* darker gray on hover */
-    }
+.selected-btn {
+  background-color: $red; /* light gray background */
+  color: white;
+  svg {
+    color: white; /* darker gray on hover */
+  }
 }
-
 </style>

@@ -2,8 +2,13 @@ const Poster = require('../models/Poster')
 const fs = require('fs')
 const path = require('path')
 
-exports.getAllPosters = async(req, res) => {
-    const posters = await Poster.find().populate('tags').sort({ title: 1 })
+exports.getPosters = async(req, res) => {
+    const {q} = req.query
+
+    const filter = {}
+
+    if(q) filter.title = {$regex:q, $options:"i"}
+    const posters = await Poster.find(filter).populate('tags').sort({ title: 1 })
 
     const withAvailableStock = await Promise.all(
         posters.map(async (poster) => {

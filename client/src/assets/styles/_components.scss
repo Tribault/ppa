@@ -15,17 +15,19 @@
   @include transition(all);
 }
 
-.btn-red-bg{
+.btn-red-bg {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   background: transparent;
   border: solid 1px white;
-  color:white;
+  color: white;
   cursor: pointer;
   padding: 0.5rem;
   border-radius: 6px;
-  transition: background-color 0.2s ease, transform 0.15s ease;
+  transition:
+    background-color 0.2s ease,
+    transform 0.15s ease;
 
   svg {
     width: 1.5rem;
@@ -36,7 +38,7 @@
 
   &:hover {
     background-color: white; /* light gray background */
-    color:$red;
+    color: $red;
     svg {
       color: $red; /* darker gray on hover */
     }
@@ -57,17 +59,19 @@
   }
 }
 
-.btn-white-bg{
+.btn-white-bg {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   background: transparent;
   border: solid 1px $red;
-  color:$red;
+  color: $red;
   cursor: pointer;
   padding: 0.5rem;
   border-radius: 6px;
-  transition: background-color 0.2s ease, transform 0.15s ease;
+  transition:
+    background-color 0.2s ease,
+    transform 0.15s ease;
 
   svg {
     width: 1.5rem;
@@ -78,7 +82,7 @@
 
   &:hover {
     background-color: $red; /* light gray background */
-    color:white;
+    color: white;
     svg {
       color: white; /* darker gray on hover */
     }
@@ -99,7 +103,7 @@
   }
 }
 
-.grayscale{
+.grayscale {
   $greyscale: grayscale(1);
 }
 
@@ -115,7 +119,6 @@
   text-transform: uppercase;
 }
 
-
 .tag-white {
   background-color: white;
   color: $red;
@@ -128,13 +131,13 @@
   text-transform: uppercase;
 }
 
-.title{
+.title {
   font-family: $font-title;
   font-weight: 900;
   font-size: $font-size-xl;
 }
 
-.subtitle{
+.subtitle {
   font-family: $font-title;
   font-weight: 900;
   font-size: $font-size-lg;
@@ -152,9 +155,8 @@
   }
 }
 
-
 /* Wrapper enables horizontal scroll on narrow screens */
-.table-container{
+.table-container {
   width: 100%;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
@@ -162,54 +164,52 @@
 }
 
 /* Table base */
-.sticky-table{
-  border-collapse: separate;   /* improves sticky rendering */
+.sticky-table {
+  border-collapse: separate; /* improves sticky rendering */
   border-spacing: 0;
   width: 100%;
-  min-width: 720px;            /* force scroll when too narrow */
+  min-width: 720px; /* force scroll when too narrow */
   font-size: 0.95rem;
 }
 
 /* Header */
-.sticky-table thead th{
+.sticky-table thead th {
   position: sticky;
   top: 0;
-  z-index: 3;                  /* above body cells */
+  z-index: 3; /* above body cells */
   text-align: left;
   font-weight: 600;
   font-size: $font-size-lg;
   padding: 12px 14px;
   border-bottom: 1px solid var(--border);
   white-space: nowrap;
-  background:#ffffff;
-  color:$red;
-
+  background: #ffffff;
+  color: $red;
 }
 
 /* Cells */
-.sticky-table td, .sticky-table th[scope="row"]{
+.sticky-table td,
+.sticky-table th[scope='row'] {
   padding: 12px 14px;
   border-bottom: 1px solid var(--border);
+  font-size: 1rem;
 }
 
 /* Sticky first column (header + body) */
-.sticky-table .sticky-col{
+.sticky-table .sticky-col {
   text-align: left;
   position: sticky;
-  left: 0;                     /* pin to left edge */
-  z-index: 2;                  /* below thead but above other cells */
+  left: 0; /* pin to left edge */
+  z-index: 2; /* below thead but above other cells */
   box-shadow: 1px 0 0 0 var(--border); /* divider line on right */
   white-space: nowrap;
   background: white;
-
-
 }
 
 /* When first header cell is also sticky, layer it above others */
-.sticky-table thead .sticky-col{
+.sticky-table thead .sticky-col {
   z-index: 4;
-background-color: white;
-  
+  background-color: white;
 }
 
 .sticky-table tr {
@@ -224,21 +224,19 @@ background-color: white;
   background-color: $darker-red;
   color: white;
 
-  .sticky-col{
+  .sticky-col {
     background-color: $red;
   }
 
   svg {
     color: white;
   }
-
 }
 
 /* Compact mode on very small screens */
-@media (max-width: 480px){
-  .sticky-table{
+@media (max-width: 480px) {
+  .sticky-table {
     font-size: 0.9rem;
     min-width: 600px;
   }
 }
-
