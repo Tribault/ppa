@@ -18,11 +18,11 @@
           <td>{{ b.poster.title }}</td>
           <td>{{ b.quantity }}</td>
           <td>{{ b.quantity * b.priceAtBooking }} €</td>
-          <td>{{ b.bookedAt }}</td>
+          <td>{{ new Date(b.bookedAt).toLocaleString() }}</td>
           <td>{{ b.status }}</td>
           <td class="admin-booking-table--actions">
             <pencil-icon class="icon" @click="$emit('edit', b)" />
-            <trash-icon class="icon" @click="deleteConfirmation(b)" />
+            <trash-icon class="icon" @click="deleteConfirmation(b._id)" />
           </td>
         </tr>
       </tbody>
@@ -49,15 +49,15 @@ const props = defineProps<{
 const emit = defineEmits(['edit', 'delete'])
 
 const showDeleteModal = ref(false)
-const bookingToDelete = ref<Booking | null>(null)
+const bookingToDelete = ref<string | null>(null)
 
-function deleteConfirmation(booking: Booking) {
+function deleteConfirmation(bookingId: string) {
   showDeleteModal.value = true
-  bookingToDelete.value = booking
+  bookingToDelete.value = bookingId
 }
 
 function closeDeletionModal() {
-  emit('delete', bookingToDelete)
+  emit('delete', bookingToDelete.value)
   showDeleteModal.value = false
 }
 </script>

@@ -30,10 +30,11 @@ export interface Booking {
 
 export interface Sale {
   _id: string
-  user: string
+  user: User
   poster: Poster
   quantity: number
   validatedAt: string
+  validatedBy: User
   priceAtSale: number
 }
 
