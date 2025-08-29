@@ -5,7 +5,6 @@ const saleSchema = new mongoose.Schema({
   poster: { type: mongoose.Schema.Types.ObjectId, ref: 'Poster', required: true },
   quantity: { type: Number, required: true },
   validatedAt: { type: Date, default: Date.now },
-  validatedBy: {type: mongoose.Schema.ObjectId, ref: 'User', required: true},
   priceAtSale: { type: Number, required: true }
 });
 

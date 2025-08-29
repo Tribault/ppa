@@ -32,51 +32,69 @@ exports.createBooking =  async (req, res) => {
 }
 
 exports.updateBooking = async (req, res) => {
-  try {
-  const bookingId = req.params.id
-    const { status, ...rest } = req.body
+    const updated = await Booking.findByIdAndUpdate(req.params.id, req.body, {new: true})
+    res.json(updated)
+}
 
-    let booking = await Booking.findById(bookingId)
-    if (!booking) return res.status(404).json({ message: "Booking not found" })
+exports.validateBooking = async (req, res) => {
 
-      Object.assign(booking, rest)
+  const booking = await Booking.findById(req.params.bookingId);
+  if (!booking) return res.status(404).json({ error: 'Booking not found' });
 
-     if (status && status !== booking.status) {
-      booking.status = status
+  if (booking.status !== 'pending')
+    return res.status(400).json({ error: 'Booking already validated' });
 
-      if (status === "validated") {
-        const existingSale = await Sale.findOne({ booking: booking._id })
-        if (!existingSale) {
-          await Sale.create({
-            booking: booking._id,
-            quantity: booking.quantity,
-            poster: booking.poster,
-            user: booking.user,
-            validatedBy: req.user._id, 
-            priceAtSale: booking.priceAtBooking
-        })
-      } else if (status === "pending") {
-        await Sale.deleteOne({ booking: booking._id })
-      }
-}}
+  const poster = await Poster.findById(booking.poster)
+  if (booking.quantity > poster.totalStock)
+  return res.status(400).json({ error: 'Not enough stock to validate this booking' })
+  poster.totalStock -= booking.quantity
+  await poster.save()
 
+  booking.status = 'validated'
   await booking.save()
-    res.json(booking)
-  } catch (err) {
-    console.error(err)
-    res.status(500).json({ message: "Failed to update booking" })
+
+  const sale = new Sale({
+    user: booking.user,
+    poster: booking.poster,
+    quantity: booking.quantity,
+    priceAtSale: booking.priceAtBooking
+  });
+
+  await sale.save();
+  res.status(201).json({ message: 'Booking validated and sale recorded' });
+}
+
+exports.devalidateBooking = async (req, res) => {
+  try {
+
+  const booking = await Booking.findById(req.params.bookingId);
+  if (!booking) return res.status(404).json({ error: 'Booking not found' });
+
+  if (booking.status !== 'validated')
+    return res.status(400).json({ error: 'Only validated bookings can be devalidated' });
+
+  const poster = await Poster.findById(booking.poster)
+  poster.totalStock += booking.quantity
+  await poster.save()
+
+  await Sale.deleteOne({
+      user: booking.user,
+      poster: booking.poster,
+      quantity: booking.quantity,
+      priceAtSale: booking.priceAtBooking
+    });
+
+  booking.status = 'pending'
+  await booking.save()
+
+  res.status(201).json({ message: 'Booking validated and sale recorded' });
+  }catch(err){
+    res.status(500).json({ error: 'Server error while devalidating booking' });
   }
 }
 
 exports.getBookings = async (req, res) => {
-  let filter = {}
-
-    if (!req.user.role == 'admin') {
-      filter.user = req.user._id
-    } else if (!req.query.all) {
-      filter.user = req.user._id
-    }
- const bookings = await Booking.find(filter)
+ const bookings = await Booking.find()
     .populate('user')
     .populate('poster');
   res.json(bookings);

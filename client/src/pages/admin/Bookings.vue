@@ -43,6 +43,7 @@
 import { useBookingStore } from '@/stores/bookings'
 import { ref, onMounted } from 'vue'
 import { Alphabet } from '@/types/models'
+import type { Booking } from '@/types/models'
 import AdminBookingTable from '@/components/AdminBookingTable.vue'
 import BookingEdit from '@/components/edition/BookingEdit.vue'
 import {
@@ -76,16 +77,15 @@ const closeModal = () => {
 }
 
 onMounted(async () => {
-  bookingStore.fetchBookings({ all: true })
+  bookingStore.fetchBookings()
 })
 
 function onSearchInput(e: Event) {
   bookingStore.setSearchQuery((e.target as HTMLInputElement).value)
 }
 
-function deleteBooking(bookingId: string) {
-  console.log(bookingId)
-  bookingStore.deleteBooking(bookingId)
+function deleteBooking(booking: Booking) {
+  bookingStore.deleteBooking(booking._id)
 }
 
 function toggleBookings() {

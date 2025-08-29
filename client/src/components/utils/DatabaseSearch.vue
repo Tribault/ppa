@@ -24,7 +24,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, watch } from "vue"
+import { ref, onMounted, onBeforeUnmount } from "vue"
 import type {Poster, User} from "@/types/models"
 import { usePosterStore } from "@/stores/posters"
 import { useUserStore } from "@/stores/users"
@@ -35,14 +35,13 @@ const posterStore = usePosterStore()
 
 const props = defineProps<{
   searchType: 'user' | 'poster'
-  selectedLabel? : string
 }>()
 
 const emit = defineEmits<{
   valueSelected: [id: string]
 }>()
 
-const query = ref(props.selectedLabel || "")
+const query = ref("")
 const userResults = ref<User[]>([])
 const posterResults = ref<Poster[]>([])
 
@@ -104,17 +103,12 @@ onBeforeUnmount(() => {
   document.removeEventListener("click", handleClickOutside)
 })
 
-watch(() => props.selectedLabel, (val) => {
-  query.value = val || ""
-})
 
 </script>
 
 <style scoped>
 .database-search {
   position: relative;
-  display: inline-flex;
-  width:100%;
 }
 
   .database-search-input{

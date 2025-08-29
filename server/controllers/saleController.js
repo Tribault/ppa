@@ -3,22 +3,8 @@ const converter = require('json-2-csv');
 const Sale = require('../models/Sale')
 
 exports.getSales = async(req, res) => {
-   const { startDate, endDate } = req.query
-    const filter = {}
-
-    if (startDate || endDate) {
-      filter.validatedAt = {}
-      if (startDate) filter.validatedAt.$gte = new Date(startDate)
-      if (endDate) {
-        const end = new Date(endDate)
-        end.setDate(end.getDate() + 1)
-        filter.validatedAt.$lte = end
-      }
-    }
-
-   const sales = await Sale.find(filter)
+   const sales = await Sale.find()
     .populate('user')
-    .populate('validatedBy')
     .populate('poster');
   res.json(sales);
 }
@@ -73,8 +59,7 @@ exports.exportSalesCSV = async (req, res) => {
       quantity: s.quantity,
       priceAtSale: s.priceAtSale,
       total: (s.priceAtSale * s.quantity).toFixed(2),
-      validatedAt: s.validatedAt.toISOString(),
-      validatedBy: s.validatedBy
+      validatedAt: s.validatedAt.toISOString()
     }));
 
     const csv = converter.json2csv(data)

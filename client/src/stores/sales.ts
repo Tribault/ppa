@@ -1,63 +1,54 @@
 import { defineStore } from 'pinia'
 import type { Sale } from '@/types/models'
-import { ref } from 'vue'
 import api from '@/utils/axios'
 
-export const useSaleStore = defineStore('sales', () =>{
+export const useSaleStore = defineStore('sales', {
+  state: () => ({
+    sales: [] as Sale[],
+    userSales: [] as Sale[],
+    posterSales: [] as Sale[],
+    loading: false,
+    error: null as string | null,
+  }),
 
-    const sales = ref<Sale[]>([])
-    const filters = { startDate: "", endDate: ""}
-    const userSales = ref<Sale[]>([])
-    const posterSales = ref<Sale[]>([])
-    const loading = ref(false)
-    const error = ref<string | null>(null)
-
-    async function fetchSales() {
-      loading.value = true
-      const params: any = {}
-      if(filters.startDate) params.startDate = filters.startDate
-      if(filters.endDate) params.endDate = filters.endDate
+  actions: {
+    async fetchSales() {
+      this.loading = true
       try {
-        const res = await api.get('/sales', {params})
-        sales.value = res.data
+        const res = await api.get('/sales')
+        this.sales = res.data
       } catch (err: any) {
-        error.value = err.response?.data?.message || 'Failed to fetch sales'
+        this.error = err.response?.data?.message || 'Failed to fetch sales'
       } finally {
-        loading.value = false
+        this.loading = false
       }
-    }
+    },
 
-        function resetFilters(){
-      filters.startDate = ""
-      filters.endDate = ""
-    }
-
-
-    async function fetchUserSales(id: string) {
-      loading.value = true
+    async fetchUserSales(id: string) {
+      this.loading = true
       try {
         const res = await api.get(`/sales/user/${id}`)
-        userSales.value = res.data
+        this.userSales = res.data
       } catch (err: any) {
-        error.value = err.response?.data?.message || 'Failed to fetch user sales'
+        this.error = err.response?.data?.message || 'Failed to fetch user sales'
       } finally {
-        loading.value = false
+        this.loading = false
       }
-    }
+    },
 
-    async function fetchPosterSales(id: string) {
-      loading.value = true
+    async fetchPosterSales(id: string) {
+      this.loading = true
       try {
         const res = await api.get(`/sales/poster/${id}`)
-        posterSales.value = res.data
+        this.posterSales = res.data
       } catch (err: any) {
-        error.value = err.response?.data?.message || 'Failed to fetch poster sales'
+        this.error = err.response?.data?.message || 'Failed to fetch poster sales'
       } finally {
-        loading.value = false
+        this.loading = false
       }
-    }
+    },
 
-    async function exportSalesCSV(filters = {}) {
+    async exportSalesCSV(filters = {}) {
       try {
         const params = new URLSearchParams(filters).toString()
         const url = `/sales/export/csv${params ? `?${params}` : ''}`
@@ -74,20 +65,6 @@ export const useSaleStore = defineStore('sales', () =>{
       } catch (err) {
         console.error(err)
       }
-    }
-
-    return{
-       sales,
-       filters,
-    userSales,
-    posterSales,
-    loading,
-    error,
-      fetchSales,
-      fetchUserSales,
-      fetchPosterSales,
-      resetFilters,
-      exportSalesCSV
-
-    }
-  })
+    },
+  },
+})

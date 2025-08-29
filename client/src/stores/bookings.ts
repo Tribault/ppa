@@ -3,8 +3,6 @@ import type { Booking, BookingPayload } from '@/types/models'
 import debounce from 'lodash.debounce'
 import api from '@/utils/axios'
 import { ref, computed } from 'vue'
-import { useToast } from 'vue-toastification'
-const toast = useToast()
 
 export const useBookingStore = defineStore('bookings', () => {
   const bookings = ref<Booking[]>([])
@@ -37,14 +35,10 @@ export const useBookingStore = defineStore('bookings', () => {
     return result
   })
 
-  async function fetchBookings(options?: { all?: boolean }) {
+  async function fetchBookings() {
     loading.value = true
     try {
-      let url = "/bookings"
-      if (options?.all) {
-        url += "?all=true"
-      }
-      const res = await api.get(url)
+      const res = await api.get('/bookings')
       bookings.value = res.data
     } catch (err: any) {
       error.value = err.response?.data?.message || 'Failed to fetch bookings'
@@ -55,16 +49,34 @@ export const useBookingStore = defineStore('bookings', () => {
 
   async function createBooking(bookingData: BookingPayload) {
     try {
+      console.log("form", bookingData)
       const res = await api.post('/bookings', bookingData)
       bookings.value.push(res.data)
-         toast.success('Réservation créée ✅')
     } catch (err: any) {
       error.value = err.response?.data?.message || 'Failed to create booking'
-          toast.error('Erreur durant la création ❌')
       throw err
     }
   }
 
+  async function validateBooking(id: string) {
+    try {
+      await api.post(`/bookings/${id}/validate`)
+      await fetchBookings()
+    } catch (err: any) {
+      error.value = err.response?.data?.message || 'Failed to validate booking'
+      throw err
+    }
+  }
+
+  async function devalidateBooking(id: string) {
+    try {
+      await api.post(`/bookings/${id}/devalidate`)
+      await fetchBookings()
+    } catch (err: any) {
+      error.value = err.response?.data?.message || 'Failed to devalidate booking'
+      throw err
+    }
+  }
 
   async function updateBooking(id: string, bookingData: BookingPayload) {
     try {
@@ -73,10 +85,8 @@ export const useBookingStore = defineStore('bookings', () => {
       if (index !== -1) {
         bookings.value[index] = res.data
       }
-         toast.success('Réservation mise à jour ✅')
     } catch (err: any) {
       error.value = err.response?.data?.message || 'Failed to update booking'
-          toast.error('Erreur durant la mise à jour ❌')
       throw err
     }
   }
@@ -85,10 +95,8 @@ export const useBookingStore = defineStore('bookings', () => {
     try {
       await api.delete(`/bookings/${id}`)
       bookings.value = bookings.value.filter((p) => p._id !== id)
-         toast.success('Réservation supprimée ✅')
     } catch (err: any) {
       error.value = err.response?.data?.message || 'Failed to delete booking'
-      toast.error('Erreur durant la suppression ❌')
       throw err
     }
   }
@@ -105,6 +113,8 @@ export const useBookingStore = defineStore('bookings', () => {
     fetchBookings,
     deleteBooking,
     updateBooking,
-    createBooking
+    createBooking,
+    devalidateBooking,
+    validateBooking,
   }
 })
