@@ -1,71 +1,115 @@
 import { defineStore } from 'pinia'
 import type { User } from '@/types/models'
+import { ref, computed } from 'vue'
 import api from '@/utils/axios'
+import debounce from 'lodash.debounce'
 
-export const useUserStore = defineStore('users', {
-  state: () => ({
-    users: [] as User[],
-    user: null as User | null,
-    loading: false,
-    error: null as string | null,
-  }),
+export const useUserStore = defineStore('users', () => {
 
-  actions: {
-    async fetchUsers(params? : Record<string, string>) {
-      this.loading = true
+    const users = ref<User[]>([])
+    const user = ref<User | null>(null)
+    const loading = ref(false)
+    const error = ref<string | null>(null)
+    const selectedLetter = ref<string | null>(null)
+    const searchQuery = ref('')
+
+
+    const setSearchQuery = debounce((value: string) => {
+        searchQuery.value = value
+      }, 300)
+    
+      const filteredUsers = computed(() => {
+        let result = users.value
+    
+        if (selectedLetter.value) {
+          result = result.filter(
+            (u) => u.email[0].toUpperCase() === selectedLetter.value?.toUpperCase(),
+          )
+        }
+    
+        if (searchQuery.value.trim()) {
+          const query = searchQuery.value.toLowerCase()
+          result = result.filter(
+            (u) =>
+              u.email.toLowerCase().includes(query)
+          )
+        }
+    
+        return result
+      })
+
+
+    async function fetchUsers(params? : Record<string, string>) {
+      loading.value = true
       try {
         const res = await api.get('/users', {params})
-        this.users = res.data
+        users.value = res.data
       } catch (err: any) {
-        this.error = err.response?.data?.message || 'Failed to fetch users'
+        error.value = err.response?.data?.message || 'Failed to fetch users'
       } finally {
-        this.loading = false
+        loading.value = false
       }
-    },
+    }
 
-    async fetchUser(id: string) {
-      this.loading = true
+    async function fetchUser(id: string) {
+      loading.value = true
       try {
         const res = await api.get(`/users/${id}`)
-        this.user = res.data
+        user.value = res.data
       } catch (err: any) {
-        this.error = err.response?.data?.message || 'Failed to fetch user'
+        error.value = err.response?.data?.message || 'Failed to fetch user'
       } finally {
-        this.loading = false
+        loading.value = false
       }
-    },
+    }
 
-    async createUser(userData: Partial<User>) {
+    async function createUser(userData: Partial<User>) {
       try {
         const res = await api.post('/users', userData)
-        this.users.push(res.data)
+        users.value.push(res.data)
       } catch (err: any) {
-        this.error = err.response?.data?.message || 'Failed to create user'
+        error.value = err.response?.data?.message || 'Failed to create user'
         throw err
       }
-    },
+    }
 
-    async updateUser(id: string, userData: Partial<User>) {
+    async function updateUser(id: string, userData: Partial<User>) {
       try {
         const res = await api.put(`/users/${id}`, userData)
-        const index = this.users.findIndex((p) => p._id === id)
+        const index = users.value.findIndex((u) => u._id === id)
         if (index !== -1) {
-          this.users[index] = res.data
+          users.value[index] = res.data
         }
       } catch (err: any) {
-        this.error = err.response?.data?.message || 'Failed to update user'
+        error.value = err.response?.data?.message || 'Failed to update user'
         throw err
       }
-    },
+    }
 
-    async deleteUser(id: string) {
+    async function deleteUser(id: string) {
       try {
         await api.delete(`/users/${id}`)
-        this.users = this.users.filter((p) => p._id !== id)
+        users.value = users.value.filter((u) => u._id !== id)
       } catch (err: any) {
-        this.error = err.response?.data?.message || 'Failed to delete user'
+        error.value = err.response?.data?.message || 'Failed to delete user'
         throw err
       }
-    },
-  },
+    }
+
+  return{
+    users,
+    user,
+    error,
+    loading,
+    selectedLetter,
+    searchQuery,
+        setSearchQuery,
+        filteredUsers,
+    fetchUsers,
+    fetchUser,
+    updateUser,
+    createUser,
+    deleteUser
+
+  }
 })

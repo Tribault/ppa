@@ -26,8 +26,8 @@
         </button>
         <button
           class="btn-white-bg"
-          @click="currentTab = 'sales'"
-          :class="{ 'selected-btn': currentTab === 'sales' }"
+          @click="currentTab = 'users'"
+          :class="{ 'selected-btn': currentTab === 'users' }"
         >
           <UserGroupIcon />Utilisateurs
         </button>
@@ -35,18 +35,20 @@
     </div>
 
     <div>
-      <AdminPosters v-if="currentTab === 'posters'" />
-      <AdminBookings v-else-if="currentTab === 'bookings'" />
-      <AdminSales v-else-if="currentTab === 'sales'" />
+      <posters v-if="currentTab === 'posters'" />
+      <bookings v-else-if="currentTab === 'bookings'" />
+      <sales v-else-if="currentTab === 'sales'" />
+      <users v-else-if="currentTab === 'users'" />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import AdminPosters from './admin/Posters.vue'
-import AdminBookings from './admin/Bookings.vue'
-import AdminSales from './admin/Sales.vue'
+import Posters from './admin/Posters.vue'
+import Bookings from './admin/Bookings.vue'
+import Sales from './admin/Sales.vue'
+import Users from './admin/Users.vue'
 import {
   PhotoIcon,
   FaceSmileIcon,
@@ -54,7 +56,7 @@ import {
   UserGroupIcon,
 } from '@heroicons/vue/24/solid'
 
-const currentTab = ref<'posters' | 'bookings' | 'sales'>('posters')
+const currentTab = ref<'posters' | 'bookings' | 'sales' | 'users'>('posters')
 </script>
 
 <style scoped lang="scss">

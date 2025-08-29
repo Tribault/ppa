@@ -110,7 +110,7 @@ watch(() => props.selectedLabel, (val) => {
 
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 .database-search {
   position: relative;
   display: inline-flex;

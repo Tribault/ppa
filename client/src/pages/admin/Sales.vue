@@ -27,7 +27,7 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
 import { useSaleStore } from '@/stores/sales'
-import AdminSaleTable from '@/components/AdminSaleTable.vue'
+import AdminSaleTable from '@/components/tables/SaleTable.vue'
 import { FolderArrowDownIcon } from '@heroicons/vue/24/solid'
 
 const saleStore = useSaleStore()

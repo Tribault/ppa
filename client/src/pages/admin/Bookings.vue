@@ -43,7 +43,7 @@
 import { useBookingStore } from '@/stores/bookings'
 import { ref, onMounted } from 'vue'
 import { Alphabet } from '@/types/models'
-import AdminBookingTable from '@/components/AdminBookingTable.vue'
+import AdminBookingTable from '@/components/tables/BookingTable.vue'
 import BookingEdit from '@/components/edition/BookingEdit.vue'
 import {
   MagnifyingGlassIcon,

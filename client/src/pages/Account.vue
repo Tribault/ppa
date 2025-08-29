@@ -18,7 +18,7 @@ import { ref, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useBookingStore } from '@/stores/bookings'
 import type { Booking } from '@/types/models'
-import AdminBookingTable from '@/components/AdminBookingTable.vue'
+import AdminBookingTable from '@/components/tables/BookingTable.vue'
 
 const auth = useAuthStore()
 const bookingStore = useBookingStore()

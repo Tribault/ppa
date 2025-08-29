@@ -1,6 +1,6 @@
 <template>
   <div class="table-container admin-poster-table">
-    <table class="sticky-table" aria-label="Posters inventory">
+    <table class="sticky-table">
       <thead>
         <tr>
           <th class="sticky-col">Titre</th>
