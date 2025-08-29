@@ -12,11 +12,11 @@
           <form @submit.prevent="submit" class="booking-edit-form">
             <div class="booking-edit-form--row">
               <b>Affiche</b>
-             <database-search  search-type="poster" @value-selected="(p) => form.posterId = p" />
+             <database-search  :selected-label="bookingToEdit?.poster?.title" search-type="poster" @value-selected="(p) => form.posterId = p" />
             </div>
             <div class="booking-edit-form--row">
               <b>Client</b>
-             <database-search  search-type="user" @value-selected="(u) => form.userId = u" />
+             <database-search  :selected-label="bookingToEdit?.user?.email" search-type="user" @value-selected="(u) => form.userId = u" />
             </div>
              <div class="booking-edit-form--row">
               <b>Quantité</b
@@ -107,14 +107,13 @@ function close() {
 }
 
 async function submit() {
-  try {
-
+ try {
     if (props.bookingToEdit?._id) {
       await bookingStore.updateBooking(props.bookingToEdit._id, form.value)
-      toast.success('Poster updated ✅')
+      toast.success('Booking updated ✅')
     } else {
       await bookingStore.createBooking(form.value)
-      toast.success('Poster created 🎉')
+      toast.success('Booking created 🎉')
     }
 
     emit('saved')
@@ -167,7 +166,7 @@ async function submit() {
 
   &--row {
     display: flex;
-    width: 100%;
+    width: 90%;
     align-items: center;
     justify-content: space-between;
 
@@ -196,7 +195,7 @@ async function submit() {
   border: 1px solid #ccc;
   font-size: 14px;
   flex-grow: 1;
-  max-width: 90%;
+
 }
 
 .btn-primary {
