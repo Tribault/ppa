@@ -42,7 +42,7 @@ const toast = useToast()
 
 const props = defineProps<{
   visible: boolean
-  userToEdit: User
+  userToEdit?: User
 }>()
 const emit = defineEmits(['close', 'saved'])
 const userStore = useUserStore()
@@ -64,13 +64,17 @@ onMounted(async () => {
 watch(
   () => props.userToEdit,
   (val) => {
+    if(val){
       form.value = {
         username: val.username,
         email: val.email,
         role: val.role,
-      }
+      }}
+      else {
+      form.value = { username: '', email: '', role: 'user' }
+    }
   },
-  { immediate: true },
+  { immediate: true }
 )
 
 function close() {
@@ -79,10 +83,12 @@ function close() {
 
 async function submit() {
  try {
+  if(props.userToEdit){
       await userStore.updateUser(props.userToEdit._id, form.value)
       toast.success('Utilisateur mis à jour ✅')
     emit('saved')
     close()
+    }
   } catch (err) {
     console.error(err)
     toast.error('Erreur durant la mise à jour ❌')
