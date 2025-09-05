@@ -33,8 +33,8 @@ exports.createUser = async (req, res) => {
 
 exports.updateUser = async (req, res) => {
     try {
-    const { name, email, password, role } = req.body
-    const updateData = { name, email, role }
+    const { username, email, password, role } = req.body
+    const updateData = { username, email, role }
 
     if (password) {
       updateData.password = await bcrypt.hash(password, 10)
@@ -51,7 +51,6 @@ exports.updateUser = async (req, res) => {
 exports.deleteUser = async (req, res) => {
      try {
     const poster = await User.findByIdAndDelete(req.params.id)
-     if (!user) return res.status(404).json({ error: 'User not found' })
     res.json({message: 'User deleted'})
 } catch (err) {
     res.status(500).json({ error: 'Failed to delete user' })

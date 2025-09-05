@@ -7,7 +7,7 @@ const {createUser, getUsers, getUser, updateUser, deleteUser} = require('../cont
 router.post('/', authenticate, authorize('admin'),createUser)
 router.get('/', authenticate, authorize('admin'), getUsers)
 router.get('/:id', authenticate, authorize('admin'), getUser)
-router.put('/', authenticate, updateUser)
-router.delete('/', authenticate, deleteUser)
+router.put('/:id', authenticate, updateUser)
+router.delete('/:id', authenticate, authorize('admin'), deleteUser)
 
 module.exports = router

@@ -10,14 +10,33 @@
           </h2>
 
           <form @submit.prevent="submit" class="user-edit-form">
-                <div class="user-edit-form--row">
-              <b>Commentaire</b
-              ><input
-                v-model="form.note"
+              <div class="user-edit-form--row">
+              <b>Identifiant</b>
+              <input
+                v-model="form.username"
                 type="text"
-                placeholder="Commentaire"
+                placeholder="Identifiant"
                 class="user-edit-input"
               />
+            </div>
+              <div class="user-edit-form--row">
+              <b>E-Mail</b>
+              <input
+                v-model="form.email"
+                type="text"
+                placeholder="Identifiant"
+                class="user-edit-input"
+              />
+            </div>
+              <div class="user-edit-form--row">
+              <b>Role</b>
+              <select
+                v-model="form.role"
+                class="user-edit-input"
+              >
+              <option value="admin">Administrateur</option>
+              <option value="user">Utilisateur</option>
+            </select>
             </div>
             
             <div class="user-edit-form--actions">

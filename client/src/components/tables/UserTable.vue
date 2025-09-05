@@ -15,8 +15,10 @@
           <td>{{ u.username }}</td>
           <td>{{ u.role }}</td>
           <td class="admin-booking-table--actions">
+            <span v-if="isAuthorized(u._id)">
             <pencil-icon class="icon" @click="$emit('edit', u)" />
             <trash-icon class="icon" @click="deleteConfirmation(u._id)" />
+            </span>
           </td>
         </tr>
       </tbody>
@@ -31,6 +33,7 @@
 </template>
 
 <script setup lang="ts">
+import { useAuthStore } from '@/stores/auth'
 import type { User } from '@/types/models'
 import { ref } from 'vue'
 import ConfirmModal from '@/components/utils/ConfirmModal.vue'
@@ -40,10 +43,16 @@ const props = defineProps<{
   users: User[]
 }>()
 
+const authStore = useAuthStore()
+
 const emit = defineEmits(['edit', 'delete'])
 
 const showDeleteModal = ref(false)
 const userToDelete = ref<string | null>(null)
+
+const isAuthorized = ((userId: string)=>{
+  return !!(authStore.user?._id !== userId)
+})
 
 function deleteConfirmation(userId: string) {
   showDeleteModal.value = true

@@ -55,6 +55,7 @@ export const useBookingStore = defineStore('bookings', () => {
 
   async function createBooking(bookingData: BookingPayload) {
     try {
+      console.log("booking", bookingData)
       const res = await api.post('/bookings', bookingData)
       bookings.value.push(res.data)
          toast.success('Réservation créée ✅')

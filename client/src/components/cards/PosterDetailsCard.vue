@@ -68,7 +68,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Poster } from '@/types/models'
+import type { BookingPayload, Poster } from '@/types/models'
 import { usePosterStore } from '@/stores/posters'
 import { useBookingStore } from '@/stores/bookings'
 import { useAuthStore } from '@/stores/auth'
@@ -115,10 +115,12 @@ const decrement = () => {
 const bookPoster = async () => {
   try {
     if (auth.user) {
-      const formData = new FormData()
-      formData.append('posterId', props.poster._id)
-      formData.append('userId', auth.user._id)
-      formData.append('quantity', quantity.value.toString())
+      const formData :BookingPayload = {
+        posterId: props.poster._id,
+        userId: auth.user._id,
+        quantity: quantity.value,
+
+      }
       bookingStore.createBooking(formData)
     }
     quantity.value = 1

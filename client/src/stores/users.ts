@@ -3,6 +3,8 @@ import type { User } from '@/types/models'
 import { ref, computed } from 'vue'
 import api from '@/utils/axios'
 import debounce from 'lodash.debounce'
+import { useToast } from 'vue-toastification'
+const toast = useToast()
 
 export const useUserStore = defineStore('users', () => {
 
@@ -80,8 +82,10 @@ export const useUserStore = defineStore('users', () => {
         if (index !== -1) {
           users.value[index] = res.data
         }
+        toast.success('Utilisateur mis à jour ✅')
       } catch (err: any) {
         error.value = err.response?.data?.message || 'Failed to update user'
+        toast.error('Erreur durant la mise à jour ❌')
         throw err
       }
     }
@@ -90,8 +94,10 @@ export const useUserStore = defineStore('users', () => {
       try {
         await api.delete(`/users/${id}`)
         users.value = users.value.filter((u) => u._id !== id)
+        toast.success('Utilisateur supprimé ✅')
       } catch (err: any) {
         error.value = err.response?.data?.message || 'Failed to delete user'
+        toast.error('Erreur durant la suppression ❌')
         throw err
       }
     }
