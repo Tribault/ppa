@@ -1,5 +1,11 @@
 <template>
   <div class="home-container">
+    <div class="home-announcement">
+      <div class="home-announcement-wrapper">
+      <ChatBubbleLeftIcon/><div class="tag-red" v-if="messageStore.message" v-html="renderMarkdown(messageStore.message)" />
+  </div>
+  </div>
+
     <div class="home-header">
       <div class="home-search">
         <MagnifyingGlassIcon class="icon" />
@@ -61,16 +67,19 @@
 
 <script setup lang="ts">
 import { usePosterStore } from '@/stores/posters'
+import { useMessageStore } from '@/stores/messages'
 import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { Squares2X2Icon, ListBulletIcon, MagnifyingGlassIcon } from '@heroicons/vue/24/outline'
+import { Squares2X2Icon, ListBulletIcon, MagnifyingGlassIcon, ChatBubbleLeftIcon } from '@heroicons/vue/24/outline'
 import { Alphabet } from '@/types/models'
+import { marked } from 'marked'
 import HomePosterCard from '@/components/cards/HomePosterCard.vue'
 import Spinner from '@/components/utils/Spinner.vue'
 
 const router = useRouter()
 
 const posterStore = usePosterStore()
+const messageStore = useMessageStore()
 const letters = Object.values(Alphabet)
 const loading = ref(true)
 
@@ -84,8 +93,13 @@ function posterDetails(posterId: string) {
   router.push({ name: 'posters', params: { id: posterId } })
 }
 
+function renderMarkdown(md: string) {
+  return marked(md)
+}
+
 onMounted(async () => {
   await posterStore.fetchPosters()
+  await messageStore.fetchMessage()
   loading.value = false
 })
 
@@ -126,6 +140,24 @@ watch(view, (newView) => {
     border: solid 1px;
     background-color: $red;
     color: white;
+  }
+}
+
+.home-announcement{
+  display:grid;
+
+  &-wrapper{
+  color: $darker-red;
+  font-weight: 500;
+  margin: 0.5rem 0.5rem;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  }
+
+  svg{
+    max-width: 40px;
+    margin-right: 0.5rem;
   }
 }
 

@@ -16,6 +16,9 @@
       </button>
     </div>
     <div class="admin-bookings-header--actions">
+     <button class="btn-red-bg" @click="showMessageModal = true">
+        <ChatBubbleOvalLeftEllipsisIcon /> Message d'accueil
+      </button>
       <button class="btn-red-bg" @click="openNewBooking">
         <NewspaperIcon /> Nouvelle réservation
       </button>
@@ -37,6 +40,10 @@
     @close="closeModal"
     @saved="bookingStore.fetchBookings"
   />
+    <message-edit
+    :visible="showMessageModal"
+    @close="showMessageModal = false"
+  />
 </template>
 
 <script setup lang="ts">
@@ -45,11 +52,13 @@ import { ref, onMounted } from 'vue'
 import { Alphabet } from '@/types/models'
 import AdminBookingTable from '@/components/tables/BookingTable.vue'
 import BookingEdit from '@/components/edition/BookingEdit.vue'
+import MessageEdit from '@/components/edition/MessageEdit.vue'
 import {
   MagnifyingGlassIcon,
   NewspaperIcon,
   BellSlashIcon,
   BellAlertIcon,
+  ChatBubbleOvalLeftEllipsisIcon
 } from '@heroicons/vue/24/solid'
 
 const bookingStore = useBookingStore()
@@ -57,6 +66,7 @@ const bookingStore = useBookingStore()
 const letters = Object.values(Alphabet)
 
 const showModal = ref(false)
+const showMessageModal = ref(false)
 const isBookingAllowed = ref(true)
 
 const editingBooking = ref(null)
@@ -84,13 +94,13 @@ function onSearchInput(e: Event) {
 }
 
 function deleteBooking(bookingId: string) {
-  console.log(bookingId)
   bookingStore.deleteBooking(bookingId)
 }
 
 function toggleBookings() {
   isBookingAllowed.value = !isBookingAllowed.value
 }
+
 </script>
 
 <style scoped lang="scss">
