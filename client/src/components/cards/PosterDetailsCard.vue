@@ -115,11 +115,10 @@ const decrement = () => {
 const bookPoster = async () => {
   try {
     if (auth.user) {
-      const formData :BookingPayload = {
+      const formData: BookingPayload = {
         posterId: props.poster._id,
         userId: auth.user._id,
         quantity: quantity.value,
-
       }
       bookingStore.createBooking(formData)
     }

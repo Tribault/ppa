@@ -1,33 +1,44 @@
 <template>
   <div class="admin-sales-header">
-      <div class="admin-sales-header--filter">
-        <div>
-    <span>
-      <input type="date" class="btn-red-bg" v-model="saleStore.filters.startDate" @change="applyFilters" />
-    </span>
-    <span>
-      <b>-</b>
-      <input type="date" class="btn-red-bg" v-model="saleStore.filters.endDate" @change="applyFilters" />
-    </span>
+    <div class="admin-sales-header--filter">
+      <div>
+        <span>
+          <input
+            type="date"
+            class="btn-red-bg"
+            v-model="saleStore.filters.startDate"
+            @change="applyFilters"
+          />
+        </span>
+        <span>
+          <b>-</b>
+          <input
+            type="date"
+            class="btn-red-bg"
+            v-model="saleStore.filters.endDate"
+            @change="applyFilters"
+          />
+        </span>
+      </div>
+      <button class="btn-red-bg" @click="resetFilters">Réinitialiser</button>
     </div>
-    <button class="btn-red-bg"  @click="resetFilters">Réinitialiser</button>
-  </div>
-   <div class="admin-sales-header--actions">
+    <div class="admin-sales-header--actions">
       <button class="btn-red-bg" @click="saleStore.exportSalesCSV()">
         <span><folder-arrow-down-icon />Télécharger les ventes</span>
       </button>
     </div>
-    </div>
-   
-   <admin-sale-table
-    :sales="saleStore.sales"
-  />
+  </div>
+
+  <admin-sale-table :sales="saleStore.sales" />
+  <pagination :page="saleStore.page" :pages="saleStore.pages" @change="loadPage" />
 </template>
 
 <script setup lang="ts">
 import { onMounted } from 'vue'
 import { useSaleStore } from '@/stores/sales'
 import AdminSaleTable from '@/components/tables/SaleTable.vue'
+import Pagination from '@/components/utils/Pagination.vue'
+
 import { FolderArrowDownIcon } from '@heroicons/vue/24/solid'
 
 const saleStore = useSaleStore()
@@ -41,11 +52,13 @@ async function resetFilters() {
   await saleStore.fetchSales()
 }
 
+function loadPage(p: number) {
+  saleStore.fetchSales({ page: p, limit: 20 })
+}
+
 onMounted(() => {
-  saleStore.fetchSales()
+  saleStore.fetchSales({ page: 1, limit: 20 })
 })
-
-
 </script>
 <style lang="scss" scoped>
 .admin-sales-header {
@@ -82,13 +95,13 @@ onMounted(() => {
   &--filter {
     display: grid;
     grid-template-columns: 1fr;
-     gap: 0.5rem;
+    gap: 0.5rem;
     align-items: center;
     justify-items: center;
     font-weight: 500;
     color: white;
 
-    b{
+    b {
       padding: 0 0.5rem;
     }
 
@@ -99,9 +112,8 @@ onMounted(() => {
     }
 
     @media screen and (min-width: $break-md) {
-    grid-template-columns: 350px 125px ;
-
-  }
+      grid-template-columns: 350px 125px;
+    }
   }
 }
 </style>

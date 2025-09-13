@@ -3,6 +3,10 @@ const converter = require('json-2-csv');
 const Sale = require('../models/Sale')
 
 exports.getSales = async(req, res) => {
+    const page = parseInt(req.query.page) || 1
+    const limit = parseInt(req.query.limit) || 20
+    const skip = (page -1) * limit  
+
    const { startDate, endDate } = req.query
     const filter = {}
 
@@ -16,12 +20,25 @@ exports.getSales = async(req, res) => {
       }
     }
 
-   const sales = await Sale.find(filter)
+  const [sales, total] = await Promise.all([
+       Sale.find(filter)
     .populate('user')
     .populate('validatedBy')
-    .populate('poster');
-  res.json(sales);
+    .populate('poster')
+      .sort({ title: 1 })
+      .skip(skip)
+      .limit(limit),
+      Sale.countDocuments(filter)
+    ])
+
+  res.json({
+      data: sales,
+      total,
+      page,
+      pages: Math.ceil(total / limit)
+    })
 }
+
 
 exports.getUserSales = async(req, res) => {
     const sales = await Sale.find({ user: req.params.userId })

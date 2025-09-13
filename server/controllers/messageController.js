@@ -2,7 +2,6 @@ const Message = require('../models/Message')
 
 exports.getMessage =  async (req, res) => {
   try {
-    console.log("test")
     const msg = await Message.findOne().sort({ updatedAt: -1 })
     res.json(msg)
   } catch (err) {

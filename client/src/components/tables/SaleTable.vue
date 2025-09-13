@@ -17,10 +17,10 @@
           <th scope="row" class="sticky-col">{{ s.poster.title }}</th>
           <td>{{ s.user.email }}</td>
           <td>{{ s.priceAtSale }} €</td>
-          <td>{{ s.quantity }} </td>
+          <td>{{ s.quantity }}</td>
           <td>{{ s.quantity * s.priceAtSale }} €</td>
           <td>{{ s.validatedBy.email }}</td>
-          <td>{{ new Date(s.validatedAt).toLocaleString()}}</td>
+          <td>{{ new Date(s.validatedAt).toLocaleString() }}</td>
         </tr>
       </tbody>
     </table>
@@ -33,7 +33,6 @@ import type { Sale } from '@/types/models'
 const props = defineProps<{
   sales: Sale[]
 }>()
-
 </script>
 <style lang="scss" scoped>
 .admin-booking-table {

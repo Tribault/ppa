@@ -16,7 +16,7 @@
       </button>
     </div>
     <div class="admin-bookings-header--actions">
-     <button class="btn-red-bg" @click="showMessageModal = true">
+      <button class="btn-red-bg" @click="showMessageModal = true">
         <ChatBubbleOvalLeftEllipsisIcon /> Message d'accueil
       </button>
       <button class="btn-red-bg" @click="openNewBooking">
@@ -34,16 +34,14 @@
     @edit="(p) => openEditBooking(p)"
     @delete="(p) => deleteBooking(p)"
   />
+  <pagination :page="bookingStore.page" :pages="bookingStore.pages" @change="loadPage" />
   <booking-edit
     :visible="showModal"
     :bookingToEdit="editingBooking"
     @close="closeModal"
     @saved="bookingStore.fetchBookings"
   />
-    <message-edit
-    :visible="showMessageModal"
-    @close="showMessageModal = false"
-  />
+  <message-edit :visible="showMessageModal" @close="showMessageModal = false" />
 </template>
 
 <script setup lang="ts">
@@ -53,12 +51,14 @@ import { Alphabet } from '@/types/models'
 import AdminBookingTable from '@/components/tables/BookingTable.vue'
 import BookingEdit from '@/components/edition/BookingEdit.vue'
 import MessageEdit from '@/components/edition/MessageEdit.vue'
+import Pagination from '@/components/utils/Pagination.vue'
+
 import {
   MagnifyingGlassIcon,
   NewspaperIcon,
   BellSlashIcon,
   BellAlertIcon,
-  ChatBubbleOvalLeftEllipsisIcon
+  ChatBubbleOvalLeftEllipsisIcon,
 } from '@heroicons/vue/24/solid'
 
 const bookingStore = useBookingStore()
@@ -85,8 +85,12 @@ const closeModal = () => {
   showModal.value = false
 }
 
+function loadPage(p: number) {
+  bookingStore.fetchBookings({ all: true }, { page: p, limit: 20 })
+}
+
 onMounted(async () => {
-  bookingStore.fetchBookings({ all: true })
+  bookingStore.fetchBookings({ all: true }, { page: 1, limit: 20 })
 })
 
 function onSearchInput(e: Event) {
@@ -100,7 +104,6 @@ function deleteBooking(bookingId: string) {
 function toggleBookings() {
   isBookingAllowed.value = !isBookingAllowed.value
 }
-
 </script>
 
 <style scoped lang="scss">

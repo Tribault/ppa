@@ -9,6 +9,10 @@ const toast = useToast()
 export const useBookingStore = defineStore('bookings', () => {
   const bookings = ref<Booking[]>([])
   const booking = ref<Booking | null>(null)
+  const total = ref(0)
+  const page = ref(1)
+  const pages = ref(1)
+
   const loading = ref(false)
   const error = ref<string | null>(null)
   const selectedLetter = ref<string | null>(null)
@@ -37,15 +41,21 @@ export const useBookingStore = defineStore('bookings', () => {
     return result
   })
 
-  async function fetchBookings(options?: { all?: boolean }) {
+  async function fetchBookings(
+    options?: { all?: boolean },
+    params: { page?: number; limit?: number } = {},
+  ) {
     loading.value = true
     try {
-      let url = "/bookings"
+      let url = '/bookings'
       if (options?.all) {
-        url += "?all=true"
+        url += '?all=true'
       }
-      const res = await api.get(url)
-      bookings.value = res.data
+      const res = await api.get(url, { params })
+      bookings.value = res.data.data
+      total.value = res.data.total
+      page.value = res.data.page
+      pages.value = res.data.pages
     } catch (err: any) {
       error.value = err.response?.data?.message || 'Failed to fetch bookings'
     } finally {
@@ -55,17 +65,15 @@ export const useBookingStore = defineStore('bookings', () => {
 
   async function createBooking(bookingData: BookingPayload) {
     try {
-      console.log("booking", bookingData)
       const res = await api.post('/bookings', bookingData)
       bookings.value.push(res.data)
-         toast.success('Réservation créée ✅')
+      toast.success('Réservation créée ✅')
     } catch (err: any) {
       error.value = err.response?.data?.message || 'Failed to create booking'
-          toast.error('Erreur durant la création ❌')
+      toast.error('Erreur durant la création ❌')
       throw err
     }
   }
-
 
   async function updateBooking(id: string, bookingData: BookingPayload) {
     try {
@@ -74,10 +82,10 @@ export const useBookingStore = defineStore('bookings', () => {
       if (index !== -1) {
         bookings.value[index] = res.data
       }
-         toast.success('Réservation mise à jour ✅')
+      toast.success('Réservation mise à jour ✅')
     } catch (err: any) {
       error.value = err.response?.data?.message || 'Failed to update booking'
-          toast.error('Erreur durant la mise à jour ❌')
+      toast.error('Erreur durant la mise à jour ❌')
       throw err
     }
   }
@@ -86,7 +94,7 @@ export const useBookingStore = defineStore('bookings', () => {
     try {
       await api.delete(`/bookings/${id}`)
       bookings.value = bookings.value.filter((p) => p._id !== id)
-         toast.success('Réservation supprimée ✅')
+      toast.success('Réservation supprimée ✅')
     } catch (err: any) {
       error.value = err.response?.data?.message || 'Failed to delete booking'
       toast.error('Erreur durant la suppression ❌')
@@ -97,6 +105,9 @@ export const useBookingStore = defineStore('bookings', () => {
   return {
     bookings,
     booking,
+    total,
+    page,
+    pages,
     loading,
     error,
     selectedLetter,
@@ -106,6 +117,6 @@ export const useBookingStore = defineStore('bookings', () => {
     fetchBookings,
     deleteBooking,
     updateBooking,
-    createBooking
+    createBooking,
   }
 })

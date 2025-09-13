@@ -10,7 +10,7 @@
           </h2>
 
           <form @submit.prevent="submit" class="user-edit-form">
-              <div class="user-edit-form--row">
+            <div class="user-edit-form--row">
               <b>Identifiant</b>
               <input
                 v-model="form.username"
@@ -19,7 +19,7 @@
                 class="user-edit-input"
               />
             </div>
-              <div class="user-edit-form--row">
+            <div class="user-edit-form--row">
               <b>E-Mail</b>
               <input
                 v-model="form.email"
@@ -28,17 +28,14 @@
                 class="user-edit-input"
               />
             </div>
-              <div class="user-edit-form--row">
+            <div class="user-edit-form--row">
               <b>Role</b>
-              <select
-                v-model="form.role"
-                class="user-edit-input"
-              >
-              <option value="admin">Administrateur</option>
-              <option value="user">Utilisateur</option>
-            </select>
+              <select v-model="form.role" class="user-edit-input">
+                <option value="admin">Administrateur</option>
+                <option value="user">Utilisateur</option>
+              </select>
             </div>
-            
+
             <div class="user-edit-form--actions">
               <button type="submit" class="btn-red-bg">
                 <b>Sauvegarder</b> <folder-arrow-down-icon />
@@ -73,7 +70,7 @@ const form = ref<{
 }>({
   username: '',
   email: '',
-  role: 'user'
+  role: 'user',
 })
 
 onMounted(async () => {
@@ -83,17 +80,17 @@ onMounted(async () => {
 watch(
   () => props.userToEdit,
   (val) => {
-    if(val){
+    if (val) {
       form.value = {
         username: val.username,
         email: val.email,
         role: val.role,
-      }}
-      else {
+      }
+    } else {
       form.value = { username: '', email: '', role: 'user' }
     }
   },
-  { immediate: true }
+  { immediate: true },
 )
 
 function close() {
@@ -101,12 +98,12 @@ function close() {
 }
 
 async function submit() {
- try {
-  if(props.userToEdit){
+  try {
+    if (props.userToEdit) {
       await userStore.updateUser(props.userToEdit._id, form.value)
       toast.success('Utilisateur mis à jour ✅')
-    emit('saved')
-    close()
+      emit('saved')
+      close()
     }
   } catch (err) {
     console.error(err)
@@ -185,7 +182,6 @@ async function submit() {
   border: 1px solid #ccc;
   font-size: 14px;
   flex-grow: 1;
-
 }
 
 .btn-primary {

@@ -2,12 +2,31 @@ const User = require('../models/User')
 
 exports.getUsers = async(req, res) => {
     try {
+
+    const page = parseInt(req.query.page) || 1
+    const limit = parseInt(req.query.limit) || 20
+    const skip = (page -1) * limit  
+
     const {q} = req.query
     const filter = {}
 
     if(q) filter.email = {$regex:q, $options:"i"}
-    const users = await User.find(filter).select('-password')
-    res.json(users)
+
+        const [users, total] = await Promise.all([
+         User.find(filter).select('-password')
+        .sort({ title: 1 })
+        .skip(skip)
+        .limit(limit),
+        User.countDocuments(filter)
+      ])
+        
+    res.json({
+      data: users,
+      total,
+      page,
+      pages: Math.ceil(total / limit)
+    })
+
     } catch (err) {
     res.status(500).json({ error: 'Failed to fetch users' })
   }

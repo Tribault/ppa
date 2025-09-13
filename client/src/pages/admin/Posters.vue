@@ -26,6 +26,7 @@
     @edit="(p) => openEditPoster(p)"
     @delete="(p) => deletePoster(p)"
   />
+  <pagination :page="posterStore.page" :pages="posterStore.pages" @change="loadPage" />
   <poster-edit
     :visible="showModal"
     :posterToEdit="editingPoster"
@@ -43,6 +44,8 @@ import type { Poster } from '@/types/models'
 import AdminPosterTable from '@/components/tables/PosterTable.vue'
 import PosterEdit from '@/components/edition/PosterEdit.vue'
 import TagEdit from '@/components/edition/TagEdit.vue'
+import Pagination from '@/components/utils/Pagination.vue'
+
 import { MagnifyingGlassIcon, TagIcon, NewspaperIcon } from '@heroicons/vue/24/solid'
 
 const posterStore = usePosterStore()
@@ -72,8 +75,12 @@ const closeTagModal = () => {
   showTagModal.value = false
 }
 
+function loadPage(p: number) {
+  posterStore.fetchPosters({ page: p, limit: 20 })
+}
+
 onMounted(async () => {
-  posterStore.fetchPosters()
+  posterStore.fetchPosters({ page: 1, limit: 20 })
 })
 
 function onSearchInput(e: Event) {

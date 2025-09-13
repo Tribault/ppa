@@ -3,11 +3,11 @@ import { ref } from 'vue'
 import api from '@/utils/axios'
 
 export const useMessageStore = defineStore('message', () => {
-  const message = ref<string>("")
+  const message = ref<string>('')
 
   async function fetchMessage() {
     const res = await api.get('/messages')
-    message.value = res.data?.content || ""
+    message.value = res.data?.content || ''
   }
 
   async function updateMessage(content: string) {

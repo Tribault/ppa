@@ -69,6 +69,11 @@ exports.updateBooking = async (req, res) => {
 }
 
 exports.getBookings = async (req, res) => {
+      const page = parseInt(req.query.page) || 1
+    const limit = parseInt(req.query.limit) || 20
+    const skip = (page -1) * limit  
+  
+
   let filter = {}
 
     if (!req.user.role == 'admin') {
@@ -76,10 +81,24 @@ exports.getBookings = async (req, res) => {
     } else if (!req.query.all) {
       filter.user = req.user._id
     }
- const bookings = await Booking.find(filter)
+
+    const [bookings, total] = await Promise.all([
+     Booking.find(filter)
     .populate('user')
-    .populate('poster');
-  res.json(bookings);
+    .populate('poster')
+    .sort({ title: 1 })
+    .skip(skip)
+    .limit(limit),
+    Booking.countDocuments(filter)
+  ])
+
+  res.json({
+      data: bookings,
+      total,
+      page,
+      pages: Math.ceil(total / limit)
+    })
+
 }
 
 exports.getUserBookings = async (req, res) => {
@@ -109,7 +128,6 @@ exports.getPosterBookings = async (req, res) => {
 
 exports.deleteBooking = async (req, res) => {
   const booking = await Booking.findById(req.params.id);
-  console.log("req", req.user.role, req.user.role == 'admin')
 
   if (!booking) return res.status(404).json({ error: 'Booking not found' });
 

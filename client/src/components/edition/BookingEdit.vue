@@ -12,13 +12,21 @@
           <form @submit.prevent="submit" class="booking-edit-form">
             <div class="booking-edit-form--row">
               <b>Affiche</b>
-             <database-search  :selected-label="bookingToEdit?.poster?.title" search-type="poster" @value-selected="(p) => form.posterId = p" />
+              <database-search
+                :selected-label="bookingToEdit?.poster?.title"
+                search-type="poster"
+                @value-selected="(p) => (form.posterId = p)"
+              />
             </div>
             <div class="booking-edit-form--row">
               <b>Client</b>
-             <database-search  :selected-label="bookingToEdit?.user?.email" search-type="user" @value-selected="(u) => form.userId = u" />
+              <database-search
+                :selected-label="bookingToEdit?.user?.email"
+                search-type="user"
+                @value-selected="(u) => (form.userId = u)"
+              />
             </div>
-             <div class="booking-edit-form--row">
+            <div class="booking-edit-form--row">
               <b>Quantité</b
               ><input
                 v-model.number="form.quantity"
@@ -107,7 +115,7 @@ function close() {
 }
 
 async function submit() {
- try {
+  try {
     if (props.bookingToEdit?._id) {
       await bookingStore.updateBooking(props.bookingToEdit._id, form.value)
       toast.success('Booking updated ✅')
@@ -195,7 +203,6 @@ async function submit() {
   border: 1px solid #ccc;
   font-size: 14px;
   flex-grow: 1;
-
 }
 
 .btn-primary {

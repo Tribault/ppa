@@ -7,6 +7,10 @@ import debounce from 'lodash.debounce'
 export const usePosterStore = defineStore('posters', () => {
   const posters = ref<Poster[]>([])
   const poster = ref<Poster | null>(null)
+  const total = ref(0)
+  const page = ref(1)
+  const pages = ref(1)
+
   const loading = ref(false)
   const error = ref<string | null>(null)
   const selectedLetter = ref<string | null>(null)
@@ -37,11 +41,14 @@ export const usePosterStore = defineStore('posters', () => {
     return result
   })
 
-  async function fetchPosters(params? : Record<string, string>) {
+  async function fetchPosters(params: { page?: number; limit?: number; q?: string } = {}) {
     loading.value = true
     try {
-      const res = await api.get('/posters', {params})
-      posters.value = res.data
+      const res = await api.get('/posters', { params })
+      posters.value = res.data.data
+      total.value = res.data.total
+      page.value = res.data.page
+      pages.value = res.data.pages
     } catch (err: any) {
       error.value = err.response?.data?.message || 'Failed to fetch posters'
     } finally {
@@ -101,6 +108,9 @@ export const usePosterStore = defineStore('posters', () => {
   return {
     posters,
     poster,
+    total,
+    page,
+    pages,
     loading,
     error,
     selectedLetter,

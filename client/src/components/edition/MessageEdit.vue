@@ -49,7 +49,7 @@ const props = defineProps<{
 const emit = defineEmits(['close', 'saved'])
 
 const messageStore = useMessageStore()
-const draft = ref(messageStore.message || "")
+const draft = ref(messageStore.message || '')
 
 function renderMarkdown(md: string) {
   return marked(md)
@@ -65,9 +65,9 @@ async function submit() {
   close()
 }
 
-onMounted(async()=> {
-    await messageStore.fetchMessage()
-    draft.value = messageStore.message
+onMounted(async () => {
+  await messageStore.fetchMessage()
+  draft.value = messageStore.message
 })
 </script>
 
@@ -75,65 +75,58 @@ onMounted(async()=> {
 .message-edit {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.5);
+  background: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 999;
 
   &-box {
-  background: white;
-  color: $red;
-  border-radius: 12px;
-  padding: 24px;
-  width: 90%;
-  max-width: 600px;
-  position: relative;
+    background: white;
+    color: $red;
+    border-radius: 12px;
+    padding: 24px;
+    width: 90%;
+    max-width: 600px;
+    position: relative;
+  }
+
+  &-close-btn {
+    position: absolute;
+    top: 12px;
+    right: 16px;
+  }
+
+  &-title {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 16px;
+  }
+
+  &-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  &-input {
+    padding: 8px 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+    width: 100%;
+  }
+
+  &-preview {
+    border-top: 1px solid #ddd;
+    padding-top: 12px;
+    font-size: 14px;
+  }
+
+  &-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 16px;
+  }
 }
-
-&-close-btn {
-  position: absolute;
-  top: 12px;
-  right: 16px;
-}
-
-&-title {
-  font-size: 20px;
-  font-weight: bold;
-  margin-bottom: 16px;
-}
-
-&-form {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-&-input {
-  padding: 8px 10px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  font-size: 14px;
-  width: 100%;
-}
-
-&-preview {
-  border-top: 1px solid #ddd;
-  padding-top: 12px;
-  font-size: 14px;
-}
-
-&-form-actions {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 16px;
-}
-
-}
-
-
-
-
-
-
 </style>

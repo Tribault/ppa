@@ -3,14 +3,27 @@ const fs = require('fs')
 const path = require('path')
 
 exports.getPosters = async(req, res) => {
-    const {q} = req.query
+    const page = parseInt(req.query.page) || 1
+    const limit = parseInt(req.query.limit) || 20
+    const skip = (page -1) * limit  
+  
+  const {q} = req.query
 
     const filter = {}
 
     if(q) filter.title = {$regex:q, $options:"i"}
-    const posters = await Poster.find(filter).populate('tags').sort({ title: 1 })
 
-    const withAvailableStock = await Promise.all(
+    const [posters, total] = await Promise.all([
+      Poster.find(filter)
+    .populate('tags')
+    .sort({ title: 1 })
+    .skip(skip)
+    .limit(limit),
+    Poster.countDocuments(filter)
+  ])
+    
+
+    const postersWithAvailableStock = await Promise.all(
         posters.map(async (poster) => {
             const available = await poster.getAvailableStock()
             return{
@@ -19,7 +32,13 @@ exports.getPosters = async(req, res) => {
             }
         })
     )
-    res.json(withAvailableStock)
+
+    res.json({
+      data: postersWithAvailableStock,
+      total,
+      page,
+      pages: Math.ceil(total / limit)
+    })
 }
 
 exports.getPoster = async (req, res) => {

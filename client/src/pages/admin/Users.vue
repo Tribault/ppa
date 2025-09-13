@@ -22,8 +22,9 @@
     @edit="(u) => openEditUser(u)"
     @delete="(u) => deleteUser(u)"
   />
+  <pagination :page="userStore.page" :pages="userStore.pages" @change="loadPage" />
   <user-edit
-  v-if="editingUser"
+    v-if="editingUser"
     :visible="showModal"
     :userToEdit="editingUser"
     @close="closeModal"
@@ -38,7 +39,9 @@ import { Alphabet } from '@/types/models'
 import type { User } from '@/types/models'
 import UserTable from '@/components/tables/UserTable.vue'
 import UserEdit from '@/components/edition/UserEdit.vue'
-import {MagnifyingGlassIcon} from '@heroicons/vue/24/solid'
+import Pagination from '@/components/utils/Pagination.vue'
+
+import { MagnifyingGlassIcon } from '@heroicons/vue/24/solid'
 
 const userStore = useUserStore()
 
@@ -57,8 +60,12 @@ const closeModal = () => {
   showModal.value = false
 }
 
+function loadPage(p: number) {
+  userStore.fetchUsers({ page: p, limit: 20 })
+}
+
 onMounted(async () => {
-  userStore.fetchUsers()
+  userStore.fetchUsers({ page: 1, limit: 20 })
 })
 
 function onSearchInput(e: Event) {
@@ -68,7 +75,6 @@ function onSearchInput(e: Event) {
 function deleteUser(userId: string) {
   userStore.deleteUser(userId)
 }
-
 </script>
 
 <style scoped lang="scss">

@@ -2,9 +2,14 @@
   <div class="home-container">
     <div class="home-announcement">
       <div class="home-announcement-wrapper">
-      <ChatBubbleLeftIcon/><div class="tag-red" v-if="messageStore.message" v-html="renderMarkdown(messageStore.message)" />
-  </div>
-  </div>
+        <ChatBubbleLeftIcon />
+        <div
+          class="tag-red"
+          v-if="messageStore.message"
+          v-html="renderMarkdown(messageStore.message)"
+        />
+      </div>
+    </div>
 
     <div class="home-header">
       <div class="home-search">
@@ -61,6 +66,7 @@
           />
         </div>
       </transition>
+      <pagination :page="posterStore.page" :pages="posterStore.pages" @change="loadPage" />
     </div>
   </div>
 </template>
@@ -70,11 +76,17 @@ import { usePosterStore } from '@/stores/posters'
 import { useMessageStore } from '@/stores/messages'
 import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { Squares2X2Icon, ListBulletIcon, MagnifyingGlassIcon, ChatBubbleLeftIcon } from '@heroicons/vue/24/outline'
+import {
+  Squares2X2Icon,
+  ListBulletIcon,
+  MagnifyingGlassIcon,
+  ChatBubbleLeftIcon,
+} from '@heroicons/vue/24/outline'
 import { Alphabet } from '@/types/models'
 import { marked } from 'marked'
 import HomePosterCard from '@/components/cards/HomePosterCard.vue'
 import Spinner from '@/components/utils/Spinner.vue'
+import Pagination from '@/components/utils/Pagination.vue'
 
 const router = useRouter()
 
@@ -97,8 +109,12 @@ function renderMarkdown(md: string) {
   return marked(md)
 }
 
+function loadPage(p: number) {
+  posterStore.fetchPosters({ page: p, limit: 10 })
+}
+
 onMounted(async () => {
-  await posterStore.fetchPosters()
+  await posterStore.fetchPosters({ page: 1, limit: 10 })
   await messageStore.fetchMessage()
   loading.value = false
 })
@@ -109,10 +125,6 @@ watch(view, (newView) => {
 </script>
 
 <style lang="scss" scoped>
-.home-container {
-  padding: 0 1rem;
-}
-
 .home-header {
   display: flex;
   justify-content: space-between;
@@ -143,19 +155,19 @@ watch(view, (newView) => {
   }
 }
 
-.home-announcement{
-  display:grid;
+.home-announcement {
+  display: grid;
 
-  &-wrapper{
-  color: $darker-red;
-  font-weight: 500;
-  margin: 0.5rem 0.5rem;
-  display: flex;
-  justify-content: center;
-  width: 100%;
+  &-wrapper {
+    color: $darker-red;
+    font-weight: 500;
+    margin: 0.5rem 0.5rem;
+    display: flex;
+    justify-content: center;
+    width: 100%;
   }
 
-  svg{
+  svg {
     max-width: 40px;
     margin-right: 0.5rem;
   }
