@@ -71,8 +71,9 @@
 import type { BookingPayload, Poster } from '@/types/models'
 import { usePosterStore } from '@/stores/posters'
 import { useBookingStore } from '@/stores/bookings'
+import { useMessageStore } from '@/stores/messages'
 import { useAuthStore } from '@/stores/auth'
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import { ArrowUturnLeftIcon, PlusIcon, MinusIcon, PencilIcon } from '@heroicons/vue/24/solid'
 
 import PosterEdit from '@/components/edition/PosterEdit.vue'
@@ -89,12 +90,13 @@ const emit = defineEmits(['edit', 'updated'])
 const auth = useAuthStore()
 const posterStore = usePosterStore()
 const bookingStore = useBookingStore()
+const messageStore = useMessageStore()
 
 const quantity = ref<number>(1)
 const isEditing = ref<boolean>(false)
 const imgUrl = computed(() => ref<string>(import.meta.env.VITE_IMG_URL + props.poster.image))
 
-const canBook = computed(() => auth.user?.role === 'user' && props.poster.availableStock > 0)
+const canBook = computed(() => auth.user?.role === 'user' && props.poster.availableStock > 0 && messageStore.message?.bookingAllowed)
 
 function refreshData() {
   posterStore.fetchPoster(props.poster._id)
@@ -129,6 +131,10 @@ const bookPoster = async () => {
     toast.error(err.response?.data?.error || 'Erreur durant la réservation.')
   }
 }
+
+onMounted(()=>{
+  messageStore.fetchMessage()
+})
 </script>
 
 <style lang="scss" scoped>

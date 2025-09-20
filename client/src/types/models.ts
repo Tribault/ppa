@@ -38,6 +38,12 @@ export interface Sale {
   priceAtSale: number
 }
 
+export interface Message {
+_id: string
+content : string
+bookingAllowed: boolean
+}
+
 export interface BookingPayload {
   userId: string
   posterId: string

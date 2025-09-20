@@ -11,7 +11,8 @@ const posterSchema = new mongoose.Schema({
     note : String,
     image : String,
     tags: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Tag' }],
-    totalStock: Number
+    totalStock: Number,
+    forSale: {type: Boolean, default: false}
 })
 
 posterSchema.methods.getAvailableStock = async function(){

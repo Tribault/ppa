@@ -11,6 +11,8 @@ import Account from '@/pages/Account.vue'
 import PosterDetails from '@/pages/PosterDetails.vue'
 import ForgotPassword from '@/pages/auth/ForgotPassword.vue'
 import ResetPassword from '@/pages/auth/ResetPassword.vue'
+import EmailVerification from '@/pages/auth/EmailVerification.vue'
+import ResendVerification from '@/pages/auth/ResendVerification.vue'
 
 const routes = [
   { path: '/', component: Home },
@@ -23,6 +25,8 @@ const routes = [
   { path: '/admin/edit/:id', component: PosterForm, props: true },
   { path: '/forgot-password', component: ForgotPassword },
   { path: '/reset-password', component: ResetPassword },
+  { path: '/verify-email', component: EmailVerification },
+  { path: '/resend-verification', component: ResendVerification },
 ]
 
 const router = createRouter({

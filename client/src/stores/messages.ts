@@ -1,9 +1,10 @@
 import { defineStore } from 'pinia'
+import type { Message } from '@/types/models'
 import { ref } from 'vue'
 import api from '@/utils/axios'
 
 export const useMessageStore = defineStore('message', () => {
-  const message = ref<string>('')
+  const message = ref<Message|null>(null)
 
   async function fetchMessage() {
     const res = await api.get('/messages')
@@ -15,5 +16,9 @@ export const useMessageStore = defineStore('message', () => {
     message.value = res.data.content
   }
 
-  return { message, fetchMessage, updateMessage }
+  async function toggleBooking() {
+    const res = await api.post('/messages/toggle-booking')
+  }
+
+  return { message, fetchMessage, updateMessage, toggleBooking }
 })

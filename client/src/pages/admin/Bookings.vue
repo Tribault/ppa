@@ -46,6 +46,7 @@
 
 <script setup lang="ts">
 import { useBookingStore } from '@/stores/bookings'
+import { useMessageStore } from '@/stores/messages'
 import { ref, onMounted } from 'vue'
 import { Alphabet } from '@/types/models'
 import AdminBookingTable from '@/components/tables/BookingTable.vue'
@@ -62,6 +63,7 @@ import {
 } from '@heroicons/vue/24/solid'
 
 const bookingStore = useBookingStore()
+const messageStore = useMessageStore()
 
 const letters = Object.values(Alphabet)
 
@@ -91,6 +93,8 @@ function loadPage(p: number) {
 
 onMounted(async () => {
   bookingStore.fetchBookings({ all: true }, { page: 1, limit: 20 })
+  messageStore.fetchMessage()
+  isBookingAllowed.value = messageStore.message?.bookingAllowed || true
 })
 
 function onSearchInput(e: Event) {
@@ -102,6 +106,7 @@ function deleteBooking(bookingId: string) {
 }
 
 function toggleBookings() {
+  messageStore.toggleBooking()
   isBookingAllowed.value = !isBookingAllowed.value
 }
 </script>

@@ -21,3 +21,14 @@ exports.upsertMessage =  async (req, res) => {
   }
   res.json(msg)
 }
+
+exports.toggleBooking =  async (req, res) => {
+  let msg = await Message.findOne()
+  if (msg) {
+    msg.bookingAllowed = !msg.bookingAllowed
+    await msg.save()
+  } else {
+    msg = await Message.create({ content:'message par défaut' })
+  }
+  res.json(msg)
+}

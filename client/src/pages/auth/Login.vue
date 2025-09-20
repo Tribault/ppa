@@ -4,7 +4,7 @@
       <h2>Connexion</h2>
       <form @submit.prevent="handleLogin">
         <div>
-          <input v-model="username" type="text" placeholder="Identifiant" required />
+          <input v-model="email" type="text" placeholder="Identifiant" required />
           <input v-model="password" type="password" placeholder="Mot de passe" required />
         </div>
         <button type="submit" class="btn-red-bg"><b>Se connecter</b></button>
@@ -20,23 +20,33 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useToast } from 'vue-toastification'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
-const username = ref('')
+const email = ref('')
 const password = ref('')
 const error = ref('')
 
 const auth = useAuthStore()
 const router = useRouter()
 
+const toast = useToast()
+
 const handleLogin = async () => {
   error.value = ''
   try {
-    await auth.login(username.value, password.value)
+    await auth.login(email.value, password.value)
     router.push('/')
-  } catch (err) {
-    error.value = 'Identifiant ou mot de passe invalide'
+  } catch (err : any) {
+     const message = err.response?.data?.message || "Login failed"
+    console.log("message", message)
+    if (message == "Not verified.") {
+      toast.error("Please verify your email first.")
+      router.push('/resend-verification')
+    } else {
+      toast.error(message)
+    }
   }
 }
 </script>
