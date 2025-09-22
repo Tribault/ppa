@@ -16,6 +16,7 @@ export interface Poster {
   availableStock: number
   totalStock: number
   tags: Tag[]
+  forSale: Boolean
 }
 
 export interface Booking {
@@ -59,6 +60,7 @@ export interface PosterPayload {
   note: string
   totalStock: number
   tags: string[]
+  forSale: Boolean
 }
 
 export interface Tag {

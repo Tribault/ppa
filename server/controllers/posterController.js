@@ -3,6 +3,7 @@ const fs = require('fs')
 const path = require('path')
 
 exports.getPosters = async(req, res) => {
+    const forSale = req.query.forSale
     const page = parseInt(req.query.page) || 1
     const limit = parseInt(req.query.limit) || 20
     const skip = (page -1) * limit  
@@ -12,6 +13,7 @@ exports.getPosters = async(req, res) => {
     const filter = {}
 
     if(q) filter.title = {$regex:q, $options:"i"}
+    if(forSale) filter.forSale = true
 
     const [posters, total] = await Promise.all([
       Poster.find(filter)

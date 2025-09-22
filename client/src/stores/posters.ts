@@ -41,7 +41,7 @@ export const usePosterStore = defineStore('posters', () => {
     return result
   })
 
-  async function fetchPosters(params: { page?: number; limit?: number; q?: string } = {}) {
+  async function fetchPosters(params: { forSale?: boolean, page?: number; limit?: number; q?: string } = {}) {
     loading.value = true
     try {
       const res = await api.get('/posters', { params })

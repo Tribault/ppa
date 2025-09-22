@@ -6,7 +6,7 @@
         <div
           class="tag-red"
           v-if="messageStore.message"
-          v-html="renderMarkdown(messageStore.message)"
+          v-html="messageStore.message"
         />
       </div>
     </div>
@@ -83,7 +83,6 @@ import {
   ChatBubbleLeftIcon,
 } from '@heroicons/vue/24/outline'
 import { Alphabet } from '@/types/models'
-import { marked } from 'marked'
 import HomePosterCard from '@/components/cards/HomePosterCard.vue'
 import Spinner from '@/components/utils/Spinner.vue'
 import Pagination from '@/components/utils/Pagination.vue'
@@ -105,16 +104,12 @@ function posterDetails(posterId: string) {
   router.push({ name: 'posters', params: { id: posterId } })
 }
 
-function renderMarkdown(md: string) {
-  return marked(md)
-}
-
 function loadPage(p: number) {
   posterStore.fetchPosters({ page: p, limit: 10 })
 }
 
 onMounted(async () => {
-  await posterStore.fetchPosters({ page: 1, limit: 10 })
+  await posterStore.fetchPosters({ forSale: true, page: 1, limit: 10 })
   await messageStore.fetchMessage()
   loading.value = false
 })
@@ -205,6 +200,10 @@ watch(view, (newView) => {
       color: white;
     }
   }
+}
+
+.tag-red{
+  align-content: center;
 }
 
 .icon {

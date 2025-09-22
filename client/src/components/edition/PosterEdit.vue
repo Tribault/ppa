@@ -74,6 +74,14 @@
                 </label>
               </div>
             </div>
+             <div class="poster-edit-form--row">
+              <b>À vendre ?</b>
+              <input type="radio" id="sale" value=true v-model="form.forSale" />
+              <label for="sale">Oui</label>
+
+              <input type="radio" id="noSale" value=false v-model="form.forSale" />
+              <label for="noSale">Non</label>
+            </div>
 
             <div class="poster-edit-form--actions">
               <button type="submit" class="btn-red-bg">
@@ -113,6 +121,7 @@ const form = ref<{
   totalStock: number
   tags: string[]
   image: File | string | null
+  forSale: Boolean
 }>({
   title: '',
   size: '120*160 cm',
@@ -121,6 +130,7 @@ const form = ref<{
   totalStock: 0,
   tags: [],
   image: null,
+  forSale: false
 })
 
 const previewUrl = ref<string>('')
@@ -140,7 +150,7 @@ watch(
       }
       previewUrl.value = val.image ? import.meta.env.VITE_IMG_URL + val.image : ''
     } else {
-      form.value = { title: '', size: '', price: 0, totalStock: 0, note: '', tags: [], image: null }
+      form.value = { title: '', size: '', price: 0, totalStock: 0, note: '', tags: [], image: null, forSale: false }
       previewUrl.value = ''
     }
   },
@@ -167,6 +177,7 @@ async function submit() {
     formData.append('price', form.value.price.toString())
     formData.append('note', form.value.note)
     formData.append('totalStock', form.value.totalStock.toString())
+    formData.append('forSale', form.value.forSale.toString())
     form.value.tags.forEach((tag) => formData.append('tags[]', tag))
 
     if (form.value.image instanceof File) {
