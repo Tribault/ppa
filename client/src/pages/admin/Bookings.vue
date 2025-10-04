@@ -39,7 +39,7 @@
     :visible="showModal"
     :bookingToEdit="editingBooking"
     @close="closeModal"
-    @saved="bookingStore.fetchBookings"
+    @saved="bookingStore.fetchBookings({ all: true }, { page: 1, limit: 20 })"
   />
   <message-edit :visible="showMessageModal" @close="showMessageModal = false" />
 </template>

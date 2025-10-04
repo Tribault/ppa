@@ -67,10 +67,8 @@ export const useBookingStore = defineStore('bookings', () => {
     try {
       const res = await api.post('/bookings', bookingData)
       bookings.value.push(res.data)
-      toast.success('Réservation créée ✅')
     } catch (err: any) {
       error.value = err.response?.data?.message || 'Failed to create booking'
-      toast.error('Erreur durant la création ❌')
       throw err
     }
   }

@@ -2,13 +2,11 @@ const express = require('express')
 const router = express.Router()
 const {authenticate} = require('../middleware/auth')
 
-const {createOrUpdateBooking, getBookings, getUserBookings, getPosterBookings, deleteBooking, updateBooking }  = require('../controllers/bookingController')
+const {createOrUpdateBooking, getBookings, deleteBooking }  = require('../controllers/bookingController')
 
 router.post('/', authenticate,createOrUpdateBooking)
-router.put('/:id', authenticate, updateBooking)
+router.put('/:id', authenticate, createOrUpdateBooking)
 router.get('/', authenticate, getBookings)
-router.get('/user/:userId', authenticate, getUserBookings)
-router.post('/poster/:posterId', authenticate, getPosterBookings)
 router.delete('/:id', authenticate, deleteBooking)
 
 module.exports = router

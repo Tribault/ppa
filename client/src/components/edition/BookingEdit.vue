@@ -9,8 +9,7 @@
             {{ bookingToEdit?._id ? `Modification de réservation` : `Création de réservation` }}
           </h2>
           <form @submit.prevent="submit" class="booking-edit-form">
-             <div v-if="authStore.isAdmin">
-            <div class="booking-edit-form--row">
+            <div v-if="authStore.isAdmin" class="booking-edit-form--row">
               <b>Affiche</b>
               <database-search
                 :selected-label="bookingToEdit?.poster?.title"
@@ -18,7 +17,7 @@
                 @value-selected="(p) => (form.posterId = p)"
               />
             </div>
-            <div class="booking-edit-form--row">
+            <div v-if="authStore.isAdmin" class="booking-edit-form--row">
               <b>Client</b>
               <database-search
                 :selected-label="bookingToEdit?.user?.email"
@@ -26,22 +25,39 @@
                 @value-selected="(u) => (form.userId = u)"
               />
             </div>
-            <div v-if="bookingToEdit?._id" class="booking-edit-form--row">
+
+            <div v-if="bookingToEdit?._id && authStore.isAdmin" class="booking-edit-form--row">
               <b>Status</b>
               <input type="radio" id="pending" value="pending" v-model="form.status" />
               <label for="pending">En cours</label>
               <input type="radio" id="validated" value="validated" v-model="form.status" />
               <label for="validated">Validée</label>
-            </div>
+
             </div>
             <div class="booking-edit-form--row">
               <b>Quantité</b
               ><input
+                v-if="bookingToEdit"
                 v-model.number="form.quantity"
                 type="number"
                 placeholder="Quantity"
-                class="booking-edit-input"
+                class="booking-edit-input stock"
+                min="1"
+                :max="bookingToEdit.quantity + (bookingToEdit.poster.stockInfo?.availableStock || 0)"
               />
+              <input
+                v-else
+                v-model.number="form.quantity"
+                type="number"
+                placeholder="Quantity"
+                class="booking-edit-input stock"
+                min="1"
+              />
+              <div class="booking-edit-form--row">
+              <p class="tag-white">disponible {{bookingToEdit?.poster.stockInfo?.availableStock}}</p>
+              <p class="tag-white">réservé  {{bookingToEdit?.poster.stockInfo?.pending}}</p>
+              <p class="tag-white"> vendu {{bookingToEdit?.poster.stockInfo?.confirmed}}</p>
+              </div>
             </div>
 
             <div class="booking-edit-form--actions">
@@ -57,7 +73,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch, onMounted, computed } from 'vue'
 import type { Booking } from '@/types/models'
 import { XMarkIcon, FolderArrowDownIcon } from '@heroicons/vue/24/solid'
 import { useBookingStore } from '@/stores/bookings'
@@ -95,6 +111,12 @@ onMounted(async () => {
   await userStore.fetchUsers()
 })
 
+const stockEditing = computed(()=> {
+  props.bookingToEdit && props.bookingToEdit.poster.stockInfo.availableStock > 0  ? 
+  {max : props.bookingToEdit.poster.stockInfo.availableStock, visible: true}
+  : 0
+})
+
 watch(
   () => props.bookingToEdit,
   (val) => {
@@ -121,17 +143,16 @@ async function submit() {
   try {
     if (props.bookingToEdit?._id) {
       await bookingStore.updateBooking(props.bookingToEdit._id, form.value)
-      toast.success('Booking updated ✅')
+      toast.success('Réservation mise à jour ✅')
     } else {
       await bookingStore.createBooking(form.value)
-      toast.success('Booking created 🎉')
+      toast.success('Réservation créée 🎉')
     }
-
     emit('saved')
     close()
   } catch (err) {
     console.error(err)
-    toast.error('An error occurred ❌')
+    toast.error('Une erreur est survenue ❌')
   }
 }
 </script>
@@ -170,6 +191,12 @@ async function submit() {
   margin-bottom: 16px;
 }
 
+.booking-edit-input.stock{
+    max-width: 80px;
+    margin-right: 0.5rem;
+}
+
+
 .booking-edit-form {
   display: flex;
   flex-direction: column;
@@ -177,7 +204,7 @@ async function submit() {
 
   &--row {
     display: flex;
-    width: 90%;
+    width: 100%;
     align-items: center;
     justify-content: space-between;
 

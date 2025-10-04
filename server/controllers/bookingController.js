@@ -2,88 +2,109 @@ const Poster = require('../models/Poster')
 const Booking = require('../models/Booking')
 const Sale = require('../models/Sale')
 const User = require('../models/User')
+const { computeStockInfo } = require('../utils/stock')
 
 exports.createOrUpdateBooking = async (req, res) => {
   try {
-    const { posterId, quantity, userId } = req.body;
+    const { posterId, quantity, userId, status } = req.body
 
-    const poster = await Poster.findById(posterId);
-    if (!poster) return res.status(404).json({ error: 'Affiche introuvable' });
+    // basic validations
+    if (!posterId || !userId || typeof quantity !== 'number') {
+      return res.status(400).json({ error: 'posterId, userId and quantity are required.' })
+    }
 
-    const user = await User.findById(userId);
-    if (!user) return res.status(404).json({ error: 'Client introuvable' });
+    const poster = await Poster.findById(posterId)
+    if (!poster) return res.status(404).json({ error: 'Affiche introuvable' })
 
-    let booking = await Booking.findOne({ user: userId, poster: posterId });
+    const user = await User.findById(userId)
+    if (!user) return res.status(404).json({ error: 'Client introuvable' })
+
+    // compute stock info before modification
+    const stockInfo = await computeStockInfo(poster._id, poster.totalStock)
+
+    let booking = await Booking.findOne({ user: userId, poster: posterId })
+    let isNew = false
 
     if (booking) {
-      const newQuantity = booking.quantity + quantity;
+      // UPDATE existing booking (quantity is absolute)
+      const allowedMax = (stockInfo.availableStock || 0) + (booking.quantity || 0)
 
-      if (newQuantity > poster.totalStock) {
-        return res.status(400).json({ error: 'Pas assez de stock pour réserver.' });
+      if (quantity > allowedMax) {
+        return res.status(400).json({ error: 'Pas assez de stock pour réserver.' })
       }
 
-      booking.quantity = newQuantity;
-      await booking.save();
+      booking.quantity = quantity
+      if (status) booking.status = status
 
-      return res.status(200).json(booking);
+      await booking.save()
+
+      // handle sale creation/deletion after save
+      if (status) {
+        if (status === 'validated') {
+          const existingSale = await Sale.findOne({ booking: booking._id })
+          if (!existingSale) {
+            await Sale.create({
+              booking: booking._id,
+              quantity: booking.quantity,
+              poster: booking.poster,
+              user: booking.user,
+              validatedBy: req.user ? req.user._id : undefined,
+              priceAtSale: booking.priceAtBooking
+            })
+          }
+        } else if (status === 'pending') {
+          await Sale.deleteOne({ booking: booking._id })
+        }
+      }
+
+      // populate then attach fresh stockInfo
+      await booking.populate([{ path: 'poster' }, { path: 'user', select: 'username email' }])
+      const result = booking.toObject()
+      result.poster.stockInfo = await computeStockInfo(poster._id, poster.totalStock)
+
+      return res.status(200).json(result)
     } else {
-      if (quantity > poster.totalStock) {
-        return res.status(400).json({ error: 'Pas assez de stock pour réserver.' });
+      // CREATE new booking
+      if (quantity > (stockInfo.availableStock || 0)) {
+        return res.status(400).json({ error: 'Pas assez de stock pour réserver.' })
       }
 
       booking = new Booking({
         user: user._id,
         poster: poster._id,
         quantity,
+        status: status || 'pending',
         priceAtBooking: poster.price
-      });
+      })
 
-      await booking.save();
-      return res.status(201).json(booking);
+      await booking.save()
+      isNew = true
+
+      // if the booking is created already validated, create a sale
+      if (booking.status === 'validated') {
+        await Sale.create({
+          booking: booking._id,
+          quantity: booking.quantity,
+          poster: booking.poster,
+          user: booking.user,
+          validatedBy: req.user ? req.user._id : undefined,
+          priceAtSale: booking.priceAtBooking
+        })
+      }
+
+      // populate then attach fresh stockInfo
+      await booking.populate([{ path: 'poster' }, { path: 'user', select: 'username email' }])
+      const result = booking.toObject()
+      result.poster.stockInfo = await computeStockInfo(poster._id, poster.totalStock)
+
+      return res.status(isNew ? 201 : 200).json(result)
     }
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Erreur serveur.' });
-  }
-};
-
-
-exports.updateBooking = async (req, res) => {
-  try {
-  const bookingId = req.params.id
-    const { status, ...rest } = req.body
-
-    let booking = await Booking.findById(bookingId)
-    if (!booking) return res.status(404).json({ message: "Booking not found" })
-
-      Object.assign(booking, rest)
-
-     if (status && status !== booking.status) {
-      booking.status = status
-
-      if (status === "validated") {
-        const existingSale = await Sale.findOne({ booking: booking._id })
-        if (!existingSale) {
-          await Sale.create({
-            booking: booking._id,
-            quantity: booking.quantity,
-            poster: booking.poster,
-            user: booking.user,
-            validatedBy: req.user._id, 
-            priceAtSale: booking.priceAtBooking
-        })
-      } else if (status === "pending") {
-        await Sale.deleteOne({ booking: booking._id })
-      }
-}}
-
-  await booking.save()
-    res.json(booking)
-  } catch (err) {
     console.error(err)
-    res.status(500).json({ message: "Failed to update booking" })
+    return res.status(500).json({ error: 'Erreur serveur.' })
   }
 }
+
 
 exports.getBookings = async (req, res) => {
       const page = parseInt(req.query.page) || 1
@@ -109,38 +130,21 @@ exports.getBookings = async (req, res) => {
     Booking.countDocuments(filter)
   ])
 
-  res.json({
-      data: bookings,
-      total,
-      page,
-      pages: Math.ceil(total / limit)
+  const enriched = await Promise.all(
+    bookings.map(async (b) => {
+      const obj = b.toObject()
+      const stockInfo = await computeStockInfo(obj.poster._id, obj.poster.totalStock)
+      obj.poster.stockInfo = stockInfo
+      return obj
     })
+  )
 
-}
-
-exports.getUserBookings = async (req, res) => {
-   const bookings = await Booking.find({ user: req.params.userId })
-    .populate('poster')
-    .lean()
-
-  await Promise.all(
-  bookings.map(async (booking) => {
-    if (booking.poster && booking.poster._id) {
-      const posterDoc = await Poster.findById(booking.poster._id);
-      const availableStock = await posterDoc.getAvailableStock();
-      booking.poster.availableStock = availableStock;
-    }
+  res.json({
+    data: enriched,
+    total,
+    page,
+    pages: Math.ceil(total / limit)
   })
-)
-
-  res.json(bookings);
-}
-
-
-exports.getPosterBookings = async (req, res) => {
-  const bookings = await Booking.find({ poster: req.params.posterId })
-    .populate('user');
-  res.json(bookings);
 }
 
 exports.deleteBooking = async (req, res) => {

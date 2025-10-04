@@ -53,9 +53,14 @@
                 v-model.number="form.totalStock"
                 type="number"
                 placeholder="Stock"
-                class="poster-edit-input"
-                :min="posterToEdit?.availableStock"
+                class="poster-edit-input stock"
+                :min="posterToEdit?.stockInfo?.availableStock"
               />
+              <div class="poster-edit-form--row">
+              <p class="tag-white">disponible {{posterToEdit?.stockInfo?.availableStock}}</p>
+              <p class="tag-white">réservé  {{posterToEdit?.stockInfo?.pending}}</p>
+              <p class="tag-white"> vendu {{posterToEdit?.stockInfo?.confirmed}}</p>
+              </div>
             </div>
             <div class="poster-edit-form--row">
               <b>Commentaire</b
@@ -151,7 +156,7 @@ watch(
       }
       previewUrl.value = val.image ? import.meta.env.VITE_IMG_URL + val.image : ''
     } else {
-      form.value = { title: '', size: '', price: 0, totalStock: 0, note: '', tags: [], image: null, forSale: false }
+      form.value = { title: '', size: '120*160 cm', price: 0, totalStock: 0, note: '', tags: [], image: null, forSale: false }
       previewUrl.value = ''
     }
   },
@@ -285,6 +290,11 @@ async function submit() {
   font-size: 14px;
   flex-grow: 1;
   max-width: 90%;
+}
+
+.poster-edit-input.stock{
+    max-width: 80px;
+    margin-right: 0.5rem;
 }
 
 .btn-primary {

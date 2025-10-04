@@ -17,7 +17,7 @@ export interface Poster {
   totalStock: number
   tags: Tag[]
   forSale: Boolean
-  stockInfo?: StockInfo
+  stockInfo: StockInfo
 }
 
 export interface StockInfo {
