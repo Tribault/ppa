@@ -15,26 +15,5 @@ const posterSchema = new mongoose.Schema({
     forSale: {type: Boolean, default: false}
 })
 
-posterSchema.methods.getAvailableStock = async function(){
-    const Booking = mongoose.model('Booking')
-
-    const result = await Booking.aggregate([
-        {
-      $match: {
-        poster: this._id,
-        status: 'pending'
-      }
-    },
-    {
-      $group: {
-        _id: null,
-        total: { $sum: '$quantity' }
-      }
-    }
-    ])
-
-    const bookedQty = result[0]?.total || 0
-    return this.totalStock - bookedQty
-}
 
 module.exports = mongoose.model('Poster', posterSchema)

@@ -8,8 +8,8 @@
           <h2 class="booking-edit-title">
             {{ bookingToEdit?._id ? `Modification de réservation` : `Création de réservation` }}
           </h2>
-
           <form @submit.prevent="submit" class="booking-edit-form">
+             <div v-if="authStore.isAdmin">
             <div class="booking-edit-form--row">
               <b>Affiche</b>
               <database-search
@@ -26,6 +26,14 @@
                 @value-selected="(u) => (form.userId = u)"
               />
             </div>
+            <div v-if="bookingToEdit?._id" class="booking-edit-form--row">
+              <b>Status</b>
+              <input type="radio" id="pending" value="pending" v-model="form.status" />
+              <label for="pending">En cours</label>
+              <input type="radio" id="validated" value="validated" v-model="form.status" />
+              <label for="validated">Validée</label>
+            </div>
+            </div>
             <div class="booking-edit-form--row">
               <b>Quantité</b
               ><input
@@ -34,13 +42,6 @@
                 placeholder="Quantity"
                 class="booking-edit-input"
               />
-            </div>
-            <div v-if="bookingToEdit?._id" class="booking-edit-form--row">
-              <b>Status</b>
-              <input type="radio" id="pending" value="pending" v-model="form.status" />
-              <label for="pending">En cours</label>
-              <input type="radio" id="validated" value="validated" v-model="form.status" />
-              <label for="validated">Validée</label>
             </div>
 
             <div class="booking-edit-form--actions">
@@ -61,6 +62,7 @@ import type { Booking } from '@/types/models'
 import { XMarkIcon, FolderArrowDownIcon } from '@heroicons/vue/24/solid'
 import { useBookingStore } from '@/stores/bookings'
 import { useUserStore } from '@/stores/users'
+import { useAuthStore } from '@/stores/auth'
 import { useToast } from 'vue-toastification'
 import DatabaseSearch from '@/components/utils/DatabaseSearch.vue'
 const toast = useToast()
@@ -73,6 +75,7 @@ const emit = defineEmits(['close', 'saved'])
 
 const bookingStore = useBookingStore()
 const userStore = useUserStore()
+const authStore = useAuthStore()
 
 const form = ref<{
   userId: string

@@ -17,6 +17,13 @@ export interface Poster {
   totalStock: number
   tags: Tag[]
   forSale: Boolean
+  stockInfo?: StockInfo
+}
+
+export interface StockInfo {
+  confirmed: number
+  pending: number
+  availableStock: number
 }
 
 export interface Booking {

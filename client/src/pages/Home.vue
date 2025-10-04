@@ -5,8 +5,8 @@
         <ChatBubbleLeftIcon />
         <div
           class="tag-red"
-          v-if="messageStore.message"
-          v-html="messageStore.message"
+          v-if="messageStore.message?.content"
+          v-html="messageStore.message.content"
         />
       </div>
     </div>

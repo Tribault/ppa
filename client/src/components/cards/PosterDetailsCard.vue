@@ -7,7 +7,7 @@
       <img
         :src="imgUrl.value"
         :class="{
-          greyscale: poster.availableStock == 0,
+          greyscale: posterInfo.availableStock == 0,
         }"
         alt=""
       />
@@ -16,24 +16,24 @@
       <div>
         <ul>
           <li class="poster-details-card-data--title title">
-            {{ poster.title }}
+            {{ posterInfo.title }}
             <button v-if="auth.isAdmin" class="btn-red-bg" @click="isEditing = true">
               <pencil-icon />
             </button>
           </li>
           <li class="poster-details-card-data--tags">
-            <span v-for="t in poster.tags" class="tag-white">{{ t.name }}</span>
+            <span v-for="t in posterInfo.tags" class="tag-white">{{ t.name }}</span>
           </li>
-          <li class="poster-details-card-data--price"><b>Prix :</b> {{ poster.price }} €</li>
-          <li class="poster-details-card-data--size"><b>Taille :</b> {{ poster.size }}</li>
+          <li class="poster-details-card-data--price"><b>Prix :</b> {{ posterInfo.price }} €</li>
+          <li class="poster-details-card-data--size"><b>Taille :</b> {{ posterInfo.size }}</li>
           <li v-if="auth.isAdmin" class="poster-details-card-data--stock">
-            <b>Stock d'affiches :</b> {{ poster.totalStock }}
+            <b>Stock d'affiches :</b> {{ posterInfo.totalStock }}
           </li>
           <li v-else class="poster-details-card-data--stock">
-            <b>Affiches disponibles :</b> {{ poster.availableStock }}
+            <b>Affiches disponibles :</b> {{ posterInfo.availableStock }}
           </li>
           <li class="poster-details-card-data--note">
-            <b>Commentaire :</b> <i>{{ poster.note }}</i>
+            <b>Commentaire :</b> <i>{{ posterInfo.note }}</i>
           </li>
         </ul>
       </div>
@@ -45,7 +45,7 @@
             <button
               class="btn-white-bg"
               @click="increment"
-              :disabled="quantity >= poster.availableStock"
+              :disabled="quantity >= posterInfo.availableStock"
             >
               <PlusIcon class="icon" />
             </button>
@@ -53,7 +53,7 @@
               <MinusIcon class="icon" />
             </button>
           </li>
-          <li><b>Prix total</b> : {{ quantity * poster.price }} €</li>
+          <li><b>Prix total</b> : {{ quantity * posterInfo.price }} €</li>
           <li><button class="btn-white-bg" @click="bookPoster">Réserver</button></li>
         </ul>
       </div>
@@ -94,16 +94,24 @@ const messageStore = useMessageStore()
 
 const quantity = ref<number>(1)
 const isEditing = ref<boolean>(false)
-const imgUrl = computed(() => ref<string>(import.meta.env.VITE_IMG_URL + props.poster.image))
 
-const canBook = computed(() => auth.user?.role === 'user' && props.poster.availableStock > 0 && messageStore.message?.bookingAllowed)
+const posterInfo = computed(() => {
+  return posterStore.poster ?? props.poster
+})
 
-function refreshData() {
-  posterStore.fetchPoster(props.poster._id)
+
+const imgUrl = computed(() => ref<string>(import.meta.env.VITE_IMG_URL + posterInfo.value.image))
+
+const canBook = computed(() => auth.user?.role === 'user' && posterInfo.value.availableStock > 0 && messageStore.message?.bookingAllowed)
+
+
+
+async function refreshData() {
+  await posterStore.fetchPoster(posterInfo.value._id)
 }
 
 const increment = () => {
-  if (quantity.value < props.poster.availableStock) {
+  if (quantity.value < posterInfo.value.availableStock) {
     quantity.value++
   }
 }
@@ -122,17 +130,20 @@ const bookPoster = async () => {
         userId: auth.user._id,
         quantity: quantity.value,
       }
-      bookingStore.createBooking(formData)
+      await bookingStore.createBooking(formData)
+      toast.success('Réservation confirmée !')
     }
     quantity.value = 1
-    toast.success('Réservation confirmée !')
+    await refreshData()
     emit('updated')
   } catch (err: any) {
+    await refreshData()
     toast.error(err.response?.data?.error || 'Erreur durant la réservation.')
   }
 }
 
 onMounted(()=>{
+  posterStore.poster = props.poster
   messageStore.fetchMessage()
 })
 </script>

@@ -21,7 +21,7 @@
 
             <div class="message-edit-preview">
               <h3>Prévisualisation</h3>
-              <div v-html="renderMarkdown(draft)" />
+              <div v-html="draft" />
             </div>
 
             <div class="message-edit-form-actions">
@@ -38,9 +38,10 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { marked } from 'marked'
 import { useMessageStore } from '@/stores/messages'
 import { XMarkIcon, FolderArrowDownIcon } from '@heroicons/vue/24/solid'
+import { useToast } from 'vue-toastification'
+const toast = useToast()
 
 const props = defineProps<{
   visible: boolean
@@ -49,25 +50,29 @@ const props = defineProps<{
 const emit = defineEmits(['close', 'saved'])
 
 const messageStore = useMessageStore()
-const draft = ref(messageStore.message || '')
+const draft = ref('')
 
-function renderMarkdown(md: string) {
-  return marked(md)
-}
 
 function close() {
   emit('close')
 }
 
 async function submit() {
+  try{
   await messageStore.updateMessage(draft.value)
+   toast.success('Erreur durant la réservation.')
   emit('saved')
+  }catch (err: any) {
+    toast.error(err.response?.data?.error || 'Erreur durant la réservation.')
+  }
   close()
 }
 
 onMounted(async () => {
   await messageStore.fetchMessage()
-  draft.value = messageStore.message
+  console.log(messageStore.message)
+  draft.value = messageStore.message?.content || ''
+
 })
 </script>
 

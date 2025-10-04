@@ -3,33 +3,50 @@ const Booking = require('../models/Booking')
 const Sale = require('../models/Sale')
 const User = require('../models/User')
 
-exports.createBooking =  async (req, res) => {
-  const { posterId, quantity, userId } = req.body;
+exports.createOrUpdateBooking = async (req, res) => {
+  try {
+    const { posterId, quantity, userId } = req.body;
 
-  const poster = await Poster.findById(posterId);
-  if (!poster) return res.status(404).json({ error: 'Affiche introuvable' });
+    const poster = await Poster.findById(posterId);
+    if (!poster) return res.status(404).json({ error: 'Affiche introuvable' });
 
-  const user = await User.findById(userId);
-  if (!user) return res.status(404).json({ error: 'Client introuvable' });
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ error: 'Client introuvable' });
 
-  const existing = await Booking.findOne({ user, poster })
-    if (existing) {
-      return res.status(400).json({ message: "La réservation existe déjà." })
+    let booking = await Booking.findOne({ user: userId, poster: posterId });
+
+    if (booking) {
+      const newQuantity = booking.quantity + quantity;
+
+      if (newQuantity > poster.totalStock) {
+        return res.status(400).json({ error: 'Pas assez de stock pour réserver.' });
+      }
+
+      booking.quantity = newQuantity;
+      await booking.save();
+
+      return res.status(200).json(booking);
+    } else {
+      if (quantity > poster.totalStock) {
+        return res.status(400).json({ error: 'Pas assez de stock pour réserver.' });
+      }
+
+      booking = new Booking({
+        user: user._id,
+        poster: poster._id,
+        quantity,
+        priceAtBooking: poster.price
+      });
+
+      await booking.save();
+      return res.status(201).json(booking);
     }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Erreur serveur.' });
+  }
+};
 
-  if (quantity > poster.totalStock)
-    return res.status(400).json({ error: 'Pas assez de stock pour réserver.' });
-
-  const booking = new Booking({
-    user: user._id,
-    poster: poster._id,
-    quantity,
-    priceAtBooking: poster.price
-  });
-
-  await booking.save();
-  res.status(201).json(booking);
-}
 
 exports.updateBooking = async (req, res) => {
   try {

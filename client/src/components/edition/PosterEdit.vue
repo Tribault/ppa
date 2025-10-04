@@ -54,6 +54,7 @@
                 type="number"
                 placeholder="Stock"
                 class="poster-edit-input"
+                :min="posterToEdit?.availableStock"
               />
             </div>
             <div class="poster-edit-form--row">

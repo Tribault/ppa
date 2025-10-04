@@ -8,12 +8,12 @@ export const useMessageStore = defineStore('message', () => {
 
   async function fetchMessage() {
     const res = await api.get('/messages')
-    message.value = res.data?.content || ''
+    message.value = res.data
   }
 
   async function updateMessage(content: string) {
     const res = await api.post('/messages', { content })
-    message.value = res.data.content
+    message.value = res.data
   }
 
   async function toggleBooking() {
