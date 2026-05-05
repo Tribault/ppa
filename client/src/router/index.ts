@@ -17,12 +17,12 @@ import ResendVerification from '@/pages/auth/ResendVerification.vue'
 const routes = [
   { path: '/', component: Home },
   { path: '/posters/:id', name: 'posters', component: PosterDetails, props: true },
-  { path: '/login', component: Login },
+  { path: '/login', name: 'login', component: Login },
   { path: '/signup', component: Signup },
-  { path: '/admin', component: Admin },
-  { path: '/admin/new', component: PosterForm },
-  { path: '/account', component: Account },
-  { path: '/admin/edit/:id', component: PosterForm, props: true },
+  { path: '/admin', component: Admin, meta: { requiresAuth: true, roles: ['admin'] } },
+  { path: '/admin/new', component: PosterForm, meta: { requiresAuth: true, roles: ['admin'] } },
+  { path: '/admin/edit/:id', component: PosterForm, props: true, meta: { requiresAuth: true, roles: ['admin'] } },
+  { path: '/account', component: Account, meta: { requiresAuth: true, roles: ['user'] } },
   { path: '/forgot-password', component: ForgotPassword },
   { path: '/reset-password', component: ResetPassword },
   { path: '/verify-email', component: EmailVerification },
@@ -43,6 +43,15 @@ router.beforeEach(async (to, from, next) => {
     } catch (err) {
       console.error('Failed to restore user', err)
     }
+  }
+
+  if (to.meta.requiresAuth && !auth.user) {
+    return next({ name: 'login' })
+  }
+
+  const roles = to.meta.roles as string[] | undefined
+  if (roles && auth.user && !roles.includes(auth.user.role)) {
+    return next(auth.user.role === 'admin' ? '/admin' : '/')
   }
 
   next()

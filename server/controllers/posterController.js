@@ -1,4 +1,5 @@
 const Poster = require('../models/Poster')
+const Booking = require('../models/Booking')
 const fs = require('fs')
 const path = require('path')
 const { computeStockInfo } = require('../utils/stock')
@@ -50,7 +51,7 @@ exports.getPoster = async (req, res) => {
 
     // Compute stock info
     const confirmedBookings = await Booking.aggregate([
-      { $match: { poster: poster._id, status: 'confirmed' } },
+      { $match: { poster: poster._id, status: 'validated' } },
       { $group: { _id: null, total: { $sum: '$quantity' } } }
     ])
 

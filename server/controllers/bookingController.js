@@ -41,10 +41,9 @@ exports.createOrUpdateBooking = async (req, res) => {
       // handle sale creation/deletion after save
       if (status) {
         if (status === 'validated') {
-          const existingSale = await Sale.findOne({ booking: booking._id })
+          const existingSale = await Sale.findOne({ user: booking.user, poster: booking.poster })
           if (!existingSale) {
             await Sale.create({
-              booking: booking._id,
               quantity: booking.quantity,
               poster: booking.poster,
               user: booking.user,
@@ -53,7 +52,7 @@ exports.createOrUpdateBooking = async (req, res) => {
             })
           }
         } else if (status === 'pending') {
-          await Sale.deleteOne({ booking: booking._id })
+          await Sale.deleteOne({ user: booking.user, poster: booking.poster })
         }
       }
 
@@ -83,7 +82,6 @@ exports.createOrUpdateBooking = async (req, res) => {
       // if the booking is created already validated, create a sale
       if (booking.status === 'validated') {
         await Sale.create({
-          booking: booking._id,
           quantity: booking.quantity,
           poster: booking.poster,
           user: booking.user,
@@ -114,7 +112,7 @@ exports.getBookings = async (req, res) => {
 
   let filter = {}
 
-    if (!req.user.role == 'admin') {
+    if (req.user.role !== 'admin') {
       filter.user = req.user._id
     } else if (!req.query.all) {
       filter.user = req.user._id

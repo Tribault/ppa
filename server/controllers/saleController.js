@@ -1,5 +1,5 @@
 const converter = require('json-2-csv');
-
+const mongoose = require('mongoose')
 const Sale = require('../models/Sale')
 
 exports.getSales = async(req, res) => {
@@ -60,13 +60,12 @@ exports.exportSalesCSV = async (req, res) => {
     const filter = {};
 
     if (startDate || endDate) {
-      filter.createdAt = {};
-      if (startDate) filter.createdAt.$gte = new Date(startDate);
+      filter.validatedAt = {};
+      if (startDate) filter.validatedAt.$gte = new Date(startDate);
       if (endDate) {
-        // Add 1 day to include endDate fully
         const end = new Date(endDate);
         end.setDate(end.getDate() + 1);
-        filter.createdAt.$lte = end;
+        filter.validatedAt.$lte = end;
       }
     }
 

@@ -4,12 +4,15 @@
       <ArrowUturnLeftIcon />
     </router-link>
     <div class="poster-details-card-image">
-      <img
+      <img v-if="posterInfo.image"
         :src="imgUrl.value"
         :class="{
-          greyscale: posterInfo.availableStock == 0,
+          greyscale: posterInfo.stockInfo.availableStock == 0,
         }"
         alt=""
+      />
+      <img v-else
+      src = "@/assets/404.svg"
       />
     </div>
     <div class="poster-details-card-data">
@@ -30,12 +33,15 @@
             <b>Stock d'affiches :</b> {{ posterInfo.totalStock }}
           </li>
           <li v-else class="poster-details-card-data--stock">
-            <b>Affiches disponibles :</b> {{ posterInfo.availableStock }}
+            <b>Affiches disponibles :</b> {{ posterInfo.stockInfo.availableStock }}
           </li>
           <li class="poster-details-card-data--note">
             <b>Commentaire :</b> <i>{{ posterInfo.note }}</i>
           </li>
         </ul>
+      </div>
+      <div class="poster-details-card-admin" v-if="auth.isAdmin">
+        <router-link to="/admin" class="btn-red-bg">Tableau de bord admin →</router-link>
       </div>
       <div class="poster-details-card-booking" v-if="canBook">
         <ul>
@@ -45,7 +51,7 @@
             <button
               class="btn-white-bg"
               @click="increment"
-              :disabled="quantity >= posterInfo.availableStock"
+              :disabled="quantity >= posterInfo.stockInfo.availableStock"
             >
               <PlusIcon class="icon" />
             </button>
@@ -102,7 +108,7 @@ const posterInfo = computed(() => {
 
 const imgUrl = computed(() => ref<string>(import.meta.env.VITE_IMG_URL + posterInfo.value.image))
 
-const canBook = computed(() => auth.user?.role === 'user' && posterInfo.value.availableStock > 0 && messageStore.message?.bookingAllowed)
+const canBook = computed(() => auth.user?.role === 'user' && posterInfo.value.stockInfo.availableStock > 0 && messageStore.message?.bookingAllowed)
 
 
 
@@ -111,7 +117,7 @@ async function refreshData() {
 }
 
 const increment = () => {
-  if (quantity.value < posterInfo.value.availableStock) {
+  if (quantity.value < posterInfo.value.stockInfo.availableStock) {
     quantity.value++
   }
 }
@@ -209,6 +215,15 @@ onMounted(()=>{
       padding: 0.8rem 0;
     }
   }
+}
+
+.poster-details-card-admin {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background-color: white;
 }
 
 .poster-details-card-booking {

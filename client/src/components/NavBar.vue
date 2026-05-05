@@ -4,8 +4,7 @@
       <router-link class="navbar-home__link" to="/"><img src="@/assets/logo.png" /></router-link>
     </div>
     <div v-if="!auth.user" class="navbar-options">
-      <router-link to="/login">S'identifier</router-link>
-      <router-link to="/signup">S'inscrire</router-link>
+      <router-link to="/login">Identification / Inscription</router-link>
     </div>
     <div v-else class="navbar-options">
       <router-link v-if="auth.user.role === 'admin' && $route.path !== '/admin'" to="/admin"
@@ -13,7 +12,7 @@
       >
       <router-link v-if="auth.user.role === 'user'" to="/account">Mes réservations</router-link>
       <div class="navbar-options__user">
-        <span class="navbar-home__logout--user">Compte : {{ auth.user.username }}</span>
+        <span class="navbar-home__logout--user">{{ auth.user.email }}</span>
         <button @click="logout" class="navbar-home__logout" title="se déconnecter">
           [Déconnexion]
         </button>

@@ -13,7 +13,6 @@ export interface Poster {
   size: string
   image: string
   note: string
-  availableStock: number
   totalStock: number
   tags: Tag[]
   forSale: Boolean

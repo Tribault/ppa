@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import type { Poster } from '@/types/models'
+import type { Poster, StockInfo } from '@/types/models'
 import { ref, computed } from 'vue'
 import api from '@/utils/axios'
 import debounce from 'lodash.debounce'

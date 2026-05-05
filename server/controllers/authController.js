@@ -4,7 +4,6 @@ const crypto = require('crypto')
 const sendEmail = require('../utils/mailer')
 
 const generateToken = (u) => {
-  console.log("riole token", u)
     return jwt.sign({id: u._id, role: u.role}, process.env.JWT_SECRET, {expiresIn: '1d'})
 }
 
@@ -50,7 +49,6 @@ exports.verifyEmail = async (req, res) => {
 
   try {
     const hashedToken = crypto.createHash('sha256').update(token).digest('hex')
-    console.log("test HT", hashedToken)
     const user = await User.findOne({
       verificationToken: hashedToken,
       verificationTokenExpires: { $gt: Date.now() },
@@ -74,7 +72,6 @@ exports.verifyEmail = async (req, res) => {
 exports.login = async (req, res) => {
    const { email, password } = req.body
   const user = await User.findOne({ email })
-  console.log("user", user)
   if (!user || !(await user.comparePassword(password))) {
     return res.status(401).json({ message: 'Invalid credentials' })
   }
@@ -108,7 +105,8 @@ exports.forgotPassword = async (req, res) => {
     await user.save()
 
     // Build reset link
-    const resetLink = `http://localhost:5173/reset-password?token=${token}`
+    const FRONT_URL = process.env.FRONTEND_URL || 'http://localhost:5173'
+    const resetLink = `${FRONT_URL}/reset-password?token=${token}`
 
      await sendEmail(
       user.email,
@@ -149,7 +147,7 @@ exports.resendEmail = async (req, res) => {
     user.verificationTokenExpires = Date.now() + 1000 * 60 * 60 * 2 // 1 hour
     await user.save()
 
-    const verifyLink = `http://localhost:5173/verify-email?token=${token}`
+    const verifyLink = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/verify-email?token=${token}`
 
     await sendEmail(
       user.email,

@@ -28,6 +28,7 @@ onMounted(async () => {
 
 <style lang="scss" scoped>
 .poster-details-error {
+  margin-top: 2rem;
   display: flex;
   flex-direction: column;
   width: 100%;

@@ -17,7 +17,7 @@
     :visible="showModal"
     :bookingToEdit="editingBooking"
     @close="closeModal"
-    @saved="bookingStore.fetchBookings"
+    @saved="refreshBookings"
   />
     </div>
   </div>
@@ -27,11 +27,13 @@
 import { ref, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useBookingStore } from '@/stores/bookings'
+import { usePosterStore } from '@/stores/posters'
 import BookingEdit from '@/components/edition/BookingEdit.vue'
 import AdminBookingTable from '@/components/tables/BookingTable.vue'
 
 const auth = useAuthStore()
 const bookingStore = useBookingStore()
+const posterStore = usePosterStore()
 const loading = ref(true)
 const editingBooking = ref(null)
 
@@ -49,6 +51,11 @@ const openEditBooking = (poster: any) => {
 
 function deleteBooking(bookingId: string) {
   bookingStore.deleteBooking(bookingId)
+}
+
+async function refreshBookings(){
+  await bookingStore.fetchBookings({ all: false })
+  await posterStore.fetchPosters({forSale: true})
 }
 
 const closeModal = () => {

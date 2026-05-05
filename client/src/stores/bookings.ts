@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import type { Booking, BookingPayload } from '@/types/models'
+import { usePosterStore } from '@/stores/posters'
 import debounce from 'lodash.debounce'
 import api from '@/utils/axios'
 import { ref, computed } from 'vue'

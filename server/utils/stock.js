@@ -10,7 +10,7 @@ const Booking = require('../models/Booking')
 async function computeStockInfo(posterId, totalStock) {
   const [confirmedAgg, pendingAgg] = await Promise.all([
     Booking.aggregate([
-      { $match: { poster: posterId, status: 'confirmed' } },
+      { $match: { poster: posterId, status: 'validated' } },
       { $group: { _id: null, total: { $sum: '$quantity' } } }
     ]),
     Booking.aggregate([

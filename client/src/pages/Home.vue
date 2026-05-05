@@ -250,5 +250,9 @@ watch(view, (newView) => {
     flex-wrap: wrap;
     justify-content: center;
   }
+  .poster-card-grid{
+
+  margin: 0 auto;
+  }
 }
 </style>

@@ -175,10 +175,14 @@ function handleFileUpload(event: Event) {
   }
 }
 
+function capitalizeTitle(string: String){
+  return string.charAt(0).toLocaleUpperCase() + string.slice(1)
+}
+
 async function submit() {
   try {
     const formData = new FormData()
-    formData.append('title', form.value.title)
+    formData.append('title', capitalizeTitle(form.value.title))
     formData.append('size', form.value.size)
     formData.append('price', form.value.price.toString())
     formData.append('note', form.value.note)
@@ -192,10 +196,10 @@ async function submit() {
 
     if (props.posterToEdit?._id) {
       await store.updatePoster(props.posterToEdit._id, formData)
-      toast.success('Poster updated ✅')
+      toast.success('Affiche mise à jour ✅')
     } else {
       await store.createPoster(formData)
-      toast.success('Poster created 🎉')
+      toast.success('Affiche créée 🎉')
     }
 
     emit('saved')
