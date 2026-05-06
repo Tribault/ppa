@@ -25,7 +25,7 @@ exports.getSales = async(req, res) => {
     .populate('user')
     .populate('validatedBy')
     .populate('poster')
-      .sort({ title: 1 })
+      .sort({ validatedAt: -1 })
       .skip(skip)
       .limit(limit),
       Sale.countDocuments(filter)
