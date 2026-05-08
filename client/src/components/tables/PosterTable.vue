@@ -3,13 +3,13 @@
     <table class="sticky-table">
       <thead>
         <tr>
-          <th class="sticky-col">Titre</th>
-          <th>Taille</th>
-          <th>Prix</th>
-          <th>Stock</th>
-          <th>Etiquettes</th>
-          <th>Commentaire</th>
-          <th>Actions</th>
+          <th class="sticky-col">{{ $t('table.poster.title') }}</th>
+          <th>{{ $t('table.poster.size') }}</th>
+          <th>{{ $t('table.poster.price') }}</th>
+          <th>{{ $t('table.poster.stock') }}</th>
+          <th>{{ $t('table.poster.tags') }}</th>
+          <th>{{ $t('table.poster.comment') }}</th>
+          <th>{{ $t('table.poster.actions') }}</th>
         </tr>
       </thead>
       <tbody>
@@ -30,7 +30,7 @@
     </table>
   </div>
   <confirm-modal
-    message="Supprimer l'affiche."
+    :message="$t('table.poster.deleteConfirm')"
     :visible="showDeleteModal"
     @cancel="showDeleteModal = false"
     @confirm="closeDeletionModal"

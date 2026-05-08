@@ -3,13 +3,13 @@
     <table class="sticky-table">
       <thead>
         <tr>
-          <th class="sticky-col">E-mail</th>
-          <th>Film</th>
-          <th>Quantité</th>
-          <th>Prix total</th>
-          <th>Date de réservation</th>
-          <th>Status</th>
-          <th>Actions</th>
+          <th class="sticky-col">{{ $t('table.booking.email') }}</th>
+          <th>{{ $t('table.booking.poster') }}</th>
+          <th>{{ $t('table.booking.quantity') }}</th>
+          <th>{{ $t('table.booking.totalPrice') }}</th>
+          <th>{{ $t('table.booking.date') }}</th>
+          <th>{{ $t('table.booking.status') }}</th>
+          <th>{{ $t('table.booking.actions') }}</th>
         </tr>
       </thead>
       <tbody>
@@ -29,7 +29,7 @@
     </table>
   </div>
   <confirm-modal
-    message="Supprimer la réservation."
+    :message="$t('table.booking.deleteConfirm')"
     :visible="showDeleteModal"
     @cancel="showDeleteModal = false"
     @confirm="closeDeletionModal"

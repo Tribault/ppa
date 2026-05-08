@@ -4,7 +4,7 @@
       class="database-search-input"
       type="text"
       v-model="query"
-      :placeholder="searchType == 'user' ? 'Email du client' : 'Poster'"
+      :placeholder="searchType == 'user' ? $t('search.clientEmail') : $t('search.poster')"
       @input="searchDebounce"
       @keydown.down.prevent="moveHighlight(1)"
       @keydown.up.prevent="moveHighlight(-1)"

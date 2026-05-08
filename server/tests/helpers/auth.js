@@ -6,7 +6,6 @@ const User = require('../../models/User')
 // and instead seed the DB directly — this is faster and deterministic.
 async function createUser(overrides = {}) {
   return User.create({
-    username: 'testuser',
     email: 'user@test.com',
     password: 'password123',
     role: 'user',

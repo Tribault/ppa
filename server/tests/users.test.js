@@ -21,7 +21,7 @@ describe('Users', () => {
       const res = await request(app)
         .post('/api/users')
         .set('Authorization', `Bearer ${adminToken}`)
-        .send({ username: 'nouveau', email: 'nouveau@test.com', password: 'pass123', role: 'user' })
+        .send({ email: 'nouveau@test.com', password: 'pass123', role: 'user' })
       expect(res.status).toBe(201)
       expect(res.body.user.email).toBe('nouveau@test.com')
       // Password must never be returned in the response
@@ -32,7 +32,7 @@ describe('Users', () => {
       const res = await request(app)
         .post('/api/users')
         .set('Authorization', `Bearer ${adminToken}`)
-        .send({ username: 'dup', email: 'user@test.com', password: 'pass123' })
+        .send({ email: 'user@test.com', password: 'pass123' })
       expect(res.status).toBe(400)
     })
 
@@ -40,7 +40,7 @@ describe('Users', () => {
       const res = await request(app)
         .post('/api/users')
         .set('Authorization', `Bearer ${userToken}`)
-        .send({ username: 'x', email: 'x@test.com', password: 'pass123' })
+        .send({ email: 'x@test.com', password: 'pass123' })
       expect(res.status).toBe(403)
     })
   })
@@ -99,22 +99,22 @@ describe('Users', () => {
   // ── UPDATE ─────────────────────────────────────────────────────────────────
 
   describe('PUT /api/users/:id', () => {
-    it('user can update their own username', async () => {
+    it('user can update their own email', async () => {
       const res = await request(app)
         .put(`/api/users/${user._id}`)
         .set('Authorization', `Bearer ${userToken}`)
-        .send({ username: 'nouveau_nom' })
+        .send({ email: 'updated@test.com' })
       expect(res.status).toBe(200)
-      expect(res.body.user.username).toBe('nouveau_nom')
+      expect(res.body.user.email).toBe('updated@test.com')
     })
 
     it('admin can update any user', async () => {
       const res = await request(app)
         .put(`/api/users/${user._id}`)
         .set('Authorization', `Bearer ${adminToken}`)
-        .send({ username: 'mis_a_jour_par_admin' })
+        .send({ email: 'admin-updated@test.com' })
       expect(res.status).toBe(200)
-      expect(res.body.user.username).toBe('mis_a_jour_par_admin')
+      expect(res.body.user.email).toBe('admin-updated@test.com')
     })
 
     it('hashes the new password when updated', async () => {
@@ -133,7 +133,7 @@ describe('Users', () => {
       const res = await request(app)
         .put(`/api/users/${fakeId}`)
         .set('Authorization', `Bearer ${adminToken}`)
-        .send({ username: 'x' })
+        .send({ email: 'nonexistent@test.com' })
       expect(res.status).toBe(404)
     })
   })

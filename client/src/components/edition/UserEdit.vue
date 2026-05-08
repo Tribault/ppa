@@ -6,39 +6,30 @@
           <button class="user-edit-close-btn btn-red-bg" @click="close"><x-mark-icon /></button>
 
           <h2 class="user-edit-title">
-            {{ `Modification d'utilisateur` }}
+            {{ $t('form.user.editTitle') }}
           </h2>
 
           <form @submit.prevent="submit" class="user-edit-form">
             <div class="user-edit-form--row">
-              <b>Identifiant</b>
-              <input
-                v-model="form.username"
-                type="text"
-                placeholder="Identifiant"
-                class="user-edit-input"
-              />
-            </div>
-            <div class="user-edit-form--row">
-              <b>E-Mail</b>
+              <b>{{ $t('form.user.emailLabel') }}</b>
               <input
                 v-model="form.email"
                 type="text"
-                placeholder="Identifiant"
+                :placeholder="$t('form.user.emailLabel')"
                 class="user-edit-input"
               />
             </div>
             <div class="user-edit-form--row">
-              <b>Role</b>
+              <b>{{ $t('form.user.roleLabel') }}</b>
               <select v-model="form.role" class="user-edit-input">
-                <option value="admin">Administrateur</option>
-                <option value="user">Utilisateur</option>
+                <option value="admin">{{ $t('form.user.roleAdmin') }}</option>
+                <option value="user">{{ $t('form.user.roleUser') }}</option>
               </select>
             </div>
 
             <div class="user-edit-form--actions">
               <button type="submit" class="btn-red-bg">
-                <b>Sauvegarder</b> <folder-arrow-down-icon />
+                <b>{{ $t('form.user.save') }}</b> <folder-arrow-down-icon />
               </button>
             </div>
           </form>
@@ -54,7 +45,9 @@ import type { User } from '@/types/models'
 import { XMarkIcon, FolderArrowDownIcon } from '@heroicons/vue/24/solid'
 import { useUserStore } from '@/stores/users'
 import { useToast } from 'vue-toastification'
+import { useI18n } from 'vue-i18n'
 const toast = useToast()
+const { t } = useI18n()
 
 const props = defineProps<{
   visible: boolean
@@ -64,11 +57,9 @@ const emit = defineEmits(['close', 'saved'])
 const userStore = useUserStore()
 
 const form = ref<{
-  username: string
   email: string
   role: 'user' | 'admin'
 }>({
-  username: '',
   email: '',
   role: 'user',
 })
@@ -82,12 +73,11 @@ watch(
   (val) => {
     if (val) {
       form.value = {
-        username: val.username,
         email: val.email,
         role: val.role,
       }
     } else {
-      form.value = { username: '', email: '', role: 'user' }
+      form.value = { email: '', role: 'user' }
     }
   },
   { immediate: true },
@@ -101,13 +91,13 @@ async function submit() {
   try {
     if (props.userToEdit) {
       await userStore.updateUser(props.userToEdit._id, form.value)
-      toast.success('Utilisateur mis à jour ✅')
+      toast.success(t('form.user.updateSuccess'))
       emit('saved')
       close()
     }
   } catch (err) {
     console.error(err)
-    toast.error('Erreur durant la mise à jour ❌')
+    toast.error(t('form.user.updateError'))
   }
 }
 </script>

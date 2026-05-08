@@ -1,10 +1,10 @@
 <template>
   <div class="forgot-password">
-    <h2>Mot de passe oublié ?</h2>
+    <h2>{{ $t('auth.forgotPassword.title') }}</h2>
     <form @submit.prevent="submit">
-      <input v-model="email" type="email" placeholder="Entrez votre e-mail" required />
+      <input v-model="email" type="email" :placeholder="$t('auth.forgotPassword.emailPlaceholder')" required />
       <button type="submit" class="btn-red-bg" :disabled="loading">
-        {{ loading ? 'Envoi en cours...' : 'Envoyer le lien' }}
+        {{ loading ? $t('auth.forgotPassword.sending') : $t('auth.forgotPassword.submit') }}
       </button>
     </form>
     <p v-if="message">{{ message }}</p>

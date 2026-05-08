@@ -10,12 +10,12 @@ const generateToken = (u) => {
 
 exports.signup = async (req, res) => {
    try {
-     const { username, email, password } = req.body
+     const { email, password } = req.body
 
     const existing = await User.findOne({ email })
     if (existing) return res.status(400).json({ message: 'Email already in use' })
 
-    const user = new User({ username, email, password })
+    const user = new User({ email, password })
 
     // generate raw token, store its hashed form on user
     const token = crypto.randomBytes(32).toString('hex')
@@ -31,7 +31,7 @@ exports.signup = async (req, res) => {
     await sendEmail(
       user.email,
       'Verify your email',
-      `<p>Hello ${user.username},</p>
+      `<p>Hello ${user.email},</p>
        <p>Click the link to verify your email:</p>
        <a href="${verifyLink}">${verifyLink}</a>
        <p>This link expires in 24 hours.</p>`
@@ -112,7 +112,7 @@ exports.forgotPassword = async (req, res) => {
       user.email,
       'Password Reset Request',
       `
-        <p>Hello ${user.username},</p>
+        <p>Hello ${user.email},</p>
         <p>You requested a password reset. Click below to reset your password:</p>
         <a href="${resetLink}">${resetLink}</a>
         <p>This link expires in 15 minutes.</p>
@@ -153,7 +153,7 @@ exports.resendEmail = async (req, res) => {
       user.email,
       'Verify Your Email',
       `
-        <p>Hello ${user.username},</p>
+        <p>Hello ${user.email},</p>
         <p>Click below to verify your email:</p>
         <a href="${verifyLink}">${verifyLink}</a>
         <p>This link will expire in 1 hour.</p>

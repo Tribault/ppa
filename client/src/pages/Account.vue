@@ -1,10 +1,10 @@
 <template class="account">
   <div class="account-container">
-    <h1 class="account-container-title">Mes réservations</h1>
+    <h1 class="account-container-title">{{ $t('account.title') }}</h1>
 
-    <div v-if="loading">Chargement en cours...</div>
+    <div v-if="loading">{{ $t('account.loading') }}</div>
     <div v-else-if="bookingStore.bookings.length === 0">
-      Vous n'avez pas encore de réservations.
+      {{ $t('account.noBookings') }}
     </div>
 
     <div v-else>

@@ -57,7 +57,7 @@ exports.createOrUpdateBooking = async (req, res) => {
       }
 
       // populate then attach fresh stockInfo
-      await booking.populate([{ path: 'poster' }, { path: 'user', select: 'username email' }])
+      await booking.populate([{ path: 'poster' }, { path: 'user', select: 'email' }])
       const result = booking.toObject()
       result.poster.stockInfo = await computeStockInfo(poster._id, poster.totalStock)
 
@@ -91,7 +91,7 @@ exports.createOrUpdateBooking = async (req, res) => {
       }
 
       // populate then attach fresh stockInfo
-      await booking.populate([{ path: 'poster' }, { path: 'user', select: 'username email' }])
+      await booking.populate([{ path: 'poster' }, { path: 'user', select: 'email' }])
       const result = booking.toObject()
       result.poster.stockInfo = await computeStockInfo(poster._id, poster.totalStock)
 

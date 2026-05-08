@@ -2,11 +2,11 @@
   <Transition name="modal-fade">
     <div v-if="visible" class="confirm-modal">
       <div class="confirm-modal-box">
-        <h2>Êtes-vous sûr de vouloir faire cette action ?</h2>
+        <h2>{{ $t('modal.confirm') }}</h2>
         <p>{{ message }}</p>
         <div class="confirm-modal-actions">
-          <button class="btn-white-bg" @click="cancel">Annuler</button>
-          <button class="btn-white-bg" @click="confirm">Oui</button>
+          <button class="btn-white-bg" @click="cancel">{{ $t('modal.cancel') }}</button>
+          <button class="btn-white-bg" @click="confirm">{{ $t('modal.yes') }}</button>
         </div>
       </div>
     </div>

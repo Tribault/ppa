@@ -3,16 +3,14 @@
     <table class="sticky-table">
       <thead>
         <tr>
-          <th class="sticky-col">E-mail</th>
-          <th>Identifiant</th>
-          <th>Role</th>
-          <th>Actions</th>
+          <th class="sticky-col">{{ $t('table.user.email') }}</th>
+          <th>{{ $t('table.user.role') }}</th>
+          <th>{{ $t('table.user.actions') }}</th>
         </tr>
       </thead>
       <tbody>
         <tr v-for="u in users">
           <th scope="row" class="sticky-col">{{ u.email }}</th>
-          <td>{{ u.username }}</td>
           <td>{{ u.role }}</td>
           <td class="admin-booking-table--actions">
             <span v-if="isAuthorized(u._id)">
@@ -25,7 +23,7 @@
     </table>
   </div>
   <confirm-modal
-    message="Supprimer l'utilisateur."
+    :message="$t('table.user.deleteConfirm')"
     :visible="showDeleteModal"
     @cancel="showDeleteModal = false"
     @confirm="closeDeletionModal"

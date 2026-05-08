@@ -6,7 +6,7 @@
           <button class="poster-edit-close-btn btn-red-bg" @click="close"><x-mark-icon /></button>
 
           <h2 class="poster-edit-title">
-            {{ posterToEdit?._id ? `Modification d'affiche` : `Création d'affiche` }}
+            {{ posterToEdit?._id ? $t('form.poster.editTitle') : $t('form.poster.createTitle') }}
           </h2>
 
           <form @submit.prevent="submit" class="poster-edit-form">
@@ -22,57 +22,56 @@
               />
             </div>
             <div class="poster-edit-form--row">
-              <b>Titre</b>
+              <b>{{ $t('form.poster.titleLabel') }}</b>
               <input
                 v-model="form.title"
-                title="title"
-                placeholder="Title"
+                :placeholder="$t('form.poster.titlePlaceholder')"
                 class="poster-edit-input"
               />
             </div>
             <div class="poster-edit-form--row">
-              <b>Taille</b>
+              <b>{{ $t('form.poster.sizeLabel') }}</b>
               <input type="radio" id="sizeL" value="120*160 cm" v-model="form.size" />
-              <label for="sizeL">120x160 cm</label>
+              <label for="sizeL">{{ $t('form.poster.size120') }}</label>
 
               <input type="radio" id="sizeM" value="60*80 cm" v-model="form.size" />
-              <label for="sizeM">60x80 cm</label>
+              <label for="sizeM">{{ $t('form.poster.size60') }}</label>
             </div>
             <div class="poster-edit-form--row">
-              <b>Prix</b
-              ><input
+              <b>{{ $t('form.poster.priceLabel') }}</b>
+              <input
                 v-model.number="form.price"
                 type="number"
-                placeholder="Price"
+                :placeholder="$t('form.poster.pricePlaceholder')"
                 class="poster-edit-input"
               />
             </div>
             <div class="poster-edit-form--row">
-              <b>Stock</b
-              ><input
+              <b>{{ $t('form.poster.stockLabel') }}</b>
+              <input
                 v-model.number="form.totalStock"
                 type="number"
-                placeholder="Stock"
+                :placeholder="$t('form.poster.stockPlaceholder')"
                 class="poster-edit-input stock"
                 :min="posterToEdit?.stockInfo?.availableStock"
               />
               <div class="poster-edit-form--row">
-              <p class="tag-white">disponible {{posterToEdit?.stockInfo?.availableStock}}</p>
-              <p class="tag-white">réservé  {{posterToEdit?.stockInfo?.pending}}</p>
-              <p class="tag-white"> vendu {{posterToEdit?.stockInfo?.confirmed}}</p>
+              <p class="tag-white">{{ $t('form.poster.available') }} {{posterToEdit?.stockInfo?.availableStock}}</p>
+              <p class="tag-white">{{ $t('form.poster.reserved') }} {{posterToEdit?.stockInfo?.pending}}</p>
+              <p class="tag-white">{{ $t('form.poster.sold') }} {{posterToEdit?.stockInfo?.confirmed}}</p>
               </div>
             </div>
             <div class="poster-edit-form--row">
-              <b>Commentaire</b
-              ><input
+              <b>{{ $t('form.poster.commentLabel') }}</b>
+              <input
                 v-model="form.note"
                 type="text"
-                placeholder="Commentaire"
+                :placeholder="$t('form.poster.commentPlaceholder')"
                 class="poster-edit-input"
               />
             </div>
             <div class="poster-edit-form--row">
-              <b>Etiquettes</b>
+              <b>{{ $t('form.poster.tagsLabel') }}</b>
               <div class="tags">
                 <label v-for="tag in tagStore.tags" :key="tag._id">
                   <input type="checkbox" :value="tag._id" v-model="form.tags" />
@@ -81,17 +80,17 @@
               </div>
             </div>
              <div class="poster-edit-form--row">
-              <b>À vendre ?</b>
+              <b>{{ $t('form.poster.forSale') }}</b>
               <input type="radio" id="sale" value=true v-model="form.forSale" />
-              <label for="sale">Oui</label>
+              <label for="sale">{{ $t('form.poster.yes') }}</label>
 
               <input type="radio" id="noSale" value=false v-model="form.forSale" />
-              <label for="noSale">Non</label>
+              <label for="noSale">{{ $t('form.poster.no') }}</label>
             </div>
 
             <div class="poster-edit-form--actions">
               <button type="submit" class="btn-red-bg">
-                <b>Sauvegarder</b> <folder-arrow-down-icon />
+                <b>{{ $t('form.poster.save') }}</b> <folder-arrow-down-icon />
               </button>
             </div>
           </form>
@@ -108,7 +107,9 @@ import { XMarkIcon, FolderArrowDownIcon } from '@heroicons/vue/24/solid'
 import { usePosterStore } from '@/stores/posters'
 import { useTagStore } from '@/stores/tags'
 import { useToast } from 'vue-toastification'
+import { useI18n } from 'vue-i18n'
 const toast = useToast()
+const { t } = useI18n()
 
 const props = defineProps<{
   visible: boolean
@@ -196,17 +197,17 @@ async function submit() {
 
     if (props.posterToEdit?._id) {
       await store.updatePoster(props.posterToEdit._id, formData)
-      toast.success('Affiche mise à jour ✅')
+      toast.success(t('form.poster.updateSuccess'))
     } else {
       await store.createPoster(formData)
-      toast.success('Affiche créée 🎉')
+      toast.success(t('form.poster.createSuccess'))
     }
 
     emit('saved')
     close()
   } catch (err) {
     console.error(err)
-    toast.error('An error occurred ❌')
+    toast.error(t('form.poster.error'))
   }
 }
 </script>

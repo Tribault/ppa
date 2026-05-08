@@ -27,27 +27,27 @@
           <li class="poster-details-card-data--tags">
             <span v-for="t in posterInfo.tags" class="tag-white">{{ t.name }}</span>
           </li>
-          <li class="poster-details-card-data--price"><b>Prix :</b> {{ posterInfo.price }} €</li>
-          <li class="poster-details-card-data--size"><b>Taille :</b> {{ posterInfo.size }}</li>
+          <li class="poster-details-card-data--price"><b>{{ $t('posterDetails.price') }}</b> {{ posterInfo.price }} €</li>
+          <li class="poster-details-card-data--size"><b>{{ $t('posterDetails.size') }}</b> {{ posterInfo.size }}</li>
           <li v-if="auth.isAdmin" class="poster-details-card-data--stock">
-            <b>Stock d'affiches :</b> {{ posterInfo.totalStock }}
+            <b>{{ $t('posterDetails.totalStock') }}</b> {{ posterInfo.totalStock }}
           </li>
           <li v-else class="poster-details-card-data--stock">
-            <b>Affiches disponibles :</b> {{ posterInfo.stockInfo.availableStock }}
+            <b>{{ $t('posterDetails.availableStock') }}</b> {{ posterInfo.stockInfo.availableStock }}
           </li>
           <li class="poster-details-card-data--note">
-            <b>Commentaire :</b> <i>{{ posterInfo.note }}</i>
+            <b>{{ $t('posterDetails.comment') }}</b> <i>{{ posterInfo.note }}</i>
           </li>
         </ul>
       </div>
       <div class="poster-details-card-admin" v-if="auth.isAdmin">
-        <router-link to="/admin" class="btn-red-bg">Tableau de bord admin →</router-link>
+        <router-link to="/admin" class="btn-red-bg">{{ $t('posterDetails.adminDashboard') }}</router-link>
       </div>
       <div class="poster-details-card-booking" v-if="canBook">
         <ul>
-          <li class="title">Réserver l'affiche</li>
+          <li class="title">{{ $t('posterDetails.bookTitle') }}</li>
           <li class="poster-details-card-booking--info">
-            <span><b>Nombre d'affiches :</b> {{ quantity }}</span>
+            <span><b>{{ $t('posterDetails.quantityLabel') }}</b> {{ quantity }}</span>
             <button
               class="btn-white-bg"
               @click="increment"
@@ -59,8 +59,8 @@
               <MinusIcon class="icon" />
             </button>
           </li>
-          <li><b>Prix total</b> : {{ quantity * posterInfo.price }} €</li>
-          <li><button class="btn-white-bg" @click="bookPoster">Réserver</button></li>
+          <li><b>{{ $t('posterDetails.totalPrice') }}</b> : {{ quantity * posterInfo.price }} €</li>
+          <li><button class="btn-white-bg" @click="bookPoster">{{ $t('posterDetails.book') }}</button></li>
         </ul>
       </div>
     </div>
@@ -85,7 +85,9 @@ import { ArrowUturnLeftIcon, PlusIcon, MinusIcon, PencilIcon } from '@heroicons/
 import PosterEdit from '@/components/edition/PosterEdit.vue'
 
 import { useToast } from 'vue-toastification'
+import { useI18n } from 'vue-i18n'
 const toast = useToast()
+const { t: translate } = useI18n()
 
 const props = defineProps<{
   poster: Poster
@@ -137,14 +139,14 @@ const bookPoster = async () => {
         quantity: quantity.value,
       }
       await bookingStore.createBooking(formData)
-      toast.success('Réservation confirmée !')
+      toast.success(translate('posterDetails.bookSuccess'))
     }
     quantity.value = 1
     await refreshData()
     emit('updated')
   } catch (err: any) {
     await refreshData()
-    toast.error(err.response?.data?.error || 'Erreur durant la réservation.')
+    toast.error(err.response?.data?.error || translate('posterDetails.bookError'))
   }
 }
 

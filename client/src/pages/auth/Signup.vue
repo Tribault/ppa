@@ -1,65 +1,87 @@
 <template>
   <div class="signup">
     <div class="signup-form">
-      <h2>Créer un compte</h2>
+      <h2>{{ $t('auth.signup.title') }}</h2>
       <form v-if="!signupSuccess" @submit.prevent="handleSignup">
         <div>
-          <input v-model="username" type="text" placeholder="Username" required />
-          <input v-model="email" type="email" placeholder="Adresse e-mail" required />
-          <input v-model="password" type="password" placeholder="Mot de passe" required />
+          <input v-model="email" type="email" :placeholder="$t('auth.signup.emailPlaceholder')" required />
+          <input v-model="password" type="password" :placeholder="$t('auth.signup.passwordPlaceholder')" required />
+          <input v-model="passwordConfirm" type="password" :placeholder="$t('auth.signup.confirmPlaceholder')" required />
         </div>
-        <button type="submit" class="btn-red-bg"><b>Créer un compte</b></button>
+        <ul v-if="password" class="password-rules">
+          <li :class="{ valid: rules.length }">{{ $t('auth.signup.rules.length') }}</li>
+          <li :class="{ valid: rules.upper }">{{ $t('auth.signup.rules.upper') }}</li>
+          <li :class="{ valid: rules.lower }">{{ $t('auth.signup.rules.lower') }}</li>
+          <li :class="{ valid: rules.number }">{{ $t('auth.signup.rules.number') }}</li>
+        </ul>
+        <button type="submit" class="btn-red-bg"><b>{{ $t('auth.signup.title') }}</b></button>
         <p v-if="error" class="error">{{ error }}</p>
       </form>
 
       <div v-else class="confirmation">
-        <p>✅ Votre compte a été créé.</p>
+        <p>{{ $t('auth.signup.success') }}</p>
+        <p>{{ $t('auth.signup.checkEmail', { email }) }}</p>
         <p>
-          Veuillez vérifier votre boîte mail (<b>{{ email }}</b>) et cliquer sur le lien
-          de confirmation pour activer votre compte.
-        </p>
-        <p>
-          Pas reçu d’email ?
-          <button class="btn-link" @click="resendEmail">Renvoyer le mail de vérification</button>
+          {{ $t('auth.signup.noEmail') }}
+          <button class="btn-link" @click="resendEmail">{{ $t('auth.signup.resend') }}</button>
         </p>
       </div>
 
       <router-link to="/login">
-        <p class="signup-link">Déjà inscrit ? Identifiez-vous</p>
+        <p class="signup-link">{{ $t('auth.signup.alreadyRegistered') }}</p>
       </router-link>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import api from '@/utils/axios' // your axios instance
+import { ref, computed } from 'vue'
+import api from '@/utils/axios'
 import { useAuthStore } from '@/stores/auth'
+import { useI18n } from 'vue-i18n'
 
-const username = ref('')
 const password = ref('')
+const passwordConfirm = ref('')
 const email = ref('')
 const error = ref('')
 const signupSuccess = ref(false)
 
 const auth = useAuthStore()
+const { t } = useI18n()
+
+const rules = computed(() => ({
+  length: password.value.length >= 8,
+  upper:  /[A-Z]/.test(password.value),
+  lower:  /[a-z]/.test(password.value),
+  number: /[0-9]/.test(password.value),
+}))
+
+const passwordValid = computed(() => Object.values(rules.value).every(Boolean))
 
 const handleSignup = async () => {
   error.value = ''
+  if (!passwordValid.value) {
+    error.value = t('auth.signup.errorRules')
+    return
+  }
+  if (password.value !== passwordConfirm.value) {
+    error.value = t('auth.signup.errorMatch')
+    return
+  }
   try {
-    await auth.signup(username.value, password.value, email.value, "user")
+    await auth.signup(password.value, email.value, "user")
     signupSuccess.value = true
   } catch (err: any) {
-    error.value = err.response?.data?.message || 'Une erreur est survenue.'
+    error.value = err.response?.data?.message || t('auth.signup.errorGeneric')
   }
 }
 
 const resendEmail = async () => {
   try {
     await api.post('/auth/resend-verification', { email: email.value })
-    alert('Un nouvel email de vérification a été envoyé.')
+    alert(t('auth.signup.resendSuccess'))
   } catch {
-    alert('Impossible de renvoyer l’email de vérification.')
+    alert(t('auth.signup.resendError'))
   }
 }
 </script>
@@ -103,5 +125,22 @@ const resendEmail = async () => {
 
 .error {
   color: yellow;
+}
+
+.password-rules {
+  list-style: none;
+  padding: 0;
+  margin: 0 0.5rem;
+  font-size: 0.85rem;
+
+  li::before {
+    content: '✗ ';
+    color: #ffaaaa;
+  }
+
+  li.valid::before {
+    content: '✓ ';
+    color: #aaffaa;
+  }
 }
 </style>

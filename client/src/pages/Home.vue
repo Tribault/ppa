@@ -14,7 +14,7 @@
     <div class="home-header">
       <div class="home-search">
         <MagnifyingGlassIcon class="icon" />
-        <input type="text" placeholder="Search posters..." @input="onSearchInput" />
+        <input type="text" :placeholder="$t('home.searchPlaceholder')" @input="onSearchInput" />
       </div>
       <div class="home-filter">
         <button
@@ -28,10 +28,10 @@
         </button>
       </div>
       <div class="home-view-toggle">
-        <button @click="view = 'grid'" :class="{ active: view === 'grid' }" title="Grid View">
+        <button @click="view = 'grid'" :class="{ active: view === 'grid' }" :title="$t('home.gridView')">
           <Squares2X2Icon class="icon" />
         </button>
-        <button @click="view = 'list'" :class="{ active: view === 'list' }" title="List View">
+        <button @click="view = 'list'" :class="{ active: view === 'list' }" :title="$t('home.listView')">
           <ListBulletIcon class="icon" />
         </button>
       </div>
@@ -41,7 +41,7 @@
     </div>
     <div class="home-error" v-else-if="posterStore.filteredPosters.length == 0 && !loading">
       <img src="@/assets/404.svg" />
-      <p>Aucune affiche ne correspond à votre recherche. 😭</p>
+      <p>{{ $t('home.noResults') }}</p>
     </div>
 
     <div v-else>

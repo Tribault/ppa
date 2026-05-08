@@ -6,11 +6,11 @@
           <button class="booking-edit-close-btn btn-red-bg" @click="close"><x-mark-icon /></button>
 
           <h2 class="booking-edit-title">
-            {{ bookingToEdit?._id ? `Modification de réservation` : `Création de réservation` }}
+            {{ bookingToEdit?._id ? $t('form.booking.editTitle') : $t('form.booking.createTitle') }}
           </h2>
           <form @submit.prevent="submit" class="booking-edit-form">
             <div v-if="authStore.isAdmin" class="booking-edit-form--row">
-              <b>Affiche</b>
+              <b>{{ $t('form.booking.posterLabel') }}</b>
               <database-search
                 :selected-label="bookingToEdit?.poster?.title"
                 search-type="poster"
@@ -18,7 +18,7 @@
               />
             </div>
             <div v-if="authStore.isAdmin" class="booking-edit-form--row">
-              <b>Client</b>
+              <b>{{ $t('form.booking.clientLabel') }}</b>
               <database-search
                 :selected-label="bookingToEdit?.user?.email"
                 search-type="user"
@@ -27,20 +27,20 @@
             </div>
 
             <div v-if="bookingToEdit?._id && authStore.isAdmin" class="booking-edit-form--row">
-              <b>Status</b>
+              <b>{{ $t('form.booking.statusLabel') }}</b>
               <input type="radio" id="pending" value="pending" v-model="form.status" />
-              <label for="pending">En cours</label>
+              <label for="pending">{{ $t('form.booking.statusPending') }}</label>
               <input type="radio" id="validated" value="validated" v-model="form.status" />
-              <label for="validated">Validée</label>
+              <label for="validated">{{ $t('form.booking.statusValidated') }}</label>
 
             </div>
             <div class="booking-edit-form--row">
-              <b>Quantité</b
-              ><input
+              <b>{{ $t('form.booking.quantityLabel') }}</b>
+              <input
                 v-if="bookingToEdit"
                 v-model.number="form.quantity"
                 type="number"
-                placeholder="Quantity"
+                :placeholder="$t('form.booking.quantityPlaceholder')"
                 class="booking-edit-input stock"
                 min="1"
                 :max="bookingToEdit.quantity + (bookingToEdit.poster.stockInfo?.availableStock || 0)"
@@ -49,20 +49,20 @@
                 v-else
                 v-model.number="form.quantity"
                 type="number"
-                placeholder="Quantity"
+                :placeholder="$t('form.booking.quantityPlaceholder')"
                 class="booking-edit-input stock"
                 min="1"
               />
               <div class="booking-edit-form--row">
-              <p class="tag-white">disponible {{bookingToEdit?.poster.stockInfo?.availableStock}}</p>
-              <p class="tag-white">réservé  {{bookingToEdit?.poster.stockInfo?.pending}}</p>
-              <p class="tag-white"> vendu {{bookingToEdit?.poster.stockInfo?.confirmed}}</p>
+              <p class="tag-white">{{ $t('form.booking.available') }} {{bookingToEdit?.poster.stockInfo?.availableStock}}</p>
+              <p class="tag-white">{{ $t('form.booking.reserved') }} {{bookingToEdit?.poster.stockInfo?.pending}}</p>
+              <p class="tag-white">{{ $t('form.booking.sold') }} {{bookingToEdit?.poster.stockInfo?.confirmed}}</p>
               </div>
             </div>
 
             <div class="booking-edit-form--actions">
               <button type="submit" class="btn-red-bg">
-                <b>Sauvegarder</b> <folder-arrow-down-icon />
+                <b>{{ $t('form.booking.save') }}</b> <folder-arrow-down-icon />
               </button>
             </div>
           </form>
@@ -80,8 +80,10 @@ import { useBookingStore } from '@/stores/bookings'
 import { useUserStore } from '@/stores/users'
 import { useAuthStore } from '@/stores/auth'
 import { useToast } from 'vue-toastification'
+import { useI18n } from 'vue-i18n'
 import DatabaseSearch from '@/components/utils/DatabaseSearch.vue'
 const toast = useToast()
+const { t } = useI18n()
 
 const props = defineProps<{
   visible: boolean
@@ -143,16 +145,16 @@ async function submit() {
   try {
     if (props.bookingToEdit?._id) {
       await bookingStore.updateBooking(props.bookingToEdit._id, form.value)
-      toast.success('Réservation mise à jour ✅')
+      toast.success(t('form.booking.updateSuccess'))
     } else {
       await bookingStore.createBooking(form.value)
-      toast.success('Réservation créée 🎉')
+      toast.success(t('form.booking.createSuccess'))
     }
     emit('saved')
     close()
   } catch (err) {
     console.error(err)
-    toast.error('Une erreur est survenue ❌')
+    toast.error(t('form.booking.error'))
   }
 }
 </script>

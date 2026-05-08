@@ -4,17 +4,15 @@
       <router-link class="navbar-home__link" to="/"><img src="@/assets/logo.png" /></router-link>
     </div>
     <div v-if="!auth.user" class="navbar-options">
-      <router-link to="/login">Identification / Inscription</router-link>
+      <router-link to="/login">{{ $t('nav.loginSignup') }}</router-link>
     </div>
     <div v-else class="navbar-options">
-      <router-link v-if="auth.user.role === 'admin' && $route.path !== '/admin'" to="/admin"
-        >Admin</router-link
-      >
-      <router-link v-if="auth.user.role === 'user'" to="/account">Mes réservations</router-link>
+      <router-link v-if="auth.user.role === 'admin' && $route.path !== '/admin'" to="/admin">{{ $t('nav.admin') }}</router-link>
+      <router-link v-if="auth.user.role === 'user'" to="/account">{{ $t('nav.myBookings') }}</router-link>
       <div class="navbar-options__user">
         <span class="navbar-home__logout--user">{{ auth.user.email }}</span>
-        <button @click="logout" class="navbar-home__logout" title="se déconnecter">
-          [Déconnexion]
+        <button @click="logout" class="navbar-home__logout" :title="$t('nav.logoutTitle')">
+          {{ $t('nav.logout') }}
         </button>
       </div>
     </div>

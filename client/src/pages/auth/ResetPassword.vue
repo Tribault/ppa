@@ -1,13 +1,15 @@
 <template>
   <div class="reset-password">
-    <h2>Réinitialiser le mot de passe</h2>
-    <form @submit.prevent="submit">
-      <input v-model="password" type="password" placeholder="Nouveau mot de passe" required />
-      <button type="submit" :disabled="loading">
-        {{ loading ? 'Envoi en cours...' : 'Réinitialiser le mot de passe' }}
-      </button>
-    </form>
-    <p v-if="message">{{ message }}</p>
+    <div class="reset-password-form">
+      <h2>{{ $t('auth.resetPassword.title') }}</h2>
+      <form @submit.prevent="submit">
+        <input v-model="password" type="password" :placeholder="$t('auth.resetPassword.passwordPlaceholder')" required />
+        <button type="submit" class="btn-red-bg" :disabled="loading">
+          {{ loading ? $t('auth.resetPassword.sending') : $t('auth.resetPassword.submit') }}
+        </button>
+      </form>
+      <p v-if="message">{{ message }}</p>
+    </div>
   </div>
 </template>
 
@@ -37,19 +39,24 @@ async function submit() {
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .reset-password {
+  display: flex;
+  flex-direction: column;
   max-width: 400px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 2rem 0;
+
+  form > * {
+    margin: 0.5rem;
+  }
 }
-input {
-  display: block;
-  margin-bottom: 1rem;
-  width: 100%;
-  padding: 0.5rem;
-}
-button {
-  padding: 0.5rem 1rem;
+
+.reset-password-form {
+  background-color: $red;
+  padding: 1.5rem;
+  color: white;
+  display: flex;
+  flex-direction: column;
 }
 </style>

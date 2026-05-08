@@ -79,12 +79,11 @@ exports.exportSalesCSV = async (req, res) => {
 
     // Fetch with filters
     const sales = await Sale.find(filter)
-      .populate('user', 'username email')
+      .populate('user', 'email')
       .populate('poster', 'title price');
 
     const data = sales.map(s => ({
-      user: s.user?.username || 'Unknown',
-      email: s.user?.email || 'Unknown',
+      user: s.user?.email || 'Unknown',
       poster: s.poster?.title || 'Unknown',
       quantity: s.quantity,
       priceAtSale: s.priceAtSale,

@@ -7,26 +7,26 @@
             <x-mark-icon />
           </button>
 
-          <h2 class="message-edit-title">Modifier le message</h2>
+          <h2 class="message-edit-title">{{ $t('form.message.title') }}</h2>
 
           <form @submit.prevent="submit" class="message-edit-form">
             <div class="message-edit-form-row">
               <textarea
                 v-model="draft"
-                placeholder="Tapez votre message en markdown..."
+                :placeholder="$t('form.message.placeholder')"
                 rows="8"
                 class="message-edit-input"
               />
             </div>
 
             <div class="message-edit-preview">
-              <h3>Prévisualisation</h3>
+              <h3>{{ $t('form.message.preview') }}</h3>
               <div v-html="draft" />
             </div>
 
             <div class="message-edit-form-actions">
               <button type="submit" class="btn-white-bg">
-                Sauvegarder <folder-arrow-down-icon />
+                {{ $t('form.message.save') }} <folder-arrow-down-icon />
               </button>
             </div>
           </form>
@@ -41,7 +41,9 @@ import { onMounted, ref } from 'vue'
 import { useMessageStore } from '@/stores/messages'
 import { XMarkIcon, FolderArrowDownIcon } from '@heroicons/vue/24/solid'
 import { useToast } from 'vue-toastification'
+import { useI18n } from 'vue-i18n'
 const toast = useToast()
+const { t } = useI18n()
 
 const props = defineProps<{
   visible: boolean
@@ -58,19 +60,18 @@ function close() {
 }
 
 async function submit() {
-  try{
-  await messageStore.updateMessage(draft.value)
-   toast.success('Erreur durant la réservation.')
-  emit('saved')
-  }catch (err: any) {
-    toast.error(err.response?.data?.error || 'Erreur durant la réservation.')
+  try {
+    await messageStore.updateMessage(draft.value)
+    toast.success(t('form.message.updateSuccess'))
+    emit('saved')
+  } catch (err: any) {
+    toast.error(err.response?.data?.error || t('form.message.error'))
   }
   close()
 }
 
 onMounted(async () => {
   await messageStore.fetchMessage()
-  console.log(messageStore.message)
   draft.value = messageStore.message?.content || ''
 
 })

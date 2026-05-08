@@ -2,7 +2,7 @@
   <div v-if="visible" class="tag-modal-overlay" @click="close">
     <div class="tag-modal-box" @click.stop>
       <button class="close-btn" @click="close">✖</button>
-      <h2>Gestion des étiquettes</h2>
+      <h2>{{ $t('form.tag.title') }}</h2>
 
       <!-- List of existing tags -->
       <ul class="tag-list">
@@ -13,8 +13,8 @@
 
       <!-- Create new tag -->
       <form @submit.prevent="createTag" class="tag-form">
-        <input v-model="newTag" type="text" placeholder="Nouvelle étiquette" class="tag-input" />
-        <button type="submit" class="btn-red-bg">Ajouter</button>
+        <input v-model="newTag" type="text" :placeholder="$t('form.tag.placeholder')" class="tag-input" />
+        <button type="submit" class="btn-red-bg">{{ $t('form.tag.add') }}</button>
       </form>
     </div>
   </div>

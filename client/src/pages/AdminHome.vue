@@ -1,35 +1,35 @@
 <template>
   <div class="admin-home">
     <div class="admin-home-header">
-      <h1>Administration</h1>
+      <h1>{{ $t('admin.title') }}</h1>
       <nav class="admin-home-header--nav">
         <button
           class="btn-white-bg"
           @click="currentTab = 'posters'"
           :class="{ 'selected-btn': currentTab === 'posters' }"
         >
-          <PhotoIcon /> Affiches
+          <PhotoIcon /> {{ $t('admin.tabs.posters') }}
         </button>
         <button
           class="btn-white-bg"
           @click="currentTab = 'bookings'"
           :class="{ 'selected-btn': currentTab === 'bookings' }"
         >
-          <FaceSmileIcon />Réservations
+          <FaceSmileIcon /> {{ $t('admin.tabs.bookings') }}
         </button>
         <button
           class="btn-white-bg"
           @click="currentTab = 'sales'"
           :class="{ 'selected-btn': currentTab === 'sales' }"
         >
-          <DocumentCurrencyEuroIcon />Ventes
+          <DocumentCurrencyEuroIcon /> {{ $t('admin.tabs.sales') }}
         </button>
         <button
           class="btn-white-bg"
           @click="currentTab = 'users'"
           :class="{ 'selected-btn': currentTab === 'users' }"
         >
-          <UserGroupIcon />Utilisateurs
+          <UserGroupIcon /> {{ $t('admin.tabs.users') }}
         </button>
       </nav>
     </div>

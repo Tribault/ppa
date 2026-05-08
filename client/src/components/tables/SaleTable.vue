@@ -3,13 +3,13 @@
     <table class="sticky-table">
       <thead>
         <tr>
-          <th class="sticky-col">Affiche</th>
-          <th>Acheteur</th>
-          <th>Prix unitaire</th>
-          <th>Quantité</th>
-          <th>Prix Total</th>
-          <th>Vente par</th>
-          <th>Date</th>
+          <th class="sticky-col">{{ $t('table.sale.poster') }}</th>
+          <th>{{ $t('table.sale.buyer') }}</th>
+          <th>{{ $t('table.sale.unitPrice') }}</th>
+          <th>{{ $t('table.sale.quantity') }}</th>
+          <th>{{ $t('table.sale.totalPrice') }}</th>
+          <th>{{ $t('table.sale.soldBy') }}</th>
+          <th>{{ $t('table.sale.date') }}</th>
         </tr>
       </thead>
       <tbody>
