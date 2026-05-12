@@ -47,7 +47,7 @@
 <script setup lang="ts">
 import { useBookingStore } from '@/stores/bookings'
 import { useMessageStore } from '@/stores/messages'
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { Alphabet } from '@/types/models'
 import AdminBookingTable from '@/components/tables/BookingTable.vue'
 import BookingEdit from '@/components/edition/BookingEdit.vue'
@@ -69,7 +69,7 @@ const letters = Object.values(Alphabet)
 
 const showModal = ref(false)
 const showMessageModal = ref(false)
-const isBookingAllowed = ref(true)
+const isBookingAllowed = computed(() => messageStore.message?.bookingAllowed ?? true)
 
 const editingBooking = ref(null)
 
@@ -93,8 +93,7 @@ function loadPage(p: number) {
 
 onMounted(async () => {
   bookingStore.fetchBookings({ all: true }, { page: 1, limit: 20 })
-  messageStore.fetchMessage()
-  isBookingAllowed.value = messageStore.message?.bookingAllowed || true
+  await messageStore.fetchMessage()
 })
 
 function onSearchInput(e: Event) {
@@ -107,7 +106,6 @@ function deleteBooking(bookingId: string) {
 
 function toggleBookings() {
   messageStore.toggleBooking()
-  isBookingAllowed.value = !isBookingAllowed.value
 }
 </script>
 

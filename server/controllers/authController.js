@@ -2,6 +2,7 @@ const User = require('../models/User')
 const jwt = require('jsonwebtoken')
 const crypto = require('crypto')
 const sendEmail = require('../utils/mailer')
+const fr = require('../locales/fr')
 
 const generateToken = (u) => {
     return jwt.sign({id: u._id, role: u.role}, process.env.JWT_SECRET, {expiresIn: '1d'})
@@ -13,7 +14,7 @@ exports.signup = async (req, res) => {
      const { email, password } = req.body
 
     const existing = await User.findOne({ email })
-    if (existing) return res.status(400).json({ message: 'Email already in use' })
+    if (existing) return res.status(400).json({ message: fr.auth.emailAlreadyInUse })
 
     const user = new User({ email, password })
 
@@ -30,14 +31,11 @@ exports.signup = async (req, res) => {
 
     await sendEmail(
       user.email,
-      'Verify your email',
-      `<p>Hello ${user.email},</p>
-       <p>Click the link to verify your email:</p>
-       <a href="${verifyLink}">${verifyLink}</a>
-       <p>This link expires in 24 hours.</p>`
+      fr.email.verifySubject,
+      fr.email.verifyBody(user.email, verifyLink)
     )
 
-    return res.json({ message: 'Signup successful — check your email for verification link.' })
+    return res.json({ message: fr.auth.signupSuccess })
   } catch (err) {
     res.status(400).json({ message: err.message })
   }
@@ -45,7 +43,7 @@ exports.signup = async (req, res) => {
 
 exports.verifyEmail = async (req, res) => {
   const { token } = req.body
-   if (!token) return res.status(400).json({ message: 'Missing token' })
+   if (!token) return res.status(400).json({ message: fr.auth.missingToken })
 
   try {
     const hashedToken = crypto.createHash('sha256').update(token).digest('hex')
@@ -55,7 +53,7 @@ exports.verifyEmail = async (req, res) => {
     })
 
     if (!user) {
-      return res.status(400).json({ message: 'Invalid or expired verification token' })
+      return res.status(400).json({ message: fr.auth.invalidOrExpiredVerificationToken })
     }
 
     user.isVerified = true
@@ -63,9 +61,9 @@ exports.verifyEmail = async (req, res) => {
     user.verificationTokenExpires = undefined
     await user.save()
 
-    res.json({ message: 'Email verified successfully! You can now log in.' })
+    res.json({ message: fr.auth.emailVerifiedSuccess })
   } catch (err) {
-    res.status(500).json({ message: 'Server error' })
+    res.status(500).json({ message: fr.auth.serverError })
   }
 }
 
@@ -73,11 +71,11 @@ exports.login = async (req, res) => {
    const { email, password } = req.body
   const user = await User.findOne({ email })
   if (!user || !(await user.comparePassword(password))) {
-    return res.status(401).json({ message: 'Invalid credentials' })
+    return res.status(401).json({ message: fr.auth.invalidCredentials })
   }
 
   if (!user.isVerified) {
-    return res.status(403).json({ message: 'Not verified.' })
+    return res.status(403).json({ message: fr.auth.notVerified })
   }
 
   res.json({ token: generateToken(user), user })
@@ -95,7 +93,7 @@ exports.forgotPassword = async (req, res) => {
     const user = await User.findOne({ email })
     if (!user) {
       // Always respond the same way for security
-      return res.json({ message: 'If an account exists, a reset link has been sent' })
+      return res.json({ message: fr.auth.resetLinkSent })
     }
 
     // Generate token
@@ -110,20 +108,13 @@ exports.forgotPassword = async (req, res) => {
 
      await sendEmail(
       user.email,
-      'Password Reset Request',
-      `
-        <p>Hello ${user.email},</p>
-        <p>You requested a password reset. Click below to reset your password:</p>
-        <a href="${resetLink}">${resetLink}</a>
-        <p>This link expires in 15 minutes.</p>
-        <p>If you didn’t request this, ignore this email.</p>
-      `
+      fr.email.resetSubject,
+      fr.email.resetBody(user.email, resetLink)
     )
 
-
-    res.json({ message: 'If an account exists, a reset link has been sent' })
+    res.json({ message: fr.auth.resetLinkSent })
   } catch (err) {
-    res.status(500).json({ message: 'Server error' })
+    res.status(500).json({ message: fr.auth.serverError })
   }
 }
 
@@ -134,11 +125,11 @@ exports.resendEmail = async (req, res) => {
 
     if (!user) {
       // Do not reveal if user exists for security reasons
-      return res.json({ message: 'If your account exists, a new verification email has been sent.' })
+      return res.json({ message: fr.auth.verificationEmailSent })
     }
 
     if (user.isVerified) {
-      return res.json({ message: 'Your email is already verified.' })
+      return res.json({ message: fr.auth.emailAlreadyVerified })
     }
 
     // Generate a new verification token
@@ -151,18 +142,13 @@ exports.resendEmail = async (req, res) => {
 
     await sendEmail(
       user.email,
-      'Verify Your Email',
-      `
-        <p>Hello ${user.email},</p>
-        <p>Click below to verify your email:</p>
-        <a href="${verifyLink}">${verifyLink}</a>
-        <p>This link will expire in 1 hour.</p>
-      `
+      fr.email.resendSubject,
+      fr.email.resendBody(user.email, verifyLink)
     )
 
-    res.json({ message: 'If your account exists, a new verification email has been sent.' })
+    res.json({ message: fr.auth.verificationEmailSent })
   } catch (err) {
-    res.status(500).json({ message: 'Server error' })
+    res.status(500).json({ message: fr.auth.serverError })
   }
 }
 
@@ -178,16 +164,17 @@ exports.resetPassword = async (req, res) => {
     })
 
     if (!user) {
-      return res.status(400).json({ message: 'Invalid or expired token' })
+      return res.status(400).json({ message: fr.auth.invalidOrExpiredToken })
     }
 
     user.password = password // will be hashed by pre-save hook
+    user.isVerified = true   // reset link was delivered to their inbox — email is confirmed
     user.resetPasswordToken = undefined
     user.resetPasswordExpires = undefined
     await user.save()
 
-    res.json({ message: 'Password successfully reset' })
+    res.json({ message: fr.auth.passwordResetSuccess })
   } catch (err) {
-    res.status(500).json({ message: 'Server error' })
+    res.status(500).json({ message: fr.auth.serverError })
   }
 }

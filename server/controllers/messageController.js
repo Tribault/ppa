@@ -1,4 +1,5 @@
 const Message = require('../models/Message')
+const fr = require('../locales/fr')
 
 exports.getMessage =  async (req, res) => {
   try {
@@ -28,7 +29,7 @@ exports.toggleBooking =  async (req, res) => {
     msg.bookingAllowed = !msg.bookingAllowed
     await msg.save()
   } else {
-    msg = await Message.create({ content:'message par défaut' })
+    msg = await Message.create({ content: fr.message.defaultContent })
   }
   res.json(msg)
 }

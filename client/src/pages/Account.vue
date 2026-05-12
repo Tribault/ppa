@@ -3,7 +3,7 @@
     <h1 class="account-container-title">{{ $t('account.title') }}</h1>
 
     <div v-if="loading">{{ $t('account.loading') }}</div>
-    <div v-else-if="bookingStore.bookings.length === 0">
+    <div v-else-if="bookingStore.bookings.length === 0" class="account-container-no-booking">
       {{ $t('account.noBookings') }}
     </div>
 
@@ -66,5 +66,8 @@ const closeModal = () => {
 <style lang="scss" scoped>
 .account-container-title{
   color : $red;
+}
+.account-container-no-booking{
+  padding-left: 0.5rem;
 }
 </style>

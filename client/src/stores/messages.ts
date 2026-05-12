@@ -18,6 +18,7 @@ export const useMessageStore = defineStore('message', () => {
 
   async function toggleBooking() {
     const res = await api.post('/messages/toggle-booking')
+    message.value = res.data
   }
 
   return { message, fetchMessage, updateMessage, toggleBooking }

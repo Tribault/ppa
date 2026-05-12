@@ -1,5 +1,5 @@
 <template class="poster-card">
-  <div v-if="view === 'grid'" @click="emit('details')" class="poster-card-grid">
+  <div v-if="view === 'grid'" @click="emit('details')" class="poster-card-grid" :class="{ 'no-image': !poster.image }">
     <div v-if="poster.image" class="poster-card-poster">
       <img :src="imgUrl" alt="" />
       <div class="poster-card-badges">
@@ -50,10 +50,16 @@ const imgUrl = ref<string>(import.meta.env.VITE_IMG_URL + props.poster.image)
 .poster-card-grid {
   width: 300px;
   height: 525px;
-  background-color: $red;
   color: white;
   overflow: hidden;
   cursor: pointer;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+
+  &.no-image {
+    background-color: $red;
+  }
 }
 
 .poster-card-list {
@@ -90,10 +96,11 @@ const imgUrl = ref<string>(import.meta.env.VITE_IMG_URL + props.poster.image)
 
 .poster-card-poster {
   position: relative;
-  width: 100%;
+  flex: 1;
+  overflow: hidden;
   & img {
     width: 100%;
-    height: calc(width * (16 / 9));
+    height: 100%;
     object-fit: cover;
     display: block;
   }
@@ -123,7 +130,8 @@ const imgUrl = ref<string>(import.meta.env.VITE_IMG_URL + props.poster.image)
 }
 
 .poster-card-info {
-  padding-left: $space-sm;
+  background-color: $red;
+  padding: $space-sm;
 }
 
 .poster-card-title {
@@ -138,7 +146,9 @@ const imgUrl = ref<string>(import.meta.env.VITE_IMG_URL + props.poster.image)
 }
 
 .no-logo {
-  margin: 75px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .card-list {

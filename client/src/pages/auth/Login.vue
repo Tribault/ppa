@@ -41,7 +41,7 @@ const handleLogin = async () => {
     router.push('/')
   } catch (err : any) {
     const message = err.response?.data?.message || t('auth.login.errorFailed')
-    if (message == "Not verified.") {
+    if (err.response?.status === 403) {
       toast.error(t('auth.login.errorNotVerified'))
       router.push('/resend-verification')
     } else {

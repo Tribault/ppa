@@ -3,6 +3,7 @@ const Booking = require('../models/Booking')
 const Sale = require('../models/Sale')
 const User = require('../models/User')
 const { computeStockInfo } = require('../utils/stock')
+const fr = require('../locales/fr')
 
 exports.createOrUpdateBooking = async (req, res) => {
   try {
@@ -10,14 +11,14 @@ exports.createOrUpdateBooking = async (req, res) => {
 
     // basic validations
     if (!posterId || !userId || typeof quantity !== 'number') {
-      return res.status(400).json({ error: 'posterId, userId and quantity are required.' })
+      return res.status(400).json({ error: fr.booking.missingFields })
     }
 
     const poster = await Poster.findById(posterId)
-    if (!poster) return res.status(404).json({ error: 'Affiche introuvable' })
+    if (!poster) return res.status(404).json({ error: fr.booking.posterNotFound })
 
     const user = await User.findById(userId)
-    if (!user) return res.status(404).json({ error: 'Client introuvable' })
+    if (!user) return res.status(404).json({ error: fr.booking.userNotFound })
 
     // compute stock info before modification
     const stockInfo = await computeStockInfo(poster._id, poster.totalStock)
@@ -30,7 +31,7 @@ exports.createOrUpdateBooking = async (req, res) => {
       const allowedMax = (stockInfo.availableStock || 0) + (booking.quantity || 0)
 
       if (quantity > allowedMax) {
-        return res.status(400).json({ error: 'Pas assez de stock pour réserver.' })
+        return res.status(400).json({ error: fr.booking.notEnoughStock })
       }
 
       booking.quantity = quantity
@@ -65,7 +66,7 @@ exports.createOrUpdateBooking = async (req, res) => {
     } else {
       // CREATE new booking
       if (quantity > (stockInfo.availableStock || 0)) {
-        return res.status(400).json({ error: 'Pas assez de stock pour réserver.' })
+        return res.status(400).json({ error: fr.booking.notEnoughStock })
       }
 
       booking = new Booking({
@@ -99,7 +100,7 @@ exports.createOrUpdateBooking = async (req, res) => {
     }
   } catch (err) {
     console.error(err)
-    return res.status(500).json({ error: 'Erreur serveur.' })
+    return res.status(500).json({ error: fr.booking.serverError })
   }
 }
 
@@ -148,21 +149,21 @@ exports.getBookings = async (req, res) => {
 exports.deleteBooking = async (req, res) => {
   const booking = await Booking.findById(req.params.id);
 
-  if (!booking) return res.status(404).json({ error: 'Booking not found' });
+  if (!booking) return res.status(404).json({ error: fr.booking.notFound });
 
   if (
     booking.user.toString() !== req.user.id &&
     req.user.role !== 'admin'
   ) {
-    return res.status(403).json({ error: 'Not authorized' });
+    return res.status(403).json({ error: fr.booking.notAuthorized });
   }
 
   if (booking.status !== 'pending') {
-    return res.status(400).json({ error: 'Only pending bookings can be cancelled' });
+    return res.status(400).json({ error: fr.booking.onlyPendingCanBeCancelled });
   }
 
   await Booking.findByIdAndDelete(req.params.id)
 
-  res.json({ message: 'Booking cancelled' });
+  res.json({ message: fr.booking.cancelled });
 }
 

@@ -81,10 +81,8 @@ export const useBookingStore = defineStore('bookings', () => {
       if (index !== -1) {
         bookings.value[index] = res.data
       }
-      toast.success('Réservation mise à jour ✅')
     } catch (err: any) {
       error.value = err.response?.data?.message || 'Failed to update booking'
-      toast.error('Erreur durant la mise à jour ❌')
       throw err
     }
   }

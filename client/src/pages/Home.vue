@@ -44,7 +44,7 @@
       <p>{{ $t('home.noResults') }}</p>
     </div>
 
-    <div v-else>
+    <div v-else class="home-content">
       <transition name="fade" mode="out-in">
         <div v-if="view === 'grid'" key="grid" class="grid-container">
           <home-poster-card
@@ -74,7 +74,7 @@
 <script setup lang="ts">
 import { usePosterStore } from '@/stores/posters'
 import { useMessageStore } from '@/stores/messages'
-import { ref, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import {
   Squares2X2Icon,
@@ -95,6 +95,7 @@ const letters = Object.values(Alphabet)
 const loading = ref(true)
 
 const view = ref<'grid' | 'list'>((localStorage.getItem('posterView') as 'grid' | 'list') || 'grid')
+const limit = computed(() => view.value === 'list' ? 30 : 10)
 
 function onSearchInput(e: Event) {
   posterStore.setSearchQuery((e.target as HTMLInputElement).value)
@@ -105,21 +106,28 @@ function posterDetails(posterId: string) {
 }
 
 function loadPage(p: number) {
-  posterStore.fetchPosters({ page: p, limit: 10 })
+  posterStore.fetchPosters({ forSale: true, page: p, limit: limit.value })
 }
 
 onMounted(async () => {
-  await posterStore.fetchPosters({ forSale: true, page: 1, limit: 10 })
+  await posterStore.fetchPosters({ forSale: true, page: 1, limit: limit.value })
   await messageStore.fetchMessage()
   loading.value = false
 })
 
 watch(view, (newView) => {
   localStorage.setItem('posterView', newView)
+  posterStore.fetchPosters({ forSale: true, page: 1, limit: limit.value })
 })
 </script>
 
 <style lang="scss" scoped>
+.home-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
 .home-header {
   display: flex;
   justify-content: space-between;
@@ -234,7 +242,14 @@ watch(view, (newView) => {
   border-radius: 15px;
 }
 
+.home-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
 .list-container {
+  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 0.2rem;
