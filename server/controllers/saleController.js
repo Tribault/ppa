@@ -81,7 +81,8 @@ exports.exportSalesCSV = async (req, res) => {
     // Fetch with filters
     const sales = await Sale.find(filter)
       .populate('user', 'email')
-      .populate('poster', 'title price');
+      .populate('poster', 'title price')
+      .populate('validatedBy', 'email');
 
     const data = sales.map(s => ({
       user: s.user?.email || 'Unknown',
@@ -90,7 +91,7 @@ exports.exportSalesCSV = async (req, res) => {
       priceAtSale: s.priceAtSale,
       total: (s.priceAtSale * s.quantity).toFixed(2),
       validatedAt: s.validatedAt.toISOString(),
-      validatedBy: s.validatedBy
+      validatedBy: s.validatedBy?.email || 'Unknown',
     }));
 
     const csv = converter.json2csv(data)

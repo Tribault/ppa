@@ -1,4 +1,5 @@
 <template>
+  <div class="admin-tab">
   <div class="admin-users-header">
     <div class="admin-users-header--search">
       <MagnifyingGlassIcon class="icon" />
@@ -17,24 +18,27 @@
     </div>
   </div>
 
-  <user-table
-    :users="userStore.filteredUsers"
-    @edit="(u) => openEditUser(u)"
-    @delete="(u) => deleteUser(u)"
-  />
+  <div class="admin-table-wrapper">
+    <user-table
+      :users="userStore.filteredUsers"
+      @edit="(u) => openEditUser(u)"
+      @delete="(u) => deleteUser(u)"
+    />
+  </div>
   <pagination :page="userStore.page" :pages="userStore.pages" @change="loadPage" />
   <user-edit
     v-if="editingUser"
     :visible="showModal"
     :userToEdit="editingUser"
     @close="closeModal"
-    @saved="userStore.fetchUsers"
+    @saved="userStore.fetchUsers({ page: 1, limit: 20, q: activeQuery() })"
   />
+  </div>
 </template>
 
 <script setup lang="ts">
 import { useUserStore } from '@/stores/users'
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { Alphabet } from '@/types/models'
 import type { User } from '@/types/models'
 import UserTable from '@/components/tables/UserTable.vue'
@@ -60,8 +64,14 @@ const closeModal = () => {
   showModal.value = false
 }
 
+function activeQuery() {
+  if (userStore.selectedLetter) return `^${userStore.selectedLetter}`
+  if (userStore.searchQuery) return userStore.searchQuery
+  return undefined
+}
+
 function loadPage(p: number) {
-  userStore.fetchUsers({ page: p, limit: 20 })
+  userStore.fetchUsers({ page: p, limit: 20, q: activeQuery() })
 }
 
 onMounted(async () => {
@@ -75,9 +85,29 @@ function onSearchInput(e: Event) {
 function deleteUser(userId: string) {
   userStore.deleteUser(userId)
 }
+
+watch(() => userStore.selectedLetter, (letter) => {
+  userStore.fetchUsers({ page: 1, limit: 20, q: letter ? `^${letter}` : undefined })
+})
+
+watch(() => userStore.searchQuery, (q) => {
+  userStore.fetchUsers({ page: 1, limit: 20, q: q || undefined })
+})
 </script>
 
 <style scoped lang="scss">
+.admin-tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-table-wrapper {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+
 .admin-users-header {
   background-color: $red;
   display: grid;

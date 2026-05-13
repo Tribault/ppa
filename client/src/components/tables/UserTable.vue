@@ -63,9 +63,15 @@ function closeDeletionModal() {
 }
 </script>
 <style lang="scss" scoped>
-.admin-users-table {
-  &--actions > * {
-    cursor: pointer;
+.admin-booking-table {
+  &--actions {
+    text-align: right;
+    white-space: nowrap;
+    > * { cursor: pointer; }
   }
+}
+
+thead th:last-child {
+  text-align: right;
 }
 </style>

@@ -1,4 +1,5 @@
 <template>
+  <div class="admin-tab">
   <div class="admin-sales-header">
     <div class="admin-sales-header--filter">
       <div>
@@ -29,8 +30,11 @@
     </div>
   </div>
 
-  <admin-sale-table :sales="saleStore.sales" />
+  <div class="admin-table-wrapper">
+    <admin-sale-table :sales="saleStore.sales" />
+  </div>
   <pagination :page="saleStore.page" :pages="saleStore.pages" @change="loadPage" />
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -61,6 +65,18 @@ onMounted(() => {
 })
 </script>
 <style lang="scss" scoped>
+.admin-tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-table-wrapper {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+
 .admin-sales-header {
   background-color: $red;
   display: grid;

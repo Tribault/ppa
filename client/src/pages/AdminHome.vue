@@ -34,7 +34,7 @@
       </nav>
     </div>
 
-    <div>
+    <div class="admin-home-content">
       <posters v-if="currentTab === 'posters'" />
       <bookings v-else-if="currentTab === 'bookings'" />
       <sales v-else-if="currentTab === 'sales'" />
@@ -60,6 +60,18 @@ const currentTab = ref<'posters' | 'bookings' | 'sales' | 'users'>('posters')
 </script>
 
 <style scoped lang="scss">
+.admin-home {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-home-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
 .admin-home-header {
   display: flex;
   align-items: center;

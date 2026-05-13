@@ -44,7 +44,7 @@ export const useBookingStore = defineStore('bookings', () => {
 
   async function fetchBookings(
     options?: { all?: boolean },
-    params: { page?: number; limit?: number } = {},
+    params: { page?: number; limit?: number; q?: string } = {},
   ) {
     loading.value = true
     try {

@@ -119,6 +119,13 @@ exports.getBookings = async (req, res) => {
       filter.user = req.user._id
     }
 
+    if (req.query.q && req.user.role === 'admin') {
+      const matchingUsers = await User.find({
+        email: { $regex: req.query.q, $options: 'i' }
+      }).select('_id')
+      filter.user = { $in: matchingUsers.map(u => u._id) }
+    }
+
     const [bookings, total] = await Promise.all([
      Booking.find(filter)
     .populate('user')

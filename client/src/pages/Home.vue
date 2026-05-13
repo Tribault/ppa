@@ -119,6 +119,14 @@ watch(view, (newView) => {
   localStorage.setItem('posterView', newView)
   posterStore.fetchPosters({ forSale: true, page: 1, limit: limit.value })
 })
+
+watch(() => posterStore.searchQuery, (q) => {
+  posterStore.fetchPosters({ forSale: true, page: 1, limit: limit.value, q: q || undefined })
+})
+
+watch(() => posterStore.selectedLetter, (letter) => {
+  posterStore.fetchPosters({ forSale: true, page: 1, limit: limit.value, q: letter ? `^${letter}` : undefined })
+})
 </script>
 
 <style lang="scss" scoped>

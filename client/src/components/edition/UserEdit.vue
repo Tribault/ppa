@@ -11,15 +11,6 @@
 
           <form @submit.prevent="submit" class="user-edit-form">
             <div class="user-edit-form--row">
-              <b>{{ $t('form.user.emailLabel') }}</b>
-              <input
-                v-model="form.email"
-                type="text"
-                :placeholder="$t('form.user.emailLabel')"
-                class="user-edit-input"
-              />
-            </div>
-            <div class="user-edit-form--row">
               <b>{{ $t('form.user.roleLabel') }}</b>
               <select v-model="form.role" class="user-edit-input">
                 <option value="admin">{{ $t('form.user.roleAdmin') }}</option>
@@ -57,10 +48,8 @@ const emit = defineEmits(['close', 'saved'])
 const userStore = useUserStore()
 
 const form = ref<{
-  email: string
   role: 'user' | 'admin'
 }>({
-  email: '',
   role: 'user',
 })
 
@@ -73,11 +62,10 @@ watch(
   (val) => {
     if (val) {
       form.value = {
-        email: val.email,
         role: val.role,
       }
     } else {
-      form.value = { email: '', role: 'user' }
+      form.value = { role: 'user' }
     }
   },
   { immediate: true },

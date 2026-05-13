@@ -1,4 +1,5 @@
 <template>
+  <div class="admin-tab">
   <div class="admin-posters-header">
     <div class="admin-posters-header--search">
       <MagnifyingGlassIcon class="icon" />
@@ -21,24 +22,27 @@
     </div>
   </div>
 
-  <admin-poster-table
-    :posters="posterStore.filteredPosters"
-    @edit="(p) => openEditPoster(p)"
-    @delete="(p) => deletePoster(p)"
-  />
+  <div class="admin-table-wrapper">
+    <admin-poster-table
+      :posters="posterStore.filteredPosters"
+      @edit="(p) => openEditPoster(p)"
+      @delete="(p) => deletePoster(p)"
+    />
+  </div>
   <pagination :page="posterStore.page" :pages="posterStore.pages" @change="loadPage" />
   <poster-edit
     :visible="showModal"
     :posterToEdit="editingPoster"
     @close="closeModal"
-    @saved="posterStore.fetchPosters"
+    @saved="posterStore.fetchPosters({ page: 1, limit: 20, q: activeQuery() })"
   />
   <tag-edit :visible="showTagModal" @close="closeTagModal" />
+  </div>
 </template>
 
 <script setup lang="ts">
 import { usePosterStore } from '@/stores/posters'
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { Alphabet } from '@/types/models'
 import type { Poster } from '@/types/models'
 import AdminPosterTable from '@/components/tables/PosterTable.vue'
@@ -75,8 +79,14 @@ const closeTagModal = () => {
   showTagModal.value = false
 }
 
+function activeQuery() {
+  if (posterStore.selectedLetter) return `^${posterStore.selectedLetter}`
+  if (posterStore.searchQuery) return posterStore.searchQuery
+  return undefined
+}
+
 function loadPage(p: number) {
-  posterStore.fetchPosters({ page: p, limit: 20 })
+  posterStore.fetchPosters({ page: p, limit: 20, q: activeQuery() })
 }
 
 onMounted(async () => {
@@ -87,12 +97,32 @@ function onSearchInput(e: Event) {
   posterStore.setSearchQuery((e.target as HTMLInputElement).value)
 }
 
+watch(() => posterStore.selectedLetter, (letter) => {
+  posterStore.fetchPosters({ page: 1, limit: 20, q: letter ? `^${letter}` : undefined })
+})
+
+watch(() => posterStore.searchQuery, (q) => {
+  posterStore.fetchPosters({ page: 1, limit: 20, q: q || undefined })
+})
+
 function deletePoster(poster: Poster) {
   posterStore.deletePoster(poster._id)
 }
 </script>
 
 <style scoped lang="scss">
+.admin-tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-table-wrapper {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+
 .admin-posters-header {
   background-color: $red;
   display: grid;

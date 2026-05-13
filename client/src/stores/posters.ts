@@ -3,6 +3,8 @@ import type { Poster, StockInfo } from '@/types/models'
 import { ref, computed } from 'vue'
 import api from '@/utils/axios'
 import debounce from 'lodash.debounce'
+import { useToast } from 'vue-toastification'
+const toast = useToast()
 
 export const usePosterStore = defineStore('posters', () => {
   const posters = ref<Poster[]>([])
@@ -99,8 +101,10 @@ export const usePosterStore = defineStore('posters', () => {
     try {
       await api.delete(`/posters/${id}`)
       posters.value = posters.value.filter((p) => p._id !== id)
+      toast.success('Affiche supprimée ✅')
     } catch (err: any) {
       error.value = err.response?.data?.message || 'Failed to delete poster'
+      toast.error('Erreur durant la suppression ❌')
       throw err
     }
   }

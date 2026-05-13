@@ -1,4 +1,5 @@
 <template>
+  <div class="admin-tab">
   <div class="admin-bookings-header">
     <div class="admin-bookings-header--search">
       <MagnifyingGlassIcon class="icon" />
@@ -29,25 +30,28 @@
     </div>
   </div>
 
-  <admin-booking-table
-    :bookings="bookingStore.filteredBookings"
-    @edit="(p) => openEditBooking(p)"
-    @delete="(p) => deleteBooking(p)"
-  />
+  <div class="admin-table-wrapper">
+    <admin-booking-table
+      :bookings="bookingStore.filteredBookings"
+      @edit="(p) => openEditBooking(p)"
+      @delete="(p) => deleteBooking(p)"
+    />
+  </div>
   <pagination :page="bookingStore.page" :pages="bookingStore.pages" @change="loadPage" />
   <booking-edit
     :visible="showModal"
     :bookingToEdit="editingBooking"
     @close="closeModal"
-    @saved="bookingStore.fetchBookings({ all: true }, { page: 1, limit: 20 })"
+    @saved="bookingStore.fetchBookings({ all: true }, { page: 1, limit: 20, q: activeQuery() })"
   />
   <message-edit :visible="showMessageModal" @close="showMessageModal = false" />
+  </div>
 </template>
 
 <script setup lang="ts">
 import { useBookingStore } from '@/stores/bookings'
 import { useMessageStore } from '@/stores/messages'
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { Alphabet } from '@/types/models'
 import AdminBookingTable from '@/components/tables/BookingTable.vue'
 import BookingEdit from '@/components/edition/BookingEdit.vue'
@@ -87,8 +91,14 @@ const closeModal = () => {
   showModal.value = false
 }
 
+function activeQuery() {
+  if (bookingStore.selectedLetter) return `^${bookingStore.selectedLetter}`
+  if (bookingStore.searchQuery) return bookingStore.searchQuery
+  return undefined
+}
+
 function loadPage(p: number) {
-  bookingStore.fetchBookings({ all: true }, { page: p, limit: 20 })
+  bookingStore.fetchBookings({ all: true }, { page: p, limit: 20, q: activeQuery() })
 }
 
 onMounted(async () => {
@@ -107,9 +117,29 @@ function deleteBooking(bookingId: string) {
 function toggleBookings() {
   messageStore.toggleBooking()
 }
+
+watch(() => bookingStore.selectedLetter, (letter) => {
+  bookingStore.fetchBookings({ all: true }, { page: 1, limit: 20, q: letter ? `^${letter}` : undefined })
+})
+
+watch(() => bookingStore.searchQuery, (q) => {
+  bookingStore.fetchBookings({ all: true }, { page: 1, limit: 20, q: q || undefined })
+})
 </script>
 
 <style scoped lang="scss">
+.admin-tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-table-wrapper {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+
 .admin-bookings-header {
   background-color: $red;
   display: grid;

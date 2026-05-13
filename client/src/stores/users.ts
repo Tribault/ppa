@@ -83,10 +83,8 @@ export const useUserStore = defineStore('users', () => {
       if (index !== -1) {
         users.value[index] = res.data
       }
-      toast.success('Utilisateur mis à jour ✅')
     } catch (err: any) {
       error.value = err.response?.data?.message || 'Failed to update user'
-      toast.error('Erreur durant la mise à jour ❌')
       throw err
     }
   }

@@ -234,6 +234,19 @@
   }
 }
 
+/* Column striping — even columns get a subtle tint */
+.sticky-table thead th:nth-child(even) {
+  background-color: rgba(220, 20, 60, 0.06);
+}
+
+.sticky-table tbody tr:nth-child(even) td:nth-child(even) {
+  background-color: rgba(220, 20, 60, 0.06);
+}
+
+.sticky-table tbody tr:nth-child(odd) td:nth-child(even) {
+  background-color: rgba(0, 0, 0, 0.07);
+}
+
 /* Compact mode on very small screens */
 @media (max-width: 480px) {
   .sticky-table {

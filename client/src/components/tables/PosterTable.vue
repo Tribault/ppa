@@ -62,14 +62,20 @@ function deleteConfirmation(poster: Poster) {
 }
 
 function closeDeletionModal() {
-  emit('delete', posterToDelete)
+  emit('delete', posterToDelete.value)
   showDeleteModal.value = false
 }
 </script>
 <style lang="scss" scoped>
 .admin-poster-table {
-  &--actions > * {
-    cursor: pointer;
+  &--actions {
+    text-align: right;
+    white-space: nowrap;
+    > * { cursor: pointer; }
   }
+}
+
+thead th:last-child {
+  text-align: right;
 }
 </style>
