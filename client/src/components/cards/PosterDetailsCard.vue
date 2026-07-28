@@ -29,6 +29,21 @@
           </li>
           <li class="poster-details-card-data--price"><b>{{ $t('posterDetails.price') }}</b> {{ posterInfo.price }} €</li>
           <li class="poster-details-card-data--size"><b>{{ $t('posterDetails.size') }}</b> {{ posterInfo.size }}</li>
+          <li v-if="posterInfo.filmmaker" class="poster-details-card-data--filmmaker">
+            <b>{{ $t('posterDetails.filmmaker') }}</b> {{ posterInfo.filmmaker }}
+          </li>
+          <li v-if="posterInfo.year" class="poster-details-card-data--year">
+            <b>{{ $t('posterDetails.year') }}</b> {{ posterInfo.year }}
+          </li>
+          <li v-if="posterInfo.mainActors?.length" class="poster-details-card-data--actors">
+            <b>{{ $t('posterDetails.mainActors') }}</b> {{ posterInfo.mainActors.join(', ') }}
+          </li>
+          <li v-if="posterInfo.genre" class="poster-details-card-data--genre">
+            <b>{{ $t('posterDetails.genre') }}</b> {{ posterInfo.genre }}
+          </li>
+          <li v-if="posterInfo.country" class="poster-details-card-data--country">
+            <b>{{ $t('posterDetails.country') }}</b> {{ posterInfo.country }}
+          </li>
           <li v-if="auth.isAdmin" class="poster-details-card-data--stock">
             <b>{{ $t('posterDetails.totalStock') }}</b> {{ posterInfo.totalStock }}
           </li>

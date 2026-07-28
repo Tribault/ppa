@@ -21,11 +21,74 @@
                 class="poster-edit-input"
               />
             </div>
+            <div v-if="tmdbPosterOptions.length" class="poster-edit-form--row">
+              <button type="button" class="btn-red-bg" @click="showPosterPicker = true">
+                <photo-icon /> {{ $t('form.poster.viewSuggestedPosters', { count: tmdbPosterOptions.length }) }}
+              </button>
+            </div>
             <div class="poster-edit-form--row">
               <b>{{ $t('form.poster.titleLabel') }}</b>
               <input
                 v-model="form.title"
                 :placeholder="$t('form.poster.titlePlaceholder')"
+                class="poster-edit-input"
+              />
+              <button type="button" class="btn-red-bg" @click="searchMovie" :disabled="!form.title || searching">
+                <magnifying-glass-icon /> {{ $t('form.poster.searchMovie') }}
+              </button>
+            </div>
+            <div v-if="movieResults.length" class="poster-edit-movie-results">
+              <button
+                v-for="(result, i) in movieResults"
+                :key="i"
+                type="button"
+                class="poster-edit-movie-result"
+                @click="applyMovieResult(result)"
+              >
+                <img v-if="result.posterUrl" :src="result.posterUrl" alt="" />
+                <span>{{ result.title }} <template v-if="result.year">({{ result.year }})</template></span>
+                <em>{{ result.source }}</em>
+              </button>
+            </div>
+            <p v-else-if="searched" class="poster-edit-movie-no-results">{{ $t('form.poster.noMovieResults') }}</p>
+            <div class="poster-edit-form--row">
+              <b>{{ $t('form.poster.filmmakerLabel') }}</b>
+              <input
+                v-model="form.filmmaker"
+                :placeholder="$t('form.poster.filmmakerPlaceholder')"
+                class="poster-edit-input"
+              />
+            </div>
+            <div class="poster-edit-form--row">
+              <b>{{ $t('form.poster.yearLabel') }}</b>
+              <input
+                v-model.number="form.year"
+                type="number"
+                :placeholder="$t('form.poster.yearPlaceholder')"
+                class="poster-edit-input"
+              />
+            </div>
+            <div class="poster-edit-form--row">
+              <b>{{ $t('form.poster.mainActorsLabel') }}</b>
+              <input
+                v-model="mainActorsText"
+                :placeholder="$t('form.poster.mainActorsPlaceholder')"
+                class="poster-edit-input"
+              />
+            </div>
+            <div class="poster-edit-form--row">
+              <b>{{ $t('form.poster.genreLabel') }}</b>
+              <input
+                v-model="form.genre"
+                :placeholder="$t('form.poster.genrePlaceholder')"
+                class="poster-edit-input"
+              />
+            </div>
+            <div class="poster-edit-form--row">
+              <b>{{ $t('form.poster.countryLabel') }}</b>
+              <input
+                v-model="form.country"
+                :placeholder="$t('form.poster.countryPlaceholder')"
                 class="poster-edit-input"
               />
             </div>
@@ -98,14 +161,24 @@
       </Transition>
     </div>
   </Transition>
+  <poster-image-picker
+    :visible="showPosterPicker"
+    :options="tmdbPosterOptions"
+    :selected-path="selectedPosterPath"
+    :loading="adoptingPoster"
+    @close="showPosterPicker = false"
+    @select="selectPosterOption"
+  />
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted } from 'vue'
-import type { Poster } from '@/types/models'
-import { XMarkIcon, FolderArrowDownIcon } from '@heroicons/vue/24/solid'
+import { ref, computed, watch, onMounted } from 'vue'
+import type { Poster, MovieSearchResult, TmdbPosterOption } from '@/types/models'
+import { XMarkIcon, FolderArrowDownIcon, MagnifyingGlassIcon, PhotoIcon } from '@heroicons/vue/24/solid'
 import { usePosterStore } from '@/stores/posters'
 import { useTagStore } from '@/stores/tags'
+import { useMovieStore } from '@/stores/movies'
+import PosterImagePicker from './PosterImagePicker.vue'
 import { useToast } from 'vue-toastification'
 import { useI18n } from 'vue-i18n'
 const toast = useToast()
@@ -119,6 +192,7 @@ const emit = defineEmits(['close', 'saved'])
 
 const store = usePosterStore()
 const tagStore = useTagStore()
+const movieStore = useMovieStore()
 
 const form = ref<{
   title: string
@@ -129,6 +203,11 @@ const form = ref<{
   tags: string[]
   image: File | string | null
   forSale: Boolean
+  filmmaker: string
+  year: number | null
+  mainActors: string[]
+  genre: string
+  country: string
 }>({
   title: '',
   size: '120*160 cm',
@@ -137,10 +216,87 @@ const form = ref<{
   totalStock: 0,
   tags: [],
   image: null,
-  forSale: false
+  forSale: false,
+  filmmaker: '',
+  year: null,
+  mainActors: [],
+  genre: '',
+  country: ''
+})
+
+const mainActorsText = computed({
+  get: () => form.value.mainActors.join(', '),
+  set: (val: string) => {
+    form.value.mainActors = val.split(',').map((a) => a.trim()).filter(Boolean)
+  }
 })
 
 const previewUrl = ref<string>('')
+const movieResults = ref<MovieSearchResult[]>([])
+const searching = ref(false)
+const searched = ref(false)
+const tmdbPosterOptions = ref<TmdbPosterOption[]>([])
+const selectedPosterPath = ref<string | null>(null)
+const adoptingPoster = ref(false)
+const showPosterPicker = ref(false)
+
+async function searchMovie() {
+  searching.value = true
+  searched.value = true
+  tmdbPosterOptions.value = []
+  selectedPosterPath.value = null
+  try {
+    movieResults.value = await movieStore.searchMovies(form.value.title)
+  } catch (err) {
+    console.error(err)
+    toast.error(t('form.poster.error'))
+  } finally {
+    searching.value = false
+  }
+}
+
+async function applyMovieResult(result: MovieSearchResult) {
+  try {
+    const details = result.source === 'tmdb' && result.id
+      ? await movieStore.getTmdbDetails(result.id)
+      : result
+
+    form.value.filmmaker = details.filmmaker || ''
+    form.value.year = details.year ? Number(details.year) : null
+    form.value.mainActors = details.mainActors || []
+    form.value.genre = details.genre || ''
+    form.value.country = details.country || ''
+    movieResults.value = []
+    searched.value = false
+
+    // Poster art is a suggestion, not an autofill — manual upload stays available
+    // and takes precedence, since French affiches aren't always the top TMDB match.
+    tmdbPosterOptions.value = result.source === 'tmdb' && result.id
+      ? await movieStore.getTmdbPosters(result.id)
+      : []
+    selectedPosterPath.value = null
+    showPosterPicker.value = tmdbPosterOptions.value.length > 0
+  } catch (err) {
+    console.error(err)
+    toast.error(t('form.poster.error'))
+  }
+}
+
+async function selectPosterOption(option: TmdbPosterOption) {
+  adoptingPoster.value = true
+  try {
+    const filename = await movieStore.selectTmdbPoster(option.path)
+    form.value.image = filename
+    previewUrl.value = import.meta.env.VITE_IMG_URL + filename
+    selectedPosterPath.value = option.path
+    showPosterPicker.value = false
+  } catch (err) {
+    console.error(err)
+    toast.error(t('form.poster.error'))
+  } finally {
+    adoptingPoster.value = false
+  }
+}
 
 onMounted(async () => {
   await tagStore.fetchTags()
@@ -154,12 +310,36 @@ watch(
         ...val,
         tags: (val.tags ?? []).map((t) => t._id),
         image: val.image || null,
+        filmmaker: val.filmmaker || '',
+        year: val.year ?? null,
+        mainActors: val.mainActors ?? [],
+        genre: val.genre || '',
+        country: val.country || '',
       }
       previewUrl.value = val.image ? import.meta.env.VITE_IMG_URL + val.image : ''
     } else {
-      form.value = { title: '', size: '120*160 cm', price: 0, totalStock: 0, note: '', tags: [], image: null, forSale: false }
+      form.value = {
+        title: '',
+        size: '120*160 cm',
+        price: 0,
+        totalStock: 0,
+        note: '',
+        tags: [],
+        image: null,
+        forSale: false,
+        filmmaker: '',
+        year: null,
+        mainActors: [],
+        genre: '',
+        country: '',
+      }
       previewUrl.value = ''
     }
+    movieResults.value = []
+    searched.value = false
+    tmdbPosterOptions.value = []
+    selectedPosterPath.value = null
+    showPosterPicker.value = false
   },
   { immediate: true },
 )
@@ -173,6 +353,7 @@ function handleFileUpload(event: Event) {
   if (file) {
     form.value.image = file
     previewUrl.value = URL.createObjectURL(file)
+    selectedPosterPath.value = null
   }
 }
 
@@ -189,9 +370,16 @@ async function submit() {
     formData.append('note', form.value.note)
     formData.append('totalStock', form.value.totalStock.toString())
     formData.append('forSale', form.value.forSale.toString())
+    formData.append('filmmaker', form.value.filmmaker)
+    if (form.value.year) formData.append('year', form.value.year.toString())
+    formData.append('genre', form.value.genre)
+    formData.append('country', form.value.country)
     form.value.tags.forEach((tag) => formData.append('tags[]', tag))
+    form.value.mainActors.forEach((actor) => formData.append('mainActors[]', actor))
 
     if (form.value.image instanceof File) {
+      formData.append('image', form.value.image)
+    } else if (typeof form.value.image === 'string' && form.value.image) {
       formData.append('image', form.value.image)
     }
 
@@ -250,6 +438,52 @@ async function submit() {
   position: absolute;
   top: 12px;
   right: 16px;
+}
+
+.poster-edit-movie-results {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 160px;
+  overflow-y: auto;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  padding: 4px;
+}
+
+.poster-edit-movie-result {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  background: transparent;
+  border: none;
+  color: white;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 4px;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.15);
+  }
+
+  img {
+    width: 30px;
+    height: 45px;
+    object-fit: cover;
+    border-radius: 3px;
+  }
+
+  em {
+    margin-left: auto;
+    opacity: 0.6;
+    font-size: 11px;
+  }
+}
+
+.poster-edit-movie-no-results {
+  font-size: 13px;
+  opacity: 0.8;
 }
 
 .poster-edit-title {

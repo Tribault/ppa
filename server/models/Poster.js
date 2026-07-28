@@ -12,7 +12,12 @@ const posterSchema = new mongoose.Schema({
     image : String,
     tags: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Tag' }],
     totalStock: Number,
-    forSale: {type: Boolean, default: false}
+    forSale: {type: Boolean, default: false},
+    filmmaker: String,
+    year: Number,
+    mainActors: [String],
+    genre: String,
+    country: String
 })
 
 

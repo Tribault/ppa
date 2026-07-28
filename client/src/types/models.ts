@@ -15,6 +15,37 @@ export interface Poster {
   tags: Tag[]
   forSale: Boolean
   stockInfo: StockInfo
+  filmmaker?: string
+  year?: number
+  mainActors?: string[]
+  genre?: string
+  country?: string
+}
+
+export interface MovieSearchResult {
+  source: 'tmdb' | 'wikipedia'
+  id?: number
+  title: string
+  year?: string
+  posterUrl?: string | null
+  filmmaker?: string
+  mainActors?: string[]
+  genre?: string
+  country?: string
+}
+
+export interface MovieDetails {
+  filmmaker: string
+  year: number | null
+  mainActors: string[]
+  genre: string
+  country: string
+}
+
+export interface TmdbPosterOption {
+  path: string
+  previewUrl: string
+  language: string | null
 }
 
 export interface StockInfo {
@@ -65,6 +96,11 @@ export interface PosterPayload {
   totalStock: number
   tags: string[]
   forSale: Boolean
+  filmmaker?: string
+  year?: number
+  mainActors?: string[]
+  genre?: string
+  country?: string
 }
 
 export interface Tag {

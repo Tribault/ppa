@@ -82,9 +82,9 @@ exports.getPoster = async (req, res) => {
 }
 
 exports.createPoster = async (req, res) => {
-    const {title, size, price, note, totalStock, tags} = req.body
-    const image = req.file?.filename || ''
-    const poster = await Poster.create({title, size, price, note, totalStock, image, tags})
+    const {title, size, price, note, totalStock, tags, filmmaker, year, mainActors, genre, country, image: bodyImage} = req.body
+    const image = req.file?.filename || bodyImage || ''
+    const poster = await Poster.create({title, size, price, note, totalStock, image, tags, filmmaker, year, mainActors, genre, country})
     res.json(poster)
 }
 
