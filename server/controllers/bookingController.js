@@ -7,7 +7,13 @@ const fr = require('../locales/fr')
 
 exports.createOrUpdateBooking = async (req, res) => {
   try {
-    const { posterId, quantity, userId, status } = req.body
+    const isAdmin = req.user.role === 'admin'
+    const { posterId, quantity } = req.body
+
+    // Non-admins can only ever book/update for themselves and can't set status directly
+    // (status flows through the admin validation workflow) — ignore anything they send for these.
+    const userId = isAdmin ? req.body.userId : req.user.id
+    const status = isAdmin ? req.body.status : undefined
 
     // basic validations
     if (!posterId || !userId || typeof quantity !== 'number') {

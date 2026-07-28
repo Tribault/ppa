@@ -7,13 +7,14 @@ const saleRoutes = require('./routes/sales')
 const userRoutes = require('./routes/users')
 const tagRoutes = require('./routes/tags')
 const messageRoutes = require('./routes/messages')
+const movieRoutes = require('./routes/movies')
 
 
 
 const multer = require('multer')
 
 const app = express()
-app.use(cors())
+app.use(cors({ origin: process.env.FRONTEND_URL || 'http://localhost:5173' }))
 app.use(express.json())
 app.use('/uploads', express.static('uploads'))
 
@@ -24,6 +25,7 @@ app.use('/api/sales', saleRoutes)
 app.use('/api/users', userRoutes)
 app.use('/api/tags', tagRoutes)
 app.use('/api/messages', messageRoutes)
+app.use('/api/movies', movieRoutes)
 
 // Catch Multer errors (bad file type, file too large) and return a clean 400
 // instead of letting them bubble up as an unhandled 500.

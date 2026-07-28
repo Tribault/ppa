@@ -136,6 +136,25 @@ describe('Users', () => {
         .send({ email: 'nonexistent@test.com' })
       expect(res.status).toBe(404)
     })
+
+    it('rejects a user updating another user\'s account', async () => {
+      const other = await createUser({ email: 'other@test.com', role: 'user' })
+      const res = await request(app)
+        .put(`/api/users/${other._id}`)
+        .set('Authorization', `Bearer ${userToken}`)
+        .send({ email: 'hijacked@test.com' })
+      expect(res.status).toBe(403)
+    })
+
+    it('does not let a user escalate their own role to admin', async () => {
+      const res = await request(app)
+        .put(`/api/users/${user._id}`)
+        .set('Authorization', `Bearer ${userToken}`)
+        .send({ role: 'admin' })
+      expect(res.status).toBe(200)
+      const updated = await User.findById(user._id)
+      expect(updated.role).toBe('user')
+    })
   })
 
   // ── DELETE ─────────────────────────────────────────────────────────────────

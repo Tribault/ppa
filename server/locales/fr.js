@@ -62,6 +62,7 @@ module.exports = {
     emailAlreadyInUse: 'Adresse e-mail déjà utilisée.',
     created: 'Utilisateur créé.',
     notFound: 'Utilisateur introuvable.',
+    notAuthorized: 'Action non autorisée.',
     updated: 'Utilisateur mis à jour.',
     deleted: 'Utilisateur supprimé.',
     failedToFetch: 'Impossible de récupérer les utilisateurs.',

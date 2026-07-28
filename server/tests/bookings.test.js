@@ -42,7 +42,7 @@ describe('Bookings', () => {
     it('rejects a booking that exceeds available stock', async () => {
       const res = await bookPoster(11) // totalStock is 10
       expect(res.status).toBe(400)
-      expect(res.body.error).toMatch(/stock/)
+      expect(res.body.error).toMatch(/stock/i)
     })
 
     it('requires authentication', async () => {
@@ -60,12 +60,36 @@ describe('Bookings', () => {
       expect(res.status).toBe(404)
     })
 
-    it('returns 404 for an unknown user', async () => {
+    it('returns 404 for an unknown user (admin targeting another user)', async () => {
+      // Non-admins can't target an arbitrary userId at all (it's ignored and forced to their
+      // own id — see the "cannot book on behalf of another user" test below), so this
+      // validation path is only reachable by an admin.
+      const res = await request(app)
+        .post('/api/bookings')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({ posterId: poster._id, userId: '000000000000000000000001', quantity: 1 })
+      expect(res.status).toBe(404)
+    })
+
+    it('cannot book on behalf of another user — userId is ignored for non-admins', async () => {
+      const other = await createUser({ email: 'other-target@test.com', role: 'user' })
       const res = await request(app)
         .post('/api/bookings')
         .set('Authorization', `Bearer ${userToken}`)
-        .send({ posterId: poster._id, userId: '000000000000000000000001', quantity: 1 })
-      expect(res.status).toBe(404)
+        .send({ posterId: poster._id, userId: other._id, quantity: 1 })
+      expect(res.status).toBe(201)
+      // Booking must belong to the authenticated user, not the spoofed target
+      expect(res.body.user._id ?? res.body.user).toBe(String(user._id))
+    })
+
+    it('cannot set status directly as a non-admin — new booking always starts pending', async () => {
+      const res = await request(app)
+        .post('/api/bookings')
+        .set('Authorization', `Bearer ${userToken}`)
+        .send({ posterId: poster._id, userId: user._id, quantity: 1, status: 'validated' })
+      expect(res.status).toBe(201)
+      expect(res.body.status).toBe('pending')
+      expect(await Sale.countDocuments()).toBe(0)
     })
   })
 

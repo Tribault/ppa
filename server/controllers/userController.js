@@ -56,8 +56,17 @@ exports.createUser = async (req, res) => {
 
 exports.updateUser = async (req, res) => {
     try {
+    const isAdmin = req.user.role === 'admin'
+    const isSelf = req.params.id === req.user.id
+
+    if (!isAdmin && !isSelf) {
+      return res.status(403).json({ error: fr.user.notAuthorized })
+    }
+
     const { email, password, role } = req.body
-    const updateData = { email, role }
+    const updateData = { email }
+    // Only admins can change role — a self-service update must never let a user escalate themselves.
+    if (isAdmin && role) updateData.role = role
 
     if (password) {
       updateData.password = await bcrypt.hash(password, 10)
