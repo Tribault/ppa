@@ -4,7 +4,7 @@ const app = require('./app')
 
 mongoose.connect(process.env.MONGO_URI).then(()=> {
     console.log('MongoDB connected')
-    app.listen(process.env.PORT, () => {
+    app.listen(process.env.PORT, '127.0.0.1', () => {
         console.log(`Server running on http://localhost:${process.env.PORT}`)
     })
 })
