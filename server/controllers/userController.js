@@ -1,6 +1,5 @@
 const User = require('../models/User')
 const bcrypt = require('bcryptjs')
-const fr = require('../locales/fr')
 
 exports.getUsers = async(req, res) => {
     try {
@@ -30,7 +29,7 @@ exports.getUsers = async(req, res) => {
     })
 
     } catch (err) {
-    res.status(500).json({ error: fr.user.failedToFetch })
+    res.status(500).json({ error: req.t.user.failedToFetch })
   }
 }
 
@@ -39,19 +38,19 @@ exports.getUser = async(req, res) => {
     const user = await User.findById(req.params.id).select('-password')
     res.json(user)
      } catch (err) {
-    res.status(500).json({ error: fr.user.failedToFetchOne })
+    res.status(500).json({ error: req.t.user.failedToFetchOne })
   }
 }
 
 exports.createUser = async (req, res) => {
   const { email, password, role } = req.body
   const existing = await User.findOne({ email })
-  if (existing) return res.status(400).json({ error: fr.user.emailAlreadyInUse })
+  if (existing) return res.status(400).json({ error: req.t.user.emailAlreadyInUse })
   const user = new User({ email, password, role })
   await user.save()
   const userObj = user.toObject()
   delete userObj.password
-  res.status(201).json({ message: fr.user.created, user: userObj })
+  res.status(201).json({ message: req.t.user.created, user: userObj })
 }
 
 exports.updateUser = async (req, res) => {
@@ -60,7 +59,7 @@ exports.updateUser = async (req, res) => {
     const isSelf = req.params.id === req.user.id
 
     if (!isAdmin && !isSelf) {
-      return res.status(403).json({ error: fr.user.notAuthorized })
+      return res.status(403).json({ error: req.t.user.notAuthorized })
     }
 
     const { email, password, role } = req.body
@@ -73,18 +72,18 @@ exports.updateUser = async (req, res) => {
     }
 
     const user = await User.findByIdAndUpdate(req.params.id, updateData, { new: true }).select('-password')
-    if (!user) return res.status(404).json({ error: fr.user.notFound })
-    res.json({ message: fr.user.updated, user })
+    if (!user) return res.status(404).json({ error: req.t.user.notFound })
+    res.json({ message: req.t.user.updated, user })
   } catch (err) {
-    res.status(500).json({ error: fr.user.failedToUpdate })
+    res.status(500).json({ error: req.t.user.failedToUpdate })
   }
 }
 
 exports.deleteUser = async (req, res) => {
      try {
     const poster = await User.findByIdAndDelete(req.params.id)
-    res.json({ message: fr.user.deleted })
+    res.json({ message: req.t.user.deleted })
 } catch (err) {
-    res.status(500).json({ error: fr.user.failedToDelete })
+    res.status(500).json({ error: req.t.user.failedToDelete })
   }
 }

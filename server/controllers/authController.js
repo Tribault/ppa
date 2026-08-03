@@ -2,7 +2,6 @@ const User = require('../models/User')
 const jwt = require('jsonwebtoken')
 const crypto = require('crypto')
 const sendEmail = require('../utils/mailer')
-const fr = require('../locales/fr')
 
 const generateToken = (u) => {
     return jwt.sign({id: u._id, role: u.role}, process.env.JWT_SECRET, {expiresIn: '1d'})
@@ -14,7 +13,7 @@ exports.signup = async (req, res) => {
      const { email, password } = req.body
 
     const existing = await User.findOne({ email })
-    if (existing) return res.status(400).json({ message: fr.auth.emailAlreadyInUse })
+    if (existing) return res.status(400).json({ message: req.t.auth.emailAlreadyInUse })
 
     const user = new User({ email, password })
 
@@ -31,11 +30,11 @@ exports.signup = async (req, res) => {
 
     await sendEmail(
       user.email,
-      fr.email.verifySubject,
-      fr.email.verifyBody(user.email, verifyLink)
+      req.t.email.verifySubject,
+      req.t.email.verifyBody(user.email, verifyLink)
     )
 
-    return res.json({ message: fr.auth.signupSuccess })
+    return res.json({ message: req.t.auth.signupSuccess })
   } catch (err) {
     res.status(400).json({ message: err.message })
   }
@@ -43,7 +42,7 @@ exports.signup = async (req, res) => {
 
 exports.verifyEmail = async (req, res) => {
   const { token } = req.body
-   if (!token) return res.status(400).json({ message: fr.auth.missingToken })
+   if (!token) return res.status(400).json({ message: req.t.auth.missingToken })
 
   try {
     const hashedToken = crypto.createHash('sha256').update(token).digest('hex')
@@ -53,7 +52,7 @@ exports.verifyEmail = async (req, res) => {
     })
 
     if (!user) {
-      return res.status(400).json({ message: fr.auth.invalidOrExpiredVerificationToken })
+      return res.status(400).json({ message: req.t.auth.invalidOrExpiredVerificationToken })
     }
 
     user.isVerified = true
@@ -61,9 +60,9 @@ exports.verifyEmail = async (req, res) => {
     user.verificationTokenExpires = undefined
     await user.save()
 
-    res.json({ message: fr.auth.emailVerifiedSuccess })
+    res.json({ message: req.t.auth.emailVerifiedSuccess })
   } catch (err) {
-    res.status(500).json({ message: fr.auth.serverError })
+    res.status(500).json({ message: req.t.auth.serverError })
   }
 }
 
@@ -71,11 +70,11 @@ exports.login = async (req, res) => {
    const { email, password } = req.body
   const user = await User.findOne({ email })
   if (!user || !(await user.comparePassword(password))) {
-    return res.status(401).json({ message: fr.auth.invalidCredentials })
+    return res.status(401).json({ message: req.t.auth.invalidCredentials })
   }
 
   if (!user.isVerified) {
-    return res.status(403).json({ message: fr.auth.notVerified })
+    return res.status(403).json({ message: req.t.auth.notVerified })
   }
 
   res.json({ token: generateToken(user), user })
@@ -93,7 +92,7 @@ exports.forgotPassword = async (req, res) => {
     const user = await User.findOne({ email })
     if (!user) {
       // Always respond the same way for security
-      return res.json({ message: fr.auth.resetLinkSent })
+      return res.json({ message: req.t.auth.resetLinkSent })
     }
 
     // Generate token
@@ -108,13 +107,13 @@ exports.forgotPassword = async (req, res) => {
 
      await sendEmail(
       user.email,
-      fr.email.resetSubject,
-      fr.email.resetBody(user.email, resetLink)
+      req.t.email.resetSubject,
+      req.t.email.resetBody(user.email, resetLink)
     )
 
-    res.json({ message: fr.auth.resetLinkSent })
+    res.json({ message: req.t.auth.resetLinkSent })
   } catch (err) {
-    res.status(500).json({ message: fr.auth.serverError })
+    res.status(500).json({ message: req.t.auth.serverError })
   }
 }
 
@@ -125,11 +124,11 @@ exports.resendEmail = async (req, res) => {
 
     if (!user) {
       // Do not reveal if user exists for security reasons
-      return res.json({ message: fr.auth.verificationEmailSent })
+      return res.json({ message: req.t.auth.verificationEmailSent })
     }
 
     if (user.isVerified) {
-      return res.json({ message: fr.auth.emailAlreadyVerified })
+      return res.json({ message: req.t.auth.emailAlreadyVerified })
     }
 
     // Generate a new verification token
@@ -142,13 +141,13 @@ exports.resendEmail = async (req, res) => {
 
     await sendEmail(
       user.email,
-      fr.email.resendSubject,
-      fr.email.resendBody(user.email, verifyLink)
+      req.t.email.resendSubject,
+      req.t.email.resendBody(user.email, verifyLink)
     )
 
-    res.json({ message: fr.auth.verificationEmailSent })
+    res.json({ message: req.t.auth.verificationEmailSent })
   } catch (err) {
-    res.status(500).json({ message: fr.auth.serverError })
+    res.status(500).json({ message: req.t.auth.serverError })
   }
 }
 
@@ -164,7 +163,7 @@ exports.resetPassword = async (req, res) => {
     })
 
     if (!user) {
-      return res.status(400).json({ message: fr.auth.invalidOrExpiredToken })
+      return res.status(400).json({ message: req.t.auth.invalidOrExpiredToken })
     }
 
     user.password = password // will be hashed by pre-save hook
@@ -173,8 +172,8 @@ exports.resetPassword = async (req, res) => {
     user.resetPasswordExpires = undefined
     await user.save()
 
-    res.json({ message: fr.auth.passwordResetSuccess })
+    res.json({ message: req.t.auth.passwordResetSuccess })
   } catch (err) {
-    res.status(500).json({ message: fr.auth.serverError })
+    res.status(500).json({ message: req.t.auth.serverError })
   }
 }

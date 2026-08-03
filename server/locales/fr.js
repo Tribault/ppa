@@ -78,4 +78,10 @@ module.exports = {
   message: {
     defaultContent: 'Message de bienvenue',
   },
+
+  movie: {
+    notFound: 'Film introuvable.',
+    missingPosterPath: "Chemin de l'affiche manquant.",
+    posterFetchError: 'Impossible de récupérer cette affiche.',
+  },
 }

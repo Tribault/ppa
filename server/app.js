@@ -8,6 +8,7 @@ const userRoutes = require('./routes/users')
 const tagRoutes = require('./routes/tags')
 const messageRoutes = require('./routes/messages')
 const movieRoutes = require('./routes/movies')
+const locale = require('./middleware/locale')
 
 
 
@@ -16,6 +17,7 @@ const multer = require('multer')
 const app = express()
 app.use(cors({ origin: process.env.FRONTEND_URL || 'http://localhost:5173' }))
 app.use(express.json())
+app.use(locale)
 app.use('/uploads', express.static('uploads'))
 
 app.use('/api/auth', authRoutes)

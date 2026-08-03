@@ -1,7 +1,6 @@
 const converter = require('json-2-csv');
 const mongoose = require('mongoose')
 const Sale = require('../models/Sale')
-const fr = require('../locales/fr')
 
 exports.getSales = async(req, res) => {
     const page = parseInt(req.query.page) || 1
@@ -102,6 +101,6 @@ exports.exportSalesCSV = async (req, res) => {
 
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: fr.sale.exportError });
+    res.status(500).json({ error: req.t.sale.exportError });
   }
 };

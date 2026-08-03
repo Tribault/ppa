@@ -16,7 +16,7 @@ exports.searchMovies = async (req, res) => {
 
 exports.getMovieDetails = async (req, res) => {
   const details = await getTmdbDetails(req.params.id)
-  if (!details) return res.status(404).json({ message: 'Film introuvable.' })
+  if (!details) return res.status(404).json({ message: req.t.movie.notFound })
   res.json(details)
 }
 
@@ -27,13 +27,13 @@ exports.getMoviePosters = async (req, res) => {
 
 exports.selectMoviePoster = async (req, res) => {
   const { path } = req.body
-  if (!path) return res.status(400).json({ message: 'Chemin de l\'affiche manquant.' })
+  if (!path) return res.status(400).json({ message: req.t.movie.missingPosterPath })
 
   try {
     const filename = await downloadTmdbPoster(path)
     res.json({ filename })
   } catch (err) {
     console.error('Failed to adopt TMDB poster:', err.message)
-    res.status(502).json({ message: 'Impossible de récupérer cette affiche.' })
+    res.status(502).json({ message: req.t.movie.posterFetchError })
   }
 }

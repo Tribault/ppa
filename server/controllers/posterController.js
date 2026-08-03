@@ -3,7 +3,6 @@ const Booking = require('../models/Booking')
 const fs = require('fs')
 const path = require('path')
 const { computeStockInfo } = require('../utils/stock')
-const fr = require('../locales/fr')
 
 exports.getPosters = async (req, res) => {
   const forSale = req.query.forSale
@@ -48,7 +47,7 @@ exports.getPosters = async (req, res) => {
 exports.getPoster = async (req, res) => {
   try {
     const poster = await Poster.findById(req.params.id).populate('tags')
-    if (!poster) return res.status(404).json({ message: fr.poster.notFound })
+    if (!poster) return res.status(404).json({ message: req.t.poster.notFound })
 
     // Compute stock info
     const confirmedBookings = await Booking.aggregate([
@@ -77,7 +76,7 @@ exports.getPoster = async (req, res) => {
     res.json(posterWithStock)
   } catch (err) {
     console.error(err)
-    res.status(500).json({ message: fr.poster.serverError })
+    res.status(500).json({ message: req.t.poster.serverError })
   }
 }
 
@@ -91,7 +90,7 @@ exports.createPoster = async (req, res) => {
 exports.updatePoster = async (req, res) => {
   const { id } = req.params
   const poster = await Poster.findById(id)
-  if (!poster) return res.status(404).json({ message: fr.poster.notFound })
+  if (!poster) return res.status(404).json({ message: req.t.poster.notFound })
 
   try {
     // Handle image replacement
@@ -117,11 +116,11 @@ exports.updatePoster = async (req, res) => {
     res.json(posterObj)
   } catch (err) {
     console.error(err)
-    res.status(500).json({ message: fr.poster.serverError })
+    res.status(500).json({ message: req.t.poster.serverError })
   }
 }
 
 exports.deletePoster = async (req, res) => {
     const poster = await Poster.findByIdAndDelete(req.params.id)
-    res.json({ message: fr.poster.deleted })
+    res.json({ message: req.t.poster.deleted })
 }
