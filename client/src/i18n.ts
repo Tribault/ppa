@@ -4,6 +4,8 @@ import en from './locales/en'
 
 export const resolvedLocale = navigator.language.toLowerCase().startsWith('en') ? 'en' : 'fr'
 
+document.title = resolvedLocale === 'en' ? en.appTitle : fr.appTitle
+
 export default createI18n({
   legacy: false,   // required for <script setup> / Composition API
   locale: resolvedLocale,

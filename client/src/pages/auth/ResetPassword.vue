@@ -3,7 +3,7 @@
     <div class="reset-password-form">
       <h2>{{ $t('auth.resetPassword.title') }}</h2>
       <form @submit.prevent="submit">
-        <input v-model="password" type="password" :placeholder="$t('auth.resetPassword.passwordPlaceholder')" required />
+        <password-input v-model="password" :placeholder="$t('auth.resetPassword.passwordPlaceholder')" required />
         <button type="submit" class="btn-red-bg" :disabled="loading">
           {{ loading ? $t('auth.resetPassword.sending') : $t('auth.resetPassword.submit') }}
         </button>
@@ -17,6 +17,7 @@
 import { ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import PasswordInput from '@/components/utils/PasswordInput.vue'
 
 const route = useRoute()
 const router = useRouter()

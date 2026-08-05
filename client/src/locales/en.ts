@@ -1,4 +1,5 @@
 export default {
+  appTitle: 'Movie Poster Registry',
   nav: {
     loginSignup: 'Login / Sign up',
     admin: 'Admin',
@@ -74,7 +75,7 @@ export default {
   auth: {
     login: {
       title: 'Login',
-      emailPlaceholder: 'Username',
+      emailPlaceholder: 'Email address',
       passwordPlaceholder: 'Password',
       submit: 'Log in',
       signup: 'Create an account',
@@ -182,6 +183,7 @@ export default {
       noMovieResults: 'No movie found.',
       suggestedPosters: 'Suggested posters — click to use',
       viewSuggestedPosters: 'View suggested posters ({count})',
+      uploadManually: 'Upload an image manually',
       filmmakerLabel: 'Director',
       filmmakerPlaceholder: 'Director',
       yearLabel: 'Year',

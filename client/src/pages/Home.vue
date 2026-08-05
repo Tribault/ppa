@@ -53,6 +53,7 @@
             :poster="p"
             :view="view"
             @details="posterDetails(p._id)"
+            @booked="onBooked"
           />
         </div>
 
@@ -63,6 +64,7 @@
             :poster="p"
             :view="view"
             @details="posterDetails(p._id)"
+            @booked="onBooked"
           />
         </div>
       </transition>
@@ -107,6 +109,10 @@ function posterDetails(posterId: string) {
 
 function loadPage(p: number) {
   posterStore.fetchPosters({ forSale: true, page: p, limit: limit.value })
+}
+
+function onBooked() {
+  loadPage(posterStore.page)
 }
 
 onMounted(async () => {

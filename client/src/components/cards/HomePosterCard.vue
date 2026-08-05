@@ -5,8 +5,30 @@
       <div class="poster-card-badges">
         <div v-for="t in poster.tags" :key="t._id" class="poster-card-badge">{{ t.name }}</div>
       </div>
+      <button
+        class="poster-card-book-btn"
+        :class="{ disabled: !canBook }"
+        :disabled="!canBook"
+        :title="$t('posterDetails.book')"
+        :aria-label="$t('posterDetails.book')"
+        @click.stop="openBooking"
+      >
+        <PlusIcon class="icon" />
+      </button>
     </div>
-    <div v-else class="poster-card-poster no-logo"><EyeSlashIcon /></div>
+    <div v-else class="poster-card-poster no-logo">
+      <EyeSlashIcon />
+      <button
+        class="poster-card-book-btn"
+        :class="{ disabled: !canBook }"
+        :disabled="!canBook"
+        :title="$t('posterDetails.book')"
+        :aria-label="$t('posterDetails.book')"
+        @click.stop="openBooking"
+      >
+        <PlusIcon class="icon" />
+      </button>
+    </div>
     <div class="poster-card-info">
       <div class="poster-card-title">{{ poster.title }}</div>
       <div>{{ poster.price }} €</div>
@@ -19,21 +41,48 @@
     </div>
     <div>{{ poster.price }} €</div>
   </div>
+
+  <booking-modal
+    :visible="showBookingModal"
+    :poster="poster"
+    @close="showBookingModal = false"
+    @booked="emit('booked')"
+  />
 </template>
 
 <script setup lang="ts">
 import type { Poster } from '@/types/models'
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { EyeSlashIcon } from '@heroicons/vue/24/solid'
+import { PlusIcon } from '@heroicons/vue/24/outline'
+import { useAuthStore } from '@/stores/auth'
+import { useMessageStore } from '@/stores/messages'
+import BookingModal from '@/components/cards/BookingModal.vue'
 
 const props = defineProps<{
   poster: Poster
   view: 'grid' | 'list'
 }>()
 
-const emit = defineEmits(['details'])
+const emit = defineEmits(['details', 'booked'])
+
+const auth = useAuthStore()
+const messageStore = useMessageStore()
 
 const imgUrl = ref<string>(import.meta.env.VITE_IMG_URL + props.poster.image)
+const showBookingModal = ref(false)
+
+const canBook = computed(
+  () =>
+    auth.user?.role === 'user' &&
+    props.poster.stockInfo.availableStock > 0 &&
+    messageStore.message?.bookingAllowed,
+)
+
+function openBooking() {
+  if (!canBook.value) return
+  showBookingModal.value = true
+}
 </script>
 
 <style lang="scss" scoped>
@@ -127,6 +176,41 @@ const imgUrl = ref<string>(import.meta.env.VITE_IMG_URL + props.poster.image)
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
   text-transform: uppercase;
   white-space: nowrap;
+}
+
+.poster-card-book-btn {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: $red;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+
+  .icon {
+    width: 1.5rem;
+    height: 1.5rem;
+    color: white;
+    stroke-width: 3;
+  }
+
+  &:hover:not(.disabled) {
+    background-color: $darker-red;
+  }
+
+  &.disabled {
+    background-color: #999;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
 }
 
 .poster-card-info {

@@ -5,7 +5,7 @@
       <form @submit.prevent="handleLogin">
         <div>
           <input v-model="email" type="text" :placeholder="$t('auth.login.emailPlaceholder')" required />
-          <input v-model="password" type="password" :placeholder="$t('auth.login.passwordPlaceholder')" required />
+          <password-input v-model="password" :placeholder="$t('auth.login.passwordPlaceholder')" required />
         </div>
         <button type="submit" class="btn-red-bg"><b>{{ $t('auth.login.submit') }}</b></button>
         <p v-if="error">{{ error }}</p>
@@ -24,6 +24,7 @@ import { useToast } from 'vue-toastification'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useI18n } from 'vue-i18n'
+import PasswordInput from '@/components/utils/PasswordInput.vue'
 
 const email = ref('')
 const password = ref('')

@@ -5,8 +5,8 @@
       <form v-if="!signupSuccess" @submit.prevent="handleSignup">
         <div>
           <input v-model="email" type="email" :placeholder="$t('auth.signup.emailPlaceholder')" required />
-          <input v-model="password" type="password" :placeholder="$t('auth.signup.passwordPlaceholder')" required />
-          <input v-model="passwordConfirm" type="password" :placeholder="$t('auth.signup.confirmPlaceholder')" required />
+          <password-input v-model="password" :placeholder="$t('auth.signup.passwordPlaceholder')" required />
+          <password-input v-model="passwordConfirm" :placeholder="$t('auth.signup.confirmPlaceholder')" required />
         </div>
         <ul v-if="password" class="password-rules">
           <li :class="{ valid: rules.length }">{{ $t('auth.signup.rules.length') }}</li>
@@ -39,6 +39,7 @@ import { ref, computed } from 'vue'
 import api from '@/utils/axios'
 import { useAuthStore } from '@/stores/auth'
 import { useI18n } from 'vue-i18n'
+import PasswordInput from '@/components/utils/PasswordInput.vue'
 
 const password = ref('')
 const passwordConfirm = ref('')

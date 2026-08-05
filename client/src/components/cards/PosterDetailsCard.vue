@@ -210,6 +210,16 @@ onMounted(()=>{
     width: 100%;
     object-fit: contain;
     border-radius: 8px;
+
+    // The 100vh calc above assumes the desktop layout, where the back button
+    // sits beside the image. On mobile everything stacks (header, back
+    // button, image, data), so that fixed offset leaves way less room than
+    // it assumes — the image ends up taller than what's left of the
+    // viewport, pushing itself and the data below off-screen.
+    @media (max-width: 768px) {
+      height: auto;
+      max-height: 60vh;
+    }
   }
 }
 

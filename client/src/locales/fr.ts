@@ -1,4 +1,5 @@
 export default {
+  appTitle: "Gestionnaire d'affiches de cinéma",
   nav: {
     loginSignup: 'Identification / Inscription',
     admin: 'Admin',
@@ -74,7 +75,7 @@ export default {
   auth: {
     login: {
       title: 'Connexion',
-      emailPlaceholder: 'Identifiant',
+      emailPlaceholder: 'Adresse e-mail',
       passwordPlaceholder: 'Mot de passe',
       submit: 'Se connecter',
       signup: 'Créer un compte',
@@ -182,6 +183,7 @@ export default {
       noMovieResults: 'Aucun film trouvé.',
       suggestedPosters: 'Affiches suggérées — cliquez pour utiliser',
       viewSuggestedPosters: 'Voir les affiches suggérées ({count})',
+      uploadManually: 'Uploader une image manuellement',
       filmmakerLabel: 'Réalisateur',
       filmmakerPlaceholder: 'Réalisateur',
       yearLabel: 'Année',

@@ -11,22 +11,6 @@
 
           <form @submit.prevent="submit" class="poster-edit-form">
             <div class="poster-edit-form--row">
-              <div v-if="form.image" class="poster-edit-preview">
-                <img :src="previewUrl" alt="Poster preview" />
-              </div>
-              <input
-                type="file"
-                accept="image/*"
-                @change="handleFileUpload"
-                class="poster-edit-input"
-              />
-            </div>
-            <div v-if="tmdbPosterOptions.length" class="poster-edit-form--row">
-              <button type="button" class="btn-red-bg" @click="showPosterPicker = true">
-                <photo-icon /> {{ $t('form.poster.viewSuggestedPosters', { count: tmdbPosterOptions.length }) }}
-              </button>
-            </div>
-            <div class="poster-edit-form--row">
               <b>{{ $t('form.poster.titleLabel') }}</b>
               <input
                 v-model="form.title"
@@ -51,6 +35,30 @@
               </button>
             </div>
             <p v-else-if="searched" class="poster-edit-movie-no-results">{{ $t('form.poster.noMovieResults') }}</p>
+
+            <div v-if="form.image" class="poster-edit-form--row">
+              <div class="poster-edit-preview">
+                <img :src="previewUrl" alt="Poster preview" />
+              </div>
+            </div>
+            <div v-if="tmdbPosterOptions.length" class="poster-edit-form--row">
+              <button type="button" class="btn-red-bg" @click="showPosterPicker = true">
+                <photo-icon /> {{ $t('form.poster.viewSuggestedPosters', { count: tmdbPosterOptions.length }) }}
+              </button>
+            </div>
+            <div v-if="movieLookupAttempted && !showManualUpload" class="poster-edit-form--row">
+              <button type="button" class="btn-link" @click="showManualUpload = true">
+                {{ $t('form.poster.uploadManually') }}
+              </button>
+            </div>
+            <div v-if="showManualUpload" class="poster-edit-form--row">
+              <input
+                type="file"
+                accept="image/*"
+                @change="handleFileUpload"
+                class="poster-edit-input"
+              />
+            </div>
             <div class="poster-edit-form--row">
               <b>{{ $t('form.poster.filmmakerLabel') }}</b>
               <input
@@ -239,14 +247,21 @@ const tmdbPosterOptions = ref<TmdbPosterOption[]>([])
 const selectedPosterPath = ref<string | null>(null)
 const adoptingPoster = ref(false)
 const showPosterPicker = ref(false)
+// Manual upload is a fallback, not the default: it only appears once a movie
+// search has come up empty, once a picked movie has no poster suggestions, or
+// the admin explicitly asks for it (none of the suggestions fit).
+const showManualUpload = ref(false)
+const movieLookupAttempted = ref(false)
 
 async function searchMovie() {
   searching.value = true
   searched.value = true
+  movieLookupAttempted.value = true
   tmdbPosterOptions.value = []
   selectedPosterPath.value = null
   try {
     movieResults.value = await movieStore.searchMovies(form.value.title)
+    if (movieResults.value.length === 0) showManualUpload.value = true
   } catch (err) {
     console.error(err)
     toast.error(t('form.poster.error'))
@@ -275,7 +290,11 @@ async function applyMovieResult(result: MovieSearchResult) {
       ? await movieStore.getTmdbPosters(result.id)
       : []
     selectedPosterPath.value = null
-    showPosterPicker.value = tmdbPosterOptions.value.length > 0
+    if (tmdbPosterOptions.value.length === 0) {
+      showManualUpload.value = true
+    } else {
+      showPosterPicker.value = true
+    }
   } catch (err) {
     console.error(err)
     toast.error(t('form.poster.error'))
@@ -340,6 +359,10 @@ watch(
     tmdbPosterOptions.value = []
     selectedPosterPath.value = null
     showPosterPicker.value = false
+    movieLookupAttempted.value = false
+    // Editing an existing poster already has an image to manage — show the
+    // upload control right away. Creating a new one starts search-first.
+    showManualUpload.value = !!val
   },
   { immediate: true },
 )
@@ -479,6 +502,16 @@ async function submit() {
     opacity: 0.6;
     font-size: 11px;
   }
+}
+
+.btn-link {
+  background: none;
+  border: none;
+  color: white;
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: 13px;
+  padding: 0;
 }
 
 .poster-edit-movie-no-results {
