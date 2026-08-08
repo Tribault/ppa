@@ -1,11 +1,13 @@
 <template>
   <nav class="pagination">
-    <button :disabled="page === 1" @click="$emit('change', 1)">
-      <chevron-double-left-icon class="icon" />
-    </button>
-    <button :disabled="page === 1" @click="$emit('change', page - 1)">
-      <chevron-left-icon class="icon" />
-    </button>
+    <template v-if="page > 1">
+      <button @click="$emit('change', 1)">
+        <chevron-double-left-icon class="icon" />
+      </button>
+      <button @click="$emit('change', page - 1)">
+        <chevron-left-icon class="icon" />
+      </button>
+    </template>
 
     <button
       v-for="p in pagesToShow"
@@ -19,12 +21,14 @@
     </button>
 
     <!-- Next & Last -->
-    <button :disabled="page === pages" @click="$emit('change', page + 1)">
-      <chevron-right-icon class="icon" />
-    </button>
-    <button :disabled="page === pages" @click="$emit('change', pages)">
-      <chevron-double-right-icon class="icon" />
-    </button>
+    <template v-if="page < pages">
+      <button @click="$emit('change', page + 1)">
+        <chevron-right-icon class="icon" />
+      </button>
+      <button @click="$emit('change', pages)">
+        <chevron-double-right-icon class="icon" />
+      </button>
+    </template>
   </nav>
 </template>
 <script setup lang="ts">

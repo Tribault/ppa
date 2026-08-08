@@ -38,12 +38,27 @@ module.exports = {
       <p>This link expires in 15 minutes.</p>
       <p>If you did not request this, please ignore this email.</p>
     `,
+    saleReminderSubject: 'Reminder: upcoming poster sale',
+    saleReminderBody: (email, date, bookings) => `
+      <p>Hello ${email},</p>
+      <p>Just a reminder that the next poster sale at the Arvor cinema will take place on
+      <strong>${new Date(date).toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</strong>.</p>
+      <p>You have reserved:</p>
+      <ul>
+        ${bookings.map((b) => `<li>${b.quantity} × ${b.poster.title}</li>`).join('')}
+      </ul>
+      <p>Please come collect and pay for your posters on that date.</p>
+    `,
   },
 
   poster: {
     notFound: 'Poster not found.',
     deleted: 'Poster deleted.',
     serverError: 'Server error.',
+  },
+
+  saleDate: {
+    invalidDate: 'Invalid date.',
   },
 
   booking: {

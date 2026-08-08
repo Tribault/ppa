@@ -4,14 +4,14 @@
       <thead>
         <tr>
           <th class="sticky-col">{{ $t('table.user.email') }}</th>
-          <th>{{ $t('table.user.role') }}</th>
+          <th class="role-col">{{ $t('table.user.role') }}</th>
           <th>{{ $t('table.user.actions') }}</th>
         </tr>
       </thead>
       <tbody>
         <tr v-for="u in users">
           <th scope="row" class="sticky-col">{{ u.email }}</th>
-          <td>{{ u.role }}</td>
+          <td class="role-col">{{ u.role }}</td>
           <td class="admin-booking-table--actions">
             <span v-if="isAuthorized(u._id)">
               <pencil-icon class="icon" @click="$emit('edit', u)" />
@@ -73,5 +73,21 @@ function closeDeletionModal() {
 
 thead th:last-child {
   text-align: right;
+}
+
+.admin-users-table .sticky-col {
+  width: 1%;
+  white-space: nowrap;
+}
+
+@media (max-width: $break-sm) {
+  .admin-users-table .sticky-table {
+    min-width: 0;
+  }
+
+  .admin-users-table .role-col {
+    width: 1%;
+    white-space: nowrap;
+  }
 }
 </style>

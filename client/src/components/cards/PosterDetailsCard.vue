@@ -61,21 +61,7 @@
       <div class="poster-details-card-booking" v-if="canBook">
         <ul>
           <li class="title">{{ $t('posterDetails.bookTitle') }}</li>
-          <li class="poster-details-card-booking--info">
-            <span><b>{{ $t('posterDetails.quantityLabel') }}</b> {{ quantity }}</span>
-            <button
-              class="btn-white-bg"
-              @click="increment"
-              :disabled="quantity >= posterInfo.stockInfo.availableStock"
-            >
-              <PlusIcon class="icon" />
-            </button>
-            <button class="btn-white-bg" @click="decrement" :disabled="quantity <= 1">
-              <MinusIcon class="icon" />
-            </button>
-          </li>
-          <li><b>{{ $t('posterDetails.totalPrice') }}</b> : {{ quantity * posterInfo.price }} €</li>
-          <li><button class="btn-white-bg" @click="bookPoster">{{ $t('posterDetails.book') }}</button></li>
+          <li><button class="btn-white-bg" @click="showBookingModal = true">{{ $t('posterDetails.book') }}</button></li>
         </ul>
       </div>
     </div>
@@ -86,23 +72,24 @@
     @saved="refreshData"
     @close="isEditing = false"
   />
+  <booking-modal
+    :visible="showBookingModal"
+    :poster="posterInfo"
+    @close="showBookingModal = false"
+    @booked="onBooked"
+  />
 </template>
 
 <script setup lang="ts">
-import type { BookingPayload, Poster } from '@/types/models'
+import type { Poster } from '@/types/models'
 import { usePosterStore } from '@/stores/posters'
-import { useBookingStore } from '@/stores/bookings'
 import { useMessageStore } from '@/stores/messages'
 import { useAuthStore } from '@/stores/auth'
 import { computed, ref, onMounted } from 'vue'
-import { ArrowUturnLeftIcon, PlusIcon, MinusIcon, PencilIcon } from '@heroicons/vue/24/solid'
+import { ArrowUturnLeftIcon, PencilIcon } from '@heroicons/vue/24/solid'
 
 import PosterEdit from '@/components/edition/PosterEdit.vue'
-
-import { useToast } from 'vue-toastification'
-import { useI18n } from 'vue-i18n'
-const toast = useToast()
-const { t: translate } = useI18n()
+import BookingModal from '@/components/cards/BookingModal.vue'
 
 const props = defineProps<{
   poster: Poster
@@ -112,11 +99,10 @@ const emit = defineEmits(['edit', 'updated'])
 
 const auth = useAuthStore()
 const posterStore = usePosterStore()
-const bookingStore = useBookingStore()
 const messageStore = useMessageStore()
 
-const quantity = ref<number>(1)
 const isEditing = ref<boolean>(false)
+const showBookingModal = ref(false)
 
 const posterInfo = computed(() => {
   return posterStore.poster ?? props.poster
@@ -133,36 +119,9 @@ async function refreshData() {
   await posterStore.fetchPoster(posterInfo.value._id)
 }
 
-const increment = () => {
-  if (quantity.value < posterInfo.value.stockInfo.availableStock) {
-    quantity.value++
-  }
-}
-
-const decrement = () => {
-  if (quantity.value > 1) {
-    quantity.value--
-  }
-}
-
-const bookPoster = async () => {
-  try {
-    if (auth.user) {
-      const formData: BookingPayload = {
-        posterId: props.poster._id,
-        userId: auth.user._id,
-        quantity: quantity.value,
-      }
-      await bookingStore.createBooking(formData)
-      toast.success(translate('posterDetails.bookSuccess'))
-    }
-    quantity.value = 1
-    await refreshData()
-    emit('updated')
-  } catch (err: any) {
-    await refreshData()
-    toast.error(err.response?.data?.error || translate('posterDetails.bookError'))
-  }
+async function onBooked() {
+  await refreshData()
+  emit('updated')
 }
 
 onMounted(()=>{
@@ -260,13 +219,5 @@ onMounted(()=>{
   height: 100%;
   display: flex;
   align-items: center;
-
-  &--info {
-    display: flex;
-    align-items: center;
-    > * {
-      margin-right: 1rem;
-    }
-  }
 }
 </style>

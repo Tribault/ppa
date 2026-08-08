@@ -20,6 +20,9 @@
       <button class="btn-red-bg" @click="showMessageModal = true">
         <ChatBubbleOvalLeftEllipsisIcon /> Message d'accueil
       </button>
+      <button class="btn-red-bg" @click="showSaleDateModal = true">
+        <CalendarDaysIcon /> Date de vente
+      </button>
       <button class="btn-red-bg" @click="openNewBooking">
         <NewspaperIcon /> Nouvelle réservation
       </button>
@@ -45,6 +48,7 @@
     @saved="bookingStore.fetchBookings({ all: true }, { page: 1, limit: 20, q: activeQuery() })"
   />
   <message-edit :visible="showMessageModal" @close="showMessageModal = false" />
+  <sale-date-edit :visible="showSaleDateModal" @close="showSaleDateModal = false" />
   </div>
 </template>
 
@@ -56,6 +60,7 @@ import { Alphabet } from '@/types/models'
 import AdminBookingTable from '@/components/tables/BookingTable.vue'
 import BookingEdit from '@/components/edition/BookingEdit.vue'
 import MessageEdit from '@/components/edition/MessageEdit.vue'
+import SaleDateEdit from '@/components/edition/SaleDateEdit.vue'
 import Pagination from '@/components/utils/Pagination.vue'
 
 import {
@@ -64,6 +69,7 @@ import {
   BellSlashIcon,
   BellAlertIcon,
   ChatBubbleOvalLeftEllipsisIcon,
+  CalendarDaysIcon,
 } from '@heroicons/vue/24/solid'
 
 const bookingStore = useBookingStore()
@@ -73,6 +79,7 @@ const letters = Object.values(Alphabet)
 
 const showModal = ref(false)
 const showMessageModal = ref(false)
+const showSaleDateModal = ref(false)
 const isBookingAllowed = computed(() => messageStore.message?.bookingAllowed ?? true)
 
 const editingBooking = ref(null)

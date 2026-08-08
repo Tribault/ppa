@@ -4,6 +4,8 @@ const request = require('supertest')
 const app = require('../app')
 const { createUser, tokenFor } = require('./helpers/auth')
 const Poster = require('../models/Poster')
+const Location = require('../models/Location')
+const Tag = require('../models/Tag')
 
 // Reusable poster fixture to avoid repeating the same fields everywhere.
 const posterData = { title: 'Affiche Test', size: '40x60', price: 20, totalStock: 10, forSale: true }
@@ -64,6 +66,93 @@ describe('Posters', () => {
       expect(res.body.data).toHaveLength(2)
       expect(res.body.pages).toBe(2)
     })
+
+    it('never exposes locations to an anonymous request', async () => {
+      const location = await Location.create({ name: 'Réserve' })
+      await Poster.create({ ...posterData, locations: [location._id] })
+      const res = await request(app).get('/api/posters')
+      expect(res.status).toBe(200)
+      expect(res.body.data[0].locations).toBeUndefined()
+    })
+
+    it('never exposes locations to a logged-in non-admin user', async () => {
+      const location = await Location.create({ name: 'Réserve' })
+      await Poster.create({ ...posterData, locations: [location._id] })
+      const res = await request(app).get('/api/posters').set('Authorization', `Bearer ${userToken}`)
+      expect(res.status).toBe(200)
+      expect(res.body.data[0].locations).toBeUndefined()
+    })
+
+    it('includes populated locations for an admin request', async () => {
+      const location = await Location.create({ name: 'Réserve' })
+      await Poster.create({ ...posterData, locations: [location._id] })
+      const res = await request(app).get('/api/posters').set('Authorization', `Bearer ${adminToken}`)
+      expect(res.status).toBe(200)
+      expect(res.body.data[0].locations).toHaveLength(1)
+      expect(res.body.data[0].locations[0].name).toBe('Réserve')
+    })
+  })
+
+  describe('GET /api/posters?sort=newest', () => {
+    it('sorts by creation date, newest first', async () => {
+      await Poster.create({ ...posterData, title: 'Older', createdAt: new Date('2020-01-01') })
+      await Poster.create({ ...posterData, title: 'Newer', createdAt: new Date('2024-01-01') })
+      const res = await request(app).get('/api/posters?sort=newest')
+      expect(res.body.data.map((p) => p.title)).toEqual(['Newer', 'Older'])
+    })
+
+    it('defaults to alphabetical order when sort is omitted', async () => {
+      await Poster.create({ ...posterData, title: 'Zebra' })
+      await Poster.create({ ...posterData, title: 'Alpha' })
+      const res = await request(app).get('/api/posters')
+      expect(res.body.data.map((p) => p.title)).toEqual(['Alpha', 'Zebra'])
+    })
+  })
+
+  describe('GET /api/posters filters', () => {
+    it('filters by country', async () => {
+      await Poster.create({ ...posterData, title: 'FR Poster', country: 'France' })
+      await Poster.create({ ...posterData, title: 'US Poster', country: 'USA' })
+      const res = await request(app).get('/api/posters?country=France')
+      expect(res.body.data).toHaveLength(1)
+      expect(res.body.data[0].title).toBe('FR Poster')
+    })
+
+    it('filters by genre', async () => {
+      await Poster.create({ ...posterData, title: 'Comedy Poster', genre: 'Comédie' })
+      await Poster.create({ ...posterData, title: 'Drama Poster', genre: 'Drame' })
+      const res = await request(app).get('/api/posters?genre=Drame')
+      expect(res.body.data).toHaveLength(1)
+      expect(res.body.data[0].title).toBe('Drama Poster')
+    })
+
+    it('filters by tag id', async () => {
+      const tag = await Tag.create({ name: 'Culte' })
+      await Poster.create({ ...posterData, title: 'Tagged', tags: [tag._id] })
+      await Poster.create({ ...posterData, title: 'Untagged' })
+      const res = await request(app).get(`/api/posters?tags=${tag._id}`)
+      expect(res.body.data).toHaveLength(1)
+      expect(res.body.data[0].title).toBe('Tagged')
+    })
+  })
+
+  describe('GET /api/posters/filters', () => {
+    it('returns distinct, non-empty countries and genres', async () => {
+      await Poster.create({ ...posterData, title: 'A', country: 'France', genre: 'Comédie' })
+      await Poster.create({ ...posterData, title: 'B', country: 'USA', genre: 'Comédie' })
+      await Poster.create({ ...posterData, title: 'C', country: '', genre: '' })
+      const res = await request(app).get('/api/posters/filters')
+      expect(res.status).toBe(200)
+      expect(res.body.countries.sort()).toEqual(['France', 'USA'])
+      expect(res.body.genres).toEqual(['Comédie'])
+    })
+
+    it('respects ?forSale=true', async () => {
+      await Poster.create({ ...posterData, country: 'France', forSale: true })
+      await Poster.create({ ...posterData, country: 'Japon', forSale: false })
+      const res = await request(app).get('/api/posters/filters?forSale=true')
+      expect(res.body.countries).toEqual(['France'])
+    })
   })
 
   // ── GET ONE ────────────────────────────────────────────────────────────────
@@ -81,6 +170,25 @@ describe('Posters', () => {
       const fakeId = '000000000000000000000001'
       const res = await request(app).get(`/api/posters/${fakeId}`)
       expect(res.status).toBe(404)
+    })
+
+    it('never exposes locations to an anonymous or non-admin request', async () => {
+      const location = await Location.create({ name: 'Réserve' })
+      const poster = await Poster.create({ ...posterData, locations: [location._id] })
+
+      const anonRes = await request(app).get(`/api/posters/${poster._id}`)
+      expect(anonRes.body.locations).toBeUndefined()
+
+      const userRes = await request(app).get(`/api/posters/${poster._id}`).set('Authorization', `Bearer ${userToken}`)
+      expect(userRes.body.locations).toBeUndefined()
+    })
+
+    it('includes populated locations for an admin request', async () => {
+      const location = await Location.create({ name: 'Réserve' })
+      const poster = await Poster.create({ ...posterData, locations: [location._id] })
+      const res = await request(app).get(`/api/posters/${poster._id}`).set('Authorization', `Bearer ${adminToken}`)
+      expect(res.body.locations).toHaveLength(1)
+      expect(res.body.locations[0].name).toBe('Réserve')
     })
   })
 

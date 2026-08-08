@@ -102,11 +102,16 @@
             </div>
             <div class="poster-edit-form--row">
               <b>{{ $t('form.poster.sizeLabel') }}</b>
-              <input type="radio" id="sizeL" value="120*160 cm" v-model="form.size" />
-              <label for="sizeL">{{ $t('form.poster.size120') }}</label>
-
-              <input type="radio" id="sizeM" value="60*80 cm" v-model="form.size" />
-              <label for="sizeM">{{ $t('form.poster.size60') }}</label>
+              <div class="radio-group">
+                <span class="radio-option">
+                  <input type="radio" id="sizeL" value="120*160 cm" v-model="form.size" />
+                  <label for="sizeL">{{ $t('form.poster.size120') }}</label>
+                </span>
+                <span class="radio-option">
+                  <input type="radio" id="sizeM" value="60*80 cm" v-model="form.size" />
+                  <label for="sizeM">{{ $t('form.poster.size60') }}</label>
+                </span>
+              </div>
             </div>
             <div class="poster-edit-form--row">
               <b>{{ $t('form.poster.priceLabel') }}</b>
@@ -126,7 +131,7 @@
                 class="poster-edit-input stock"
                 :min="posterToEdit?.stockInfo?.availableStock"
               />
-              <div class="poster-edit-form--row">
+              <div v-if="posterToEdit?._id" class="poster-edit-form--row">
               <p class="tag-white">{{ $t('form.poster.available') }} {{posterToEdit?.stockInfo?.availableStock}}</p>
               <p class="tag-white">{{ $t('form.poster.reserved') }} {{posterToEdit?.stockInfo?.pending}}</p>
               <p class="tag-white">{{ $t('form.poster.sold') }} {{posterToEdit?.stockInfo?.confirmed}}</p>
@@ -143,20 +148,32 @@
             </div>
             <div class="poster-edit-form--row">
               <b>{{ $t('form.poster.tagsLabel') }}</b>
-              <div class="tags">
-                <label v-for="tag in tagStore.tags" :key="tag._id">
-                  <input type="checkbox" :value="tag._id" v-model="form.tags" />
-                  {{ tag.name }}
-                </label>
-              </div>
+              <chip-input
+                v-model="form.tags"
+                :options="tagStore.tags"
+                :placeholder="$t('form.poster.tagsPlaceholder')"
+              />
+            </div>
+            <div class="poster-edit-form--row">
+              <b>{{ $t('form.poster.locationsLabel') }}</b>
+              <chip-input
+                v-model="form.locations"
+                :options="locationStore.locations"
+                :placeholder="$t('form.poster.locationsPlaceholder')"
+              />
             </div>
              <div class="poster-edit-form--row">
               <b>{{ $t('form.poster.forSale') }}</b>
-              <input type="radio" id="sale" value=true v-model="form.forSale" />
-              <label for="sale">{{ $t('form.poster.yes') }}</label>
-
-              <input type="radio" id="noSale" value=false v-model="form.forSale" />
-              <label for="noSale">{{ $t('form.poster.no') }}</label>
+              <div class="radio-group">
+                <span class="radio-option">
+                  <input type="radio" id="sale" value=true v-model="form.forSale" />
+                  <label for="sale">{{ $t('form.poster.yes') }}</label>
+                </span>
+                <span class="radio-option">
+                  <input type="radio" id="noSale" value=false v-model="form.forSale" />
+                  <label for="noSale">{{ $t('form.poster.no') }}</label>
+                </span>
+              </div>
             </div>
 
             <div class="poster-edit-form--actions">
@@ -185,8 +202,10 @@ import type { Poster, MovieSearchResult, TmdbPosterOption } from '@/types/models
 import { XMarkIcon, FolderArrowDownIcon, MagnifyingGlassIcon, PhotoIcon } from '@heroicons/vue/24/solid'
 import { usePosterStore } from '@/stores/posters'
 import { useTagStore } from '@/stores/tags'
+import { useLocationStore } from '@/stores/locations'
 import { useMovieStore } from '@/stores/movies'
 import PosterImagePicker from './PosterImagePicker.vue'
+import ChipInput from '@/components/utils/ChipInput.vue'
 import { useToast } from 'vue-toastification'
 import { useI18n } from 'vue-i18n'
 const toast = useToast()
@@ -200,6 +219,7 @@ const emit = defineEmits(['close', 'saved'])
 
 const store = usePosterStore()
 const tagStore = useTagStore()
+const locationStore = useLocationStore()
 const movieStore = useMovieStore()
 
 const form = ref<{
@@ -209,6 +229,7 @@ const form = ref<{
   note: string
   totalStock: number
   tags: string[]
+  locations: string[]
   image: File | string | null
   forSale: Boolean
   filmmaker: string
@@ -223,6 +244,7 @@ const form = ref<{
   note: '',
   totalStock: 0,
   tags: [],
+  locations: [],
   image: null,
   forSale: false,
   filmmaker: '',
@@ -319,6 +341,7 @@ async function selectPosterOption(option: TmdbPosterOption) {
 
 onMounted(async () => {
   await tagStore.fetchTags()
+  await locationStore.fetchLocations()
 })
 
 watch(
@@ -328,6 +351,7 @@ watch(
       form.value = {
         ...val,
         tags: (val.tags ?? []).map((t) => t._id),
+        locations: (val.locations ?? []).map((l) => l._id),
         image: val.image || null,
         filmmaker: val.filmmaker || '',
         year: val.year ?? null,
@@ -344,6 +368,7 @@ watch(
         totalStock: 0,
         note: '',
         tags: [],
+        locations: [],
         image: null,
         forSale: false,
         filmmaker: '',
@@ -398,6 +423,7 @@ async function submit() {
     formData.append('genre', form.value.genre)
     formData.append('country', form.value.country)
     form.value.tags.forEach((tag) => formData.append('tags[]', tag))
+    form.value.locations.forEach((location) => formData.append('locations[]', location))
     form.value.mainActors.forEach((actor) => formData.append('mainActors[]', actor))
 
     if (form.value.image instanceof File) {
@@ -432,6 +458,8 @@ async function submit() {
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow-y: auto;
+  padding: 2rem 0;
 }
 
 .poster-edit-box {
@@ -443,6 +471,7 @@ async function submit() {
   max-width: 500px;
   position: relative;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  margin: auto;
 }
 
 .poster-edit-preview {
@@ -535,6 +564,7 @@ async function submit() {
     width: 100%;
     align-items: center;
     justify-content: space-between;
+    gap: 8px;
 
     &:first-of-type {
       input {
@@ -554,6 +584,26 @@ async function submit() {
   }
 }
 
+.radio-group {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.radio-option {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+
+  input {
+    margin: 0;
+  }
+
+  label {
+    margin: 0;
+  }
+}
+
 .poster-edit-input {
   padding: 8px 10px;
   margin-left: 8px;
@@ -567,6 +617,25 @@ async function submit() {
 .poster-edit-input.stock{
     max-width: 80px;
     margin-right: 0.5rem;
+}
+
+@media (max-width: $break-sm) {
+  .poster-edit-form--row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .poster-edit-input {
+    margin-left: 0;
+    max-width: 100%;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .poster-edit-input.stock {
+    width: auto;
+  }
 }
 
 .btn-primary {

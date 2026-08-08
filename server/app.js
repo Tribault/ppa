@@ -6,8 +6,10 @@ const bookingRoutes = require('./routes/bookings')
 const saleRoutes = require('./routes/sales')
 const userRoutes = require('./routes/users')
 const tagRoutes = require('./routes/tags')
+const locationRoutes = require('./routes/locations')
 const messageRoutes = require('./routes/messages')
 const movieRoutes = require('./routes/movies')
+const saleDateRoutes = require('./routes/saleDates')
 const locale = require('./middleware/locale')
 
 
@@ -26,8 +28,10 @@ app.use('/api/bookings', bookingRoutes)
 app.use('/api/sales', saleRoutes)
 app.use('/api/users', userRoutes)
 app.use('/api/tags', tagRoutes)
+app.use('/api/locations', locationRoutes)
 app.use('/api/messages', messageRoutes)
 app.use('/api/movies', movieRoutes)
+app.use('/api/sale-date', saleDateRoutes)
 
 // Catch Multer errors (bad file type, file too large) and return a clean 400
 // instead of letting them bubble up as an unhandled 500.

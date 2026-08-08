@@ -3,39 +3,56 @@
     <div v-if="visible" class="booking-modal-overlay" @click="close">
       <div class="booking-modal-box" @click.stop>
         <button class="booking-modal-close-btn btn-red-bg" @click="close"><x-mark-icon /></button>
-        <h2 class="booking-modal-title">{{ $t('posterDetails.bookTitle') }}</h2>
-        <p class="booking-modal-poster-title">{{ poster.title }}</p>
 
-        <div class="booking-modal-quantity">
-          <span><b>{{ $t('posterDetails.quantityLabel') }}</b> {{ quantity }}</span>
-          <button
-            class="btn-white-bg"
-            @click="increment"
-            :disabled="quantity >= poster.stockInfo.availableStock"
-          >
-            <PlusIcon class="icon" />
+        <template v-if="!confirmed">
+          <h2 class="booking-modal-title">{{ $t('posterDetails.bookTitle') }}</h2>
+          <p class="booking-modal-poster-title">{{ poster.title }}</p>
+
+          <div class="booking-modal-quantity">
+            <span><b>{{ $t('posterDetails.quantityLabel') }}</b> {{ quantity }}</span>
+            <button
+              class="btn-red-bg"
+              @click="increment"
+              :disabled="quantity >= poster.stockInfo.availableStock"
+            >
+              <PlusIcon class="icon" />
+            </button>
+            <button class="btn-red-bg" @click="decrement" :disabled="quantity <= 1">
+              <MinusIcon class="icon" />
+            </button>
+          </div>
+
+          <p class="booking-modal-total"><b>{{ $t('posterDetails.totalPrice') }}</b> : {{ quantity * poster.price }} €</p>
+
+          <button class="btn-red-bg booking-modal-submit" @click="bookPoster" :disabled="booking">
+            {{ $t('posterDetails.book') }}
           </button>
-          <button class="btn-white-bg" @click="decrement" :disabled="quantity <= 1">
-            <MinusIcon class="icon" />
+        </template>
+
+        <template v-else>
+          <h2 class="booking-modal-title">{{ $t('posterDetails.bookConfirmedTitle') }}</h2>
+          <p class="booking-modal-poster-title">{{ poster.title }}</p>
+
+          <p v-if="saleDateStore.saleDate?.date" class="booking-modal-sale-date">
+            {{ $t('posterDetails.saleDateReminder', { date: formattedSaleDate }) }}
+          </p>
+
+          <button class="btn-red-bg booking-modal-submit" @click="close">
+            {{ $t('posterDetails.close') }}
           </button>
-        </div>
-
-        <p class="booking-modal-total"><b>{{ $t('posterDetails.totalPrice') }}</b> : {{ quantity * poster.price }} €</p>
-
-        <button class="btn-red-bg booking-modal-submit" @click="bookPoster" :disabled="booking">
-          {{ $t('posterDetails.book') }}
-        </button>
+        </template>
       </div>
     </div>
   </Transition>
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, computed, watch } from 'vue'
 import type { Poster } from '@/types/models'
 import { XMarkIcon, PlusIcon, MinusIcon } from '@heroicons/vue/24/solid'
 import { useAuthStore } from '@/stores/auth'
 import { useBookingStore } from '@/stores/bookings'
+import { useSaleDateStore } from '@/stores/saleDate'
 import { useToast } from 'vue-toastification'
 import { useI18n } from 'vue-i18n'
 
@@ -47,16 +64,33 @@ const emit = defineEmits(['close', 'booked'])
 
 const auth = useAuthStore()
 const bookingStore = useBookingStore()
+const saleDateStore = useSaleDateStore()
 const toast = useToast()
-const { t } = useI18n()
+const { t, locale } = useI18n()
 
 const quantity = ref(1)
 const booking = ref(false)
+const confirmed = ref(false)
+
+const formattedSaleDate = computed(() => {
+  const date = saleDateStore.saleDate?.date
+  if (!date) return ''
+  return new Date(date).toLocaleDateString(locale.value === 'en' ? 'en-US' : 'fr-FR', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  })
+})
 
 watch(
   () => props.visible,
   (v) => {
-    if (v) quantity.value = 1
+    if (v) {
+      quantity.value = 1
+      confirmed.value = false
+      saleDateStore.fetchSaleDate()
+    }
   },
 )
 
@@ -83,7 +117,7 @@ async function bookPoster() {
     })
     toast.success(t('posterDetails.bookSuccess'))
     emit('booked')
-    close()
+    confirmed.value = true
   } catch (err: any) {
     toast.error(err.response?.data?.error || t('posterDetails.bookError'))
   } finally {
@@ -152,6 +186,11 @@ async function bookPoster() {
 
 .booking-modal-total {
   margin-bottom: 16px;
+}
+
+.booking-modal-sale-date {
+  margin-bottom: 16px;
+  line-height: 1.4;
 }
 
 .booking-modal-submit {

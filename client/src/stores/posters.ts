@@ -17,6 +17,8 @@ export const usePosterStore = defineStore('posters', () => {
   const error = ref<string | null>(null)
   const selectedLetter = ref<string | null>(null)
   const searchQuery = ref('')
+  const countries = ref<string[]>([])
+  const genres = ref<string[]>([])
 
   const setSearchQuery = debounce((value: string) => {
     searchQuery.value = value
@@ -43,7 +45,18 @@ export const usePosterStore = defineStore('posters', () => {
     return result
   })
 
-  async function fetchPosters(params: { forSale?: boolean, page?: number; limit?: number; q?: string } = {}) {
+  async function fetchPosters(
+    params: {
+      forSale?: boolean
+      page?: number
+      limit?: number
+      q?: string
+      sort?: 'newest' | 'title'
+      country?: string
+      genre?: string
+      tags?: string
+    } = {},
+  ) {
     loading.value = true
     try {
       const res = await api.get('/posters', { params })
@@ -56,6 +69,12 @@ export const usePosterStore = defineStore('posters', () => {
     } finally {
       loading.value = false
     }
+  }
+
+  async function fetchFilters(params: { forSale?: boolean } = {}) {
+    const res = await api.get('/posters/filters', { params })
+    countries.value = res.data.countries
+    genres.value = res.data.genres
   }
 
   async function fetchPoster(id: string | string[]) {
@@ -119,9 +138,12 @@ export const usePosterStore = defineStore('posters', () => {
     error,
     selectedLetter,
     searchQuery,
+    countries,
+    genres,
     setSearchQuery,
     filteredPosters,
     fetchPosters,
+    fetchFilters,
     fetchPoster,
     createPoster,
     updatePoster,

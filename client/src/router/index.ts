@@ -13,9 +13,11 @@ import ForgotPassword from '@/pages/auth/ForgotPassword.vue'
 import ResetPassword from '@/pages/auth/ResetPassword.vue'
 import EmailVerification from '@/pages/auth/EmailVerification.vue'
 import ResendVerification from '@/pages/auth/ResendVerification.vue'
+import Help from '@/pages/Help.vue'
 
 const routes = [
   { path: '/', component: Home },
+  { path: '/help', name: 'help', component: Help },
   { path: '/posters/:id', name: 'posters', component: PosterDetails, props: true },
   { path: '/login', name: 'login', component: Login },
   { path: '/signup', component: Signup },

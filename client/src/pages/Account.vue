@@ -8,7 +8,10 @@
     </div>
 
     <div v-else>
-      <admin-booking-table 
+      <p v-if="saleDateStore.saleDate?.date" class="account-sale-date">
+        {{ $t('account.saleDateReminder', { date: formattedSaleDate }) }}
+      </p>
+      <admin-booking-table
       :bookings="bookingStore.bookings"
     @edit="(p) => openEditBooking(p)"
     @delete="(p) => deleteBooking(p)"
@@ -24,23 +27,39 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useBookingStore } from '@/stores/bookings'
 import { usePosterStore } from '@/stores/posters'
+import { useSaleDateStore } from '@/stores/saleDate'
 import BookingEdit from '@/components/edition/BookingEdit.vue'
 import AdminBookingTable from '@/components/tables/BookingTable.vue'
+import { useI18n } from 'vue-i18n'
 
 const auth = useAuthStore()
 const bookingStore = useBookingStore()
 const posterStore = usePosterStore()
+const saleDateStore = useSaleDateStore()
+const { locale } = useI18n()
 const loading = ref(true)
 const editingBooking = ref(null)
 
 const showModal = ref(false)
 
+const formattedSaleDate = computed(() => {
+  const date = saleDateStore.saleDate?.date
+  if (!date) return ''
+  return new Date(date).toLocaleDateString(locale.value === 'en' ? 'en-US' : 'fr-FR', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  })
+})
+
 onMounted(async () => {
   bookingStore.fetchBookings({ all: false })
+  await saleDateStore.fetchSaleDate()
   loading.value = false
 })
 
@@ -69,5 +88,12 @@ const closeModal = () => {
 }
 .account-container-no-booking{
   padding-left: 0.5rem;
+}
+.account-sale-date {
+  padding: 0.75rem 1rem;
+  margin: 0 0 1rem;
+  background-color: $darker-red;
+  color: white;
+  border-radius: 8px;
 }
 </style>

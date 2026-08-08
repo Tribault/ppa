@@ -11,6 +11,7 @@ const posterSchema = new mongoose.Schema({
     note : String,
     image : String,
     tags: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Tag' }],
+    locations: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Location' }],
     totalStock: Number,
     forSale: {type: Boolean, default: false},
     filmmaker: String,
@@ -18,7 +19,7 @@ const posterSchema = new mongoose.Schema({
     mainActors: [String],
     genre: String,
     country: String
-})
+}, { timestamps: true })
 
 
 module.exports = mongoose.model('Poster', posterSchema)

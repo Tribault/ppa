@@ -13,6 +13,7 @@ export interface Poster {
   note: string
   totalStock: number
   tags: Tag[]
+  locations?: Location[]
   forSale: Boolean
   stockInfo: StockInfo
   filmmaker?: string
@@ -80,6 +81,11 @@ content : string
 bookingAllowed: boolean
 }
 
+export interface SaleDate {
+  _id: string
+  date: string
+}
+
 export interface BookingPayload {
   userId: string
   posterId: string
@@ -95,6 +101,7 @@ export interface PosterPayload {
   note: string
   totalStock: number
   tags: string[]
+  locations?: string[]
   forSale: Boolean
   filmmaker?: string
   year?: number
@@ -104,6 +111,11 @@ export interface PosterPayload {
 }
 
 export interface Tag {
+  _id: string
+  name: string
+}
+
+export interface Location {
   _id: string
   name: string
 }

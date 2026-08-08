@@ -19,6 +19,7 @@
     <div class="admin-posters-header--actions">
       <button class="btn-red-bg" @click="openNewPoster"><NewspaperIcon /> Nouveau Poster</button>
       <button class="btn-red-bg" @click="showTagModal = true"><TagIcon />Etiquettes</button>
+      <button class="btn-red-bg" @click="showLocationModal = true"><MapPinIcon />Localisations</button>
     </div>
   </div>
 
@@ -37,6 +38,7 @@
     @saved="posterStore.fetchPosters({ page: 1, limit: 20, q: activeQuery() })"
   />
   <tag-edit :visible="showTagModal" @close="closeTagModal" />
+  <location-edit :visible="showLocationModal" @close="closeLocationModal" />
   </div>
 </template>
 
@@ -48,9 +50,10 @@ import type { Poster } from '@/types/models'
 import AdminPosterTable from '@/components/tables/PosterTable.vue'
 import PosterEdit from '@/components/edition/PosterEdit.vue'
 import TagEdit from '@/components/edition/TagEdit.vue'
+import LocationEdit from '@/components/edition/LocationEdit.vue'
 import Pagination from '@/components/utils/Pagination.vue'
 
-import { MagnifyingGlassIcon, TagIcon, NewspaperIcon } from '@heroicons/vue/24/solid'
+import { MagnifyingGlassIcon, TagIcon, MapPinIcon, NewspaperIcon } from '@heroicons/vue/24/solid'
 
 const posterStore = usePosterStore()
 
@@ -58,6 +61,7 @@ const letters = Object.values(Alphabet)
 
 const showModal = ref(false)
 const showTagModal = ref(false)
+const showLocationModal = ref(false)
 
 const editingPoster = ref(null)
 
@@ -77,6 +81,10 @@ const closeModal = () => {
 
 const closeTagModal = () => {
   showTagModal.value = false
+}
+
+const closeLocationModal = () => {
+  showLocationModal.value = false
 }
 
 function activeQuery() {

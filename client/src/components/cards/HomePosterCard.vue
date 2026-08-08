@@ -187,29 +187,39 @@ function openBooking() {
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: $red;
-  color: white;
+  background-color: white;
+  color: $red;
   border: none;
   border-radius: 50%;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: background-color 0.2s ease, color 0.2s ease;
 
   .icon {
     width: 1.5rem;
     height: 1.5rem;
-    color: white;
+    color: $red;
     stroke-width: 3;
   }
 
   &:hover:not(.disabled) {
     background-color: $darker-red;
+    color: white;
+
+    .icon {
+      color: white;
+    }
   }
 
   &.disabled {
     background-color: #999;
+    color: white;
     cursor: not-allowed;
     box-shadow: none;
+
+    .icon {
+      color: white;
+    }
   }
 }
 

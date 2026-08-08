@@ -6,7 +6,9 @@ const bookingSchema = new mongoose.Schema({
   quantity: { type: Number, required: true },
   status: { type: String, enum: ['pending', 'validated', 'cancelled'], default: 'pending' },
   bookedAt: { type: Date, default: Date.now },
-  priceAtBooking: { type: Number, required: true }
+  priceAtBooking: { type: Number, required: true },
+  reminder7SentAt: { type: Date, default: null },
+  reminder1SentAt: { type: Date, default: null }
 });
 
 bookingSchema.index({ user: 1, poster: 1 }, { unique: true })

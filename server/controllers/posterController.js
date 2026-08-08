@@ -10,18 +10,24 @@ exports.getPosters = async (req, res) => {
   const limit = parseInt(req.query.limit) || 20
   const skip = (page - 1) * limit
 
-  const { q } = req.query
+  const { q, sort, country, genre, tags } = req.query
 
   const filter = {}
   if (q) filter.title = { $regex: q, $options: 'i' }
   if (forSale) filter.forSale = true
+  if (country) filter.country = country
+  if (genre) filter.genre = genre
+  if (tags) filter.tags = tags
+
+  const sortOption = sort === 'newest' ? { createdAt: -1 } : { title: 1 }
+
+  const isAdmin = req.user?.role === 'admin'
+
+  const query = Poster.find(filter).populate('tags')
+  if (isAdmin) query.populate('locations')
 
   const [posters, total] = await Promise.all([
-    Poster.find(filter)
-      .populate('tags')
-      .sort({ title: 1 })
-      .skip(skip)
-      .limit(limit),
+    query.sort(sortOption).skip(skip).limit(limit),
     Poster.countDocuments(filter)
   ])
 
@@ -29,10 +35,9 @@ exports.getPosters = async (req, res) => {
   const postersWithStockInfo = await Promise.all(
     posters.map(async (poster) => {
       const stockInfo = await computeStockInfo(poster._id, poster.totalStock)
-      return {
-        ...poster.toObject(),
-        stockInfo
-      }
+      const posterObj = { ...poster.toObject(), stockInfo }
+      if (!isAdmin) delete posterObj.locations
+      return posterObj
     })
   )
 
@@ -44,9 +49,27 @@ exports.getPosters = async (req, res) => {
   })
 }
 
+exports.getPosterFilters = async (req, res) => {
+  const filter = {}
+  if (req.query.forSale) filter.forSale = true
+
+  const [countries, genres] = await Promise.all([
+    Poster.distinct('country', filter),
+    Poster.distinct('genre', filter),
+  ])
+
+  res.json({
+    countries: countries.filter(Boolean).sort(),
+    genres: genres.filter(Boolean).sort(),
+  })
+}
+
 exports.getPoster = async (req, res) => {
   try {
-    const poster = await Poster.findById(req.params.id).populate('tags')
+    const isAdmin = req.user?.role === 'admin'
+    const query = Poster.findById(req.params.id).populate('tags')
+    if (isAdmin) query.populate('locations')
+    const poster = await query
     if (!poster) return res.status(404).json({ message: req.t.poster.notFound })
 
     // Compute stock info
@@ -72,6 +95,7 @@ exports.getPoster = async (req, res) => {
         availableStock
       }
     }
+    if (!isAdmin) delete posterWithStock.locations
 
     res.json(posterWithStock)
   } catch (err) {
@@ -81,9 +105,9 @@ exports.getPoster = async (req, res) => {
 }
 
 exports.createPoster = async (req, res) => {
-    const {title, size, price, note, totalStock, tags, filmmaker, year, mainActors, genre, country, image: bodyImage} = req.body
+    const {title, size, price, note, totalStock, tags, locations, filmmaker, year, mainActors, genre, country, image: bodyImage} = req.body
     const image = req.file?.filename || bodyImage || ''
-    const poster = await Poster.create({title, size, price, note, totalStock, image, tags, filmmaker, year, mainActors, genre, country})
+    const poster = await Poster.create({title, size, price, note, totalStock, image, tags, locations, filmmaker, year, mainActors, genre, country})
     res.json(poster)
 }
 

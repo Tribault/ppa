@@ -30,6 +30,27 @@ exports.authenticate = async (req, res, next) => {
   }
 }
 
+exports.optionalAuthenticate = async (req, res, next) => {
+  const authHeader = req.headers.authorization
+
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return next()
+  }
+
+  const token = authHeader.split(' ')[1]
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET)
+    const user = await User.findById(decoded.id).select('email role isVerified')
+    if (user && user.isVerified) {
+      req.user = user
+    }
+  } catch (err) {
+  }
+
+  next()
+}
+
 exports.authorize = (...roles) => {
     return (req, res, next) => {
     if (!req.user) {

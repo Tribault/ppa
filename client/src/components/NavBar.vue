@@ -7,7 +7,8 @@
       <router-link to="/login">{{ $t('nav.loginSignup') }}</router-link>
     </div>
     <div v-else class="navbar-options">
-      <router-link v-if="auth.user.role === 'admin' && $route.path !== '/admin'" to="/admin">{{ $t('nav.admin') }}</router-link>
+      <router-link v-if="auth.user.role === 'admin' && $route.path !== '/admin'" to="/admin">{{ $t('nav.admin')
+        }}</router-link>
       <router-link v-if="auth.user.role === 'user'" to="/account">{{ $t('nav.myBookings') }}</router-link>
       <div class="navbar-options__user">
         <span class="navbar-home__logout--user">{{ auth.user.email }}</span>
@@ -16,12 +17,16 @@
         </button>
       </div>
     </div>
+    <router-link to="/help" class="navbar-help" :title="$t('nav.help')" :aria-label="$t('nav.help')">
+      <QuestionMarkCircleIcon />
+    </router-link>
   </nav>
 </template>
 
 <script setup lang="ts">
 import { useAuthStore } from '../stores/auth'
 import { useRouter } from 'vue-router'
+import { QuestionMarkCircleIcon } from '@heroicons/vue/24/solid'
 
 const auth = useAuthStore()
 const router = useRouter()
@@ -46,9 +51,10 @@ const logout = () => {
   text-decoration: none;
 }
 
-.navbar-home__link > img {
+.navbar-home__link>img {
   max-height: 120px;
 }
+
 .navbar-home__logout {
   background: none;
   color: inherit;
@@ -61,6 +67,21 @@ const logout = () => {
 
 .navbar-home__logout--user {
   font-weight: 700;
+}
+
+.navbar-help {
+  display: inline-flex;
+  color: whitesmoke;
+  flex-shrink: 0;
+
+  svg {
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+
+  &:hover {
+    color: white;
+  }
 }
 
 .navbar-options__user {
@@ -83,6 +104,7 @@ const logout = () => {
     flex-grow: 1;
     text-align: center;
   }
+
   .navbar {
     flex-wrap: wrap;
     font-size: 1rem;
