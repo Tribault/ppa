@@ -364,17 +364,44 @@ watch(browseMode, (mode) => {
 @media screen and (max-width: $break-sm) {
   .home-header {
     display: flex;
-    flex-direction: column;
+    flex-wrap: wrap;
     align-items: center;
+    justify-content: center;
     gap: 0.75rem;
   }
+
+  .home-search {
+    flex: 1 1 auto;
+    min-width: 0;
+
+    input {
+      flex: 1;
+      min-width: 0;
+    }
+  }
+
+  .home-view-toggle {
+    gap: 0.5rem;
+
+    button {
+      padding: 0.35rem 0.6rem;
+    }
+
+    .icon {
+      width: 20px;
+      height: 20px;
+    }
+  }
+
   .home-browse {
     flex-wrap: wrap;
     justify-content: center;
+    flex-basis: 100%;
+    order: 3;
   }
-  .poster-card-grid{
 
-  margin: 0 auto;
+  .grid-container {
+    justify-items: center;
   }
 }
 </style>

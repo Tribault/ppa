@@ -9,7 +9,7 @@
           <th>{{ $t('table.poster.stock') }}</th>
           <th>{{ $t('table.poster.tags') }}</th>
           <th>{{ $t('table.poster.locations') }}</th>
-          <th>{{ $t('table.poster.comment') }}</th>
+          <th>{{ $t('table.poster.forSale') }}</th>
           <th>{{ $t('table.poster.actions') }}</th>
         </tr>
       </thead>
@@ -21,7 +21,7 @@
           <td>{{ p.totalStock }}</td>
           <td>{{ p.tags.map((t) => t.name).join(', ') }}</td>
           <td>{{ (p.locations ?? []).map((l) => l.name).join(', ') }}</td>
-          <td>{{ p.note }}</td>
+          <td>{{ p.forSale ? $t('form.poster.yes') : $t('form.poster.no') }}</td>
           <td class="admin-poster-table--actions">
             <eye-icon v-if="p.image" class="icon" @click="viewImage(p.image)" />
             <pencil-icon class="icon" @click="$emit('edit', p)" />
