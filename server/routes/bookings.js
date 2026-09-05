@@ -1,9 +1,11 @@
 const express = require('express')
 const router = express.Router()
-const {authenticate} = require('../middleware/auth')
+const {authenticate, authorize} = require('../middleware/auth')
 
-const {createOrUpdateBooking, getBookings, deleteBooking }  = require('../controllers/bookingController')
+const {createOrUpdateBooking, createBasket, updateBasketStatus, getBookings, deleteBooking }  = require('../controllers/bookingController')
 
+router.post('/basket', authenticate, createBasket)
+router.patch('/reference/:reference', authenticate, authorize('admin'), updateBasketStatus)
 router.post('/', authenticate,createOrUpdateBooking)
 router.put('/:id', authenticate, createOrUpdateBooking)
 router.get('/', authenticate, getBookings)

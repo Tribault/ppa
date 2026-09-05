@@ -5,7 +5,7 @@ exports.getMessage =  async (req, res) => {
     const msg = await Message.findOne().sort({ updatedAt: -1 })
     res.json(msg)
   } catch (err) {
-    res.status(400).json({ message: err.message })
+    res.status(400).json({ message: req.t.message.serverError })
   }
 }
 

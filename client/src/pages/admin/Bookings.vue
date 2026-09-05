@@ -36,8 +36,12 @@
   <div class="admin-table-wrapper">
     <admin-booking-table
       :bookings="bookingStore.filteredBookings"
+      :sort-by="sortBy"
+      :sort-dir="sortDir"
+      @sort="handleSort"
       @edit="(p) => openEditBooking(p)"
       @delete="(p) => deleteBooking(p)"
+      @basket-status="(e) => updateBasketStatus(e.reference, e.status)"
     />
   </div>
   <pagination :page="bookingStore.page" :pages="bookingStore.pages" @change="loadPage" />
@@ -45,7 +49,7 @@
     :visible="showModal"
     :bookingToEdit="editingBooking"
     @close="closeModal"
-    @saved="bookingStore.fetchBookings({ all: true }, { page: 1, limit: 20, q: activeQuery() })"
+    @saved="fetchList(1)"
   />
   <message-edit :visible="showMessageModal" @close="showMessageModal = false" />
   <sale-date-edit :visible="showSaleDateModal" @close="showSaleDateModal = false" />
@@ -56,6 +60,8 @@
 import { useBookingStore } from '@/stores/bookings'
 import { useMessageStore } from '@/stores/messages'
 import { ref, computed, onMounted, watch } from 'vue'
+import { useToast } from 'vue-toastification'
+import { useI18n } from 'vue-i18n'
 import { Alphabet } from '@/types/models'
 import AdminBookingTable from '@/components/tables/BookingTable.vue'
 import BookingEdit from '@/components/edition/BookingEdit.vue'
@@ -74,6 +80,8 @@ import {
 
 const bookingStore = useBookingStore()
 const messageStore = useMessageStore()
+const toast = useToast()
+const { t } = useI18n()
 
 const letters = Object.values(Alphabet)
 
@@ -104,12 +112,32 @@ function activeQuery() {
   return undefined
 }
 
+const sortBy = ref<string | null>(null)
+const sortDir = ref<'asc' | 'desc'>('asc')
+
+function fetchList(page = bookingStore.page) {
+  return bookingStore.fetchBookings(
+    { all: true },
+    { page, limit: 20, q: activeQuery(), sortBy: sortBy.value || undefined, sortDir: sortDir.value },
+  )
+}
+
+function handleSort(field: string) {
+  if (sortBy.value === field) {
+    sortDir.value = sortDir.value === 'asc' ? 'desc' : 'asc'
+  } else {
+    sortBy.value = field
+    sortDir.value = 'asc'
+  }
+  fetchList(1)
+}
+
 function loadPage(p: number) {
-  bookingStore.fetchBookings({ all: true }, { page: p, limit: 20, q: activeQuery() })
+  fetchList(p)
 }
 
 onMounted(async () => {
-  bookingStore.fetchBookings({ all: true }, { page: 1, limit: 20 })
+  fetchList(1)
   await messageStore.fetchMessage()
 })
 
@@ -121,16 +149,26 @@ function deleteBooking(bookingId: string) {
   bookingStore.deleteBooking(bookingId)
 }
 
+async function updateBasketStatus(reference: string, status: 'ready' | 'validated') {
+  try {
+    await bookingStore.updateBasketStatus(reference, status)
+    toast.success(t('table.booking.basketUpdateSuccess'))
+    fetchList()
+  } catch (err) {
+    toast.error(t('table.booking.basketUpdateError'))
+  }
+}
+
 function toggleBookings() {
   messageStore.toggleBooking()
 }
 
-watch(() => bookingStore.selectedLetter, (letter) => {
-  bookingStore.fetchBookings({ all: true }, { page: 1, limit: 20, q: letter ? `^${letter}` : undefined })
+watch(() => bookingStore.selectedLetter, () => {
+  fetchList(1)
 })
 
-watch(() => bookingStore.searchQuery, (q) => {
-  bookingStore.fetchBookings({ all: true }, { page: 1, limit: 20, q: q || undefined })
+watch(() => bookingStore.searchQuery, () => {
+  fetchList(1)
 })
 </script>
 

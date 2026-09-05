@@ -109,6 +109,43 @@ describe('Posters', () => {
     })
   })
 
+  describe('GET /api/posters?sortBy=&sortDir= (admin backoffice sorting)', () => {
+    it('sorts by price ascending', async () => {
+      await Poster.create({ ...posterData, title: 'Expensive', price: 50 })
+      await Poster.create({ ...posterData, title: 'Cheap', price: 5 })
+      const res = await request(app).get('/api/posters?sortBy=price&sortDir=asc')
+      expect(res.body.data.map((p) => p.title)).toEqual(['Cheap', 'Expensive'])
+    })
+
+    it('sorts by price descending', async () => {
+      await Poster.create({ ...posterData, title: 'Expensive', price: 50 })
+      await Poster.create({ ...posterData, title: 'Cheap', price: 5 })
+      const res = await request(app).get('/api/posters?sortBy=price&sortDir=desc')
+      expect(res.body.data.map((p) => p.title)).toEqual(['Expensive', 'Cheap'])
+    })
+
+    it('sorts by stock', async () => {
+      await Poster.create({ ...posterData, title: 'Full', totalStock: 20 })
+      await Poster.create({ ...posterData, title: 'Empty', totalStock: 1 })
+      const res = await request(app).get('/api/posters?sortBy=totalStock&sortDir=asc')
+      expect(res.body.data.map((p) => p.title)).toEqual(['Empty', 'Full'])
+    })
+
+    it('sortBy takes precedence over the legacy sort=newest param', async () => {
+      await Poster.create({ ...posterData, title: 'Zebra', createdAt: new Date('2020-01-01') })
+      await Poster.create({ ...posterData, title: 'Alpha', createdAt: new Date('2024-01-01') })
+      const res = await request(app).get('/api/posters?sort=newest&sortBy=title&sortDir=asc')
+      expect(res.body.data.map((p) => p.title)).toEqual(['Alpha', 'Zebra'])
+    })
+
+    it('ignores an unrecognized sortBy field and falls back to the default', async () => {
+      await Poster.create({ ...posterData, title: 'Zebra' })
+      await Poster.create({ ...posterData, title: 'Alpha' })
+      const res = await request(app).get('/api/posters?sortBy=notAField')
+      expect(res.body.data.map((p) => p.title)).toEqual(['Alpha', 'Zebra'])
+    })
+  })
+
   describe('GET /api/posters filters', () => {
     it('filters by country', async () => {
       await Poster.create({ ...posterData, title: 'FR Poster', country: 'France' })
@@ -124,6 +161,26 @@ describe('Posters', () => {
       const res = await request(app).get('/api/posters?genre=Drame')
       expect(res.body.data).toHaveLength(1)
       expect(res.body.data[0].title).toBe('Drama Poster')
+    })
+
+    it('matches a genre that is one of several comma-separated values', async () => {
+      await Poster.create({ ...posterData, title: 'Horror Fantasy Poster', genre: 'Horreur, Fantastique' })
+      await Poster.create({ ...posterData, title: 'Comedy Poster', genre: 'Comédie' })
+
+      const horror = await request(app).get('/api/posters?genre=Horreur')
+      expect(horror.body.data.map((p) => p.title)).toEqual(['Horror Fantasy Poster'])
+
+      const fantasy = await request(app).get('/api/posters?genre=Fantastique')
+      expect(fantasy.body.data.map((p) => p.title)).toEqual(['Horror Fantasy Poster'])
+
+      const comedy = await request(app).get('/api/posters?genre=Comédie')
+      expect(comedy.body.data.map((p) => p.title)).toEqual(['Comedy Poster'])
+    })
+
+    it('does not partial-match an unrelated genre name', async () => {
+      await Poster.create({ ...posterData, title: 'Horror Poster', genre: 'Horreur' })
+      const res = await request(app).get('/api/posters?genre=Horre')
+      expect(res.body.data).toEqual([])
     })
 
     it('filters by tag id', async () => {
@@ -152,6 +209,60 @@ describe('Posters', () => {
       await Poster.create({ ...posterData, country: 'Japon', forSale: false })
       const res = await request(app).get('/api/posters/filters?forSale=true')
       expect(res.body.countries).toEqual(['France'])
+    })
+
+    it('splits comma-separated genres into distinct individual entries', async () => {
+      await Poster.create({ ...posterData, genre: 'Horreur, Fantastique' })
+      await Poster.create({ ...posterData, genre: 'Comédie, Fantastique' })
+      const res = await request(app).get('/api/posters/filters')
+      expect(res.body.genres).toEqual(['Comédie', 'Fantastique', 'Horreur'])
+    })
+  })
+
+  describe('GET /api/posters/check-title', () => {
+    it('rejects anonymous requests', async () => {
+      const res = await request(app).get('/api/posters/check-title?title=Amelie')
+      expect(res.status).toBe(401)
+    })
+
+    it('rejects non-admin users', async () => {
+      const res = await request(app)
+        .get('/api/posters/check-title?title=Amelie')
+        .set('Authorization', `Bearer ${userToken}`)
+      expect(res.status).toBe(403)
+    })
+
+    it('reports no duplicate when no poster matches the title', async () => {
+      const res = await request(app)
+        .get('/api/posters/check-title?title=Amelie')
+        .set('Authorization', `Bearer ${adminToken}`)
+      expect(res.body).toEqual({ exists: false, poster: null })
+    })
+
+    it('matches an existing title case-insensitively', async () => {
+      const poster = await Poster.create({ ...posterData, title: 'Amelie' })
+      const res = await request(app)
+        .get('/api/posters/check-title?title=AMELIE')
+        .set('Authorization', `Bearer ${adminToken}`)
+      expect(res.body.exists).toBe(true)
+      expect(res.body.poster._id).toBe(poster._id.toString())
+      expect(res.body.poster.title).toBe('Amelie')
+    })
+
+    it('does not partial-match a different title', async () => {
+      await Poster.create({ ...posterData, title: 'Amelie Part Two' })
+      const res = await request(app)
+        .get('/api/posters/check-title?title=Amelie')
+        .set('Authorization', `Bearer ${adminToken}`)
+      expect(res.body.exists).toBe(false)
+    })
+
+    it('excludes the given poster id, so editing a poster does not flag itself', async () => {
+      const poster = await Poster.create({ ...posterData, title: 'Amelie' })
+      const res = await request(app)
+        .get(`/api/posters/check-title?title=Amelie&excludeId=${poster._id}`)
+        .set('Authorization', `Bearer ${adminToken}`)
+      expect(res.body.exists).toBe(false)
     })
   })
 
@@ -218,6 +329,19 @@ describe('Posters', () => {
         .set('Authorization', `Bearer ${userToken}`)
         .send(posterData)
       expect(res.status).toBe(403)
+    })
+
+    it('rejects an unsupported image format with a localized message, in English when requested', async () => {
+      const res = await request(app)
+        .post('/api/posters')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .set('Accept-Language', 'en')
+        .field('title', 'Nouvelle Affiche')
+        .field('price', '15')
+        .field('totalStock', '5')
+        .attach('image', Buffer.from('not an image'), { filename: 'poster.txt', contentType: 'text/plain' })
+      expect(res.status).toBe(400)
+      expect(res.body.message).toBe('Unsupported format. Use JPEG, PNG, WebP or GIF.')
     })
   })
 

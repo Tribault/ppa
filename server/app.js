@@ -36,8 +36,12 @@ app.use('/api/sale-date', saleDateRoutes)
 // Catch Multer errors (bad file type, file too large) and return a clean 400
 // instead of letting them bubble up as an unhandled 500.
 app.use((err, req, res, next) => {
-  if (err instanceof multer.MulterError || err.message?.includes('Format non supporté')) {
-    return res.status(400).json({ error: err.message })
+  if (err instanceof multer.MulterError) {
+    const message = err.code === 'LIMIT_FILE_SIZE' ? req.t.poster.fileTooLarge : req.t.poster.unsupportedFormat
+    return res.status(400).json({ message })
+  }
+  if (err.isFileFilterError) {
+    return res.status(400).json({ message: err.message })
   }
   next(err)
 })

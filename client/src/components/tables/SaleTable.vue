@@ -3,13 +3,27 @@
     <table class="sticky-table">
       <thead>
         <tr>
-          <th class="sticky-col">{{ $t('table.sale.poster') }}</th>
-          <th>{{ $t('table.sale.buyer') }}</th>
-          <th>{{ $t('table.sale.unitPrice') }}</th>
-          <th>{{ $t('table.sale.quantity') }}</th>
-          <th>{{ $t('table.sale.totalPrice') }}</th>
-          <th>{{ $t('table.sale.soldBy') }}</th>
-          <th>{{ $t('table.sale.date') }}</th>
+          <sortable-th field="posterTitle" :sort-by="sortBy" :sort-dir="sortDir" sticky-col @sort="$emit('sort', $event)">
+            {{ $t('table.sale.poster') }}
+          </sortable-th>
+          <sortable-th field="buyerEmail" :sort-by="sortBy" :sort-dir="sortDir" @sort="$emit('sort', $event)">
+            {{ $t('table.sale.buyer') }}
+          </sortable-th>
+          <sortable-th field="unitPrice" :sort-by="sortBy" :sort-dir="sortDir" @sort="$emit('sort', $event)">
+            {{ $t('table.sale.unitPrice') }}
+          </sortable-th>
+          <sortable-th field="quantity" :sort-by="sortBy" :sort-dir="sortDir" @sort="$emit('sort', $event)">
+            {{ $t('table.sale.quantity') }}
+          </sortable-th>
+          <sortable-th field="totalPrice" :sort-by="sortBy" :sort-dir="sortDir" @sort="$emit('sort', $event)">
+            {{ $t('table.sale.totalPrice') }}
+          </sortable-th>
+          <sortable-th field="soldBy" :sort-by="sortBy" :sort-dir="sortDir" @sort="$emit('sort', $event)">
+            {{ $t('table.sale.soldBy') }}
+          </sortable-th>
+          <sortable-th field="validatedAt" :sort-by="sortBy" :sort-dir="sortDir" @sort="$emit('sort', $event)">
+            {{ $t('table.sale.date') }}
+          </sortable-th>
         </tr>
       </thead>
       <tbody>
@@ -29,10 +43,15 @@
 
 <script setup lang="ts">
 import type { Sale } from '@/types/models'
+import SortableTh from '@/components/tables/SortableTh.vue'
 
 const props = defineProps<{
   sales: Sale[]
+  sortBy?: string | null
+  sortDir?: 'asc' | 'desc'
 }>()
+
+defineEmits(['sort'])
 </script>
 <style lang="scss" scoped>
 .admin-booking-table {

@@ -43,6 +43,25 @@ describe('Users', () => {
         .send({ email: 'x@test.com', password: 'pass123' })
       expect(res.status).toBe(403)
     })
+
+    it('rejects a missing password with a localized message', async () => {
+      const res = await request(app)
+        .post('/api/users')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({ email: 'nopass@test.com' })
+      expect(res.status).toBe(400)
+      expect(res.body.error).toBe('Le mot de passe est requis.')
+    })
+
+    it('rejects an invalid email with a localized message, in English when requested', async () => {
+      const res = await request(app)
+        .post('/api/users')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .set('Accept-Language', 'en')
+        .send({ email: 'not-an-email', password: 'pass123' })
+      expect(res.status).toBe(400)
+      expect(res.body.error).toBe('Invalid email address.')
+    })
   })
 
   // ── LIST ───────────────────────────────────────────────────────────────────
@@ -73,6 +92,36 @@ describe('Users', () => {
         .get('/api/users')
         .set('Authorization', `Bearer ${userToken}`)
       expect(res.status).toBe(403)
+    })
+  })
+
+  describe('GET /api/users sorting', () => {
+    it('sorts by email ascending by default', async () => {
+      const res = await request(app)
+        .get('/api/users')
+        .set('Authorization', `Bearer ${adminToken}`)
+      expect(res.body.data.map((u) => u.email)).toEqual(['admin@test.com', 'user@test.com'])
+    })
+
+    it('sorts by email descending', async () => {
+      const res = await request(app)
+        .get('/api/users?sortBy=email&sortDir=desc')
+        .set('Authorization', `Bearer ${adminToken}`)
+      expect(res.body.data.map((u) => u.email)).toEqual(['user@test.com', 'admin@test.com'])
+    })
+
+    it('sorts by role', async () => {
+      const res = await request(app)
+        .get('/api/users?sortBy=role&sortDir=asc')
+        .set('Authorization', `Bearer ${adminToken}`)
+      expect(res.body.data.map((u) => u.role)).toEqual(['admin', 'user'])
+    })
+
+    it('ignores an unrecognized sortBy field and falls back to email', async () => {
+      const res = await request(app)
+        .get('/api/users?sortBy=notAField')
+        .set('Authorization', `Bearer ${adminToken}`)
+      expect(res.body.data.map((u) => u.email)).toEqual(['admin@test.com', 'user@test.com'])
     })
   })
 

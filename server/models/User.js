@@ -6,10 +6,10 @@ const crypto = require('crypto')
 const userSchema = new mongoose.Schema({
   email: {
     type: String,
-    required: [true, 'Email is required'],
+    required: true,
     unique: true,
     lowercase: true,
-    validate: [validator.isEmail, 'Invalid email address'],
+    validate: validator.isEmail,
   },
   password: { type: String, required: true },
    role: {type: String, enum: ['user', 'admin'], default: 'user'},

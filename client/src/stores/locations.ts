@@ -15,5 +15,10 @@ export const useLocationStore = defineStore('locations', () => {
     locations.value.push(res.data)
   }
 
-  return { locations, fetchLocations, createLocation }
+  async function deleteLocation(id: string) {
+    await api.delete(`/locations/${id}`)
+    locations.value = locations.value.filter((l) => l._id !== id)
+  }
+
+  return { locations, fetchLocations, createLocation, deleteLocation }
 })

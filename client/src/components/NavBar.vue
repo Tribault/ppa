@@ -17,22 +17,37 @@
         </button>
       </div>
     </div>
+    <button
+      v-if="auth.user?.role === 'user'"
+      class="navbar-basket"
+      :title="$t('nav.viewBasket')"
+      :aria-label="$t('nav.viewBasket')"
+      @click="basketStore.open()"
+    >
+      <ShoppingBagIcon />
+      <span v-if="basketStore.itemCount" class="navbar-basket__badge">{{ basketStore.itemCount }}</span>
+    </button>
     <router-link to="/help" class="navbar-help" :title="$t('nav.help')" :aria-label="$t('nav.help')">
       <QuestionMarkCircleIcon />
     </router-link>
   </nav>
+  <basket-modal />
 </template>
 
 <script setup lang="ts">
 import { useAuthStore } from '../stores/auth'
+import { useBasketStore } from '../stores/basket'
 import { useRouter } from 'vue-router'
-import { QuestionMarkCircleIcon } from '@heroicons/vue/24/solid'
+import { QuestionMarkCircleIcon, ShoppingBagIcon } from '@heroicons/vue/24/solid'
+import BasketModal from '@/components/cards/BasketModal.vue'
 
 const auth = useAuthStore()
+const basketStore = useBasketStore()
 const router = useRouter()
 
 const logout = () => {
   auth.logout()
+  basketStore.clear()
   router.push('/')
 }
 </script>
@@ -67,6 +82,41 @@ const logout = () => {
 
 .navbar-home__logout--user {
   font-weight: 700;
+}
+
+.navbar-basket {
+  position: relative;
+  display: inline-flex;
+  background: none;
+  border: none;
+  padding: 0;
+  color: whitesmoke;
+  flex-shrink: 0;
+  cursor: pointer;
+
+  svg {
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+
+  &:hover {
+    color: white;
+  }
+
+  &__badge {
+    position: absolute;
+    top: -4px;
+    right: -6px;
+    background-color: white;
+    color: $red;
+    font-size: 0.7rem;
+    font-weight: 700;
+    line-height: 1;
+    border-radius: 999px;
+    padding: 3px 6px;
+    min-width: 1.2em;
+    text-align: center;
+  }
 }
 
 .navbar-help {

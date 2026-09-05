@@ -52,6 +52,8 @@ export const usePosterStore = defineStore('posters', () => {
       limit?: number
       q?: string
       sort?: 'newest' | 'title'
+      sortBy?: string
+      sortDir?: 'asc' | 'desc'
       country?: string
       genre?: string
       tags?: string
@@ -75,6 +77,11 @@ export const usePosterStore = defineStore('posters', () => {
     const res = await api.get('/posters/filters', { params })
     countries.value = res.data.countries
     genres.value = res.data.genres
+  }
+
+  async function checkDuplicateTitle(title: string, excludeId?: string) {
+    const res = await api.get('/posters/check-title', { params: { title, excludeId } })
+    return res.data as { exists: boolean; poster: { _id: string; title: string } | null }
   }
 
   async function fetchPoster(id: string | string[]) {
@@ -144,6 +151,7 @@ export const usePosterStore = defineStore('posters', () => {
     filteredPosters,
     fetchPosters,
     fetchFilters,
+    checkDuplicateTitle,
     fetchPoster,
     createPoster,
     updatePoster,

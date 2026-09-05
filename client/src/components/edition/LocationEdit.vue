@@ -7,7 +7,10 @@
       <!-- List of existing locations -->
       <ul class="location-list">
         <li v-for="location in locationStore.locations" :key="location._id" class="location-item">
-          {{ location.name }}
+          <span>{{ location.name }}</span>
+          <button type="button" class="location-item-delete" @click="confirmDelete(location)">
+            <trash-icon class="icon" />
+          </button>
         </li>
       </ul>
 
@@ -18,11 +21,21 @@
       </form>
     </div>
   </div>
+  <confirm-modal
+    :message="$t('form.location.deleteConfirm')"
+    :visible="showDeleteModal"
+    @cancel="showDeleteModal = false"
+    @confirm="deleteConfirmed"
+  />
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useLocationStore } from '@/stores/locations'
+import { TrashIcon } from '@heroicons/vue/24/solid'
+import ConfirmModal from '@/components/utils/ConfirmModal.vue'
+import { useToast } from 'vue-toastification'
+import { useI18n } from 'vue-i18n'
 
 const props = defineProps<{
   visible: boolean
@@ -30,7 +43,12 @@ const props = defineProps<{
 const emit = defineEmits(['close'])
 
 const locationStore = useLocationStore()
+const toast = useToast()
+const { t } = useI18n()
 const newLocation = ref('')
+
+const showDeleteModal = ref(false)
+const locationToDelete = ref<{ _id: string; name: string } | null>(null)
 
 onMounted(async () => {
   await locationStore.fetchLocations()
@@ -47,6 +65,24 @@ async function createLocation() {
     newLocation.value = ''
   } catch (err) {
     console.error('Impossible de créer la localisation', err)
+  }
+}
+
+function confirmDelete(location: { _id: string; name: string }) {
+  locationToDelete.value = location
+  showDeleteModal.value = true
+}
+
+async function deleteConfirmed() {
+  if (!locationToDelete.value) return
+  try {
+    await locationStore.deleteLocation(locationToDelete.value._id)
+  } catch (err) {
+    console.error('Impossible de supprimer la localisation', err)
+    toast.error(t('form.location.deleteError'))
+  } finally {
+    showDeleteModal.value = false
+    locationToDelete.value = null
   }
 }
 </script>
@@ -99,6 +135,30 @@ async function createLocation() {
   margin: 4px 0;
   border-radius: 6px;
   font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.location-item-delete {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: white;
+  cursor: pointer;
+  padding: 2px;
+
+  .icon {
+    width: 16px;
+    height: 16px;
+  }
+
+  &:hover {
+    color: #ffb3b3;
+  }
 }
 
 .location-form {

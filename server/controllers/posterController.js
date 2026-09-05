@@ -1,8 +1,15 @@
 const Poster = require('../models/Poster')
-const Booking = require('../models/Booking')
 const fs = require('fs')
 const path = require('path')
 const { computeStockInfo } = require('../utils/stock')
+
+function escapeRegex(str) {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+function genreFilterRegex(genre) {
+  return new RegExp(`(^|,\\s*)${escapeRegex(genre)}\\s*(,|$)`, 'i')
+}
 
 exports.getPosters = async (req, res) => {
   const forSale = req.query.forSale
@@ -10,16 +17,19 @@ exports.getPosters = async (req, res) => {
   const limit = parseInt(req.query.limit) || 20
   const skip = (page - 1) * limit
 
-  const { q, sort, country, genre, tags } = req.query
+  const { q, sort, sortBy, sortDir, country, genre, tags } = req.query
 
   const filter = {}
   if (q) filter.title = { $regex: q, $options: 'i' }
   if (forSale) filter.forSale = true
   if (country) filter.country = country
-  if (genre) filter.genre = genre
+  if (genre) filter.genre = genreFilterRegex(genre)
   if (tags) filter.tags = tags
 
-  const sortOption = sort === 'newest' ? { createdAt: -1 } : { title: 1 }
+  const SORTABLE_POSTER_FIELDS = ['title', 'size', 'price', 'totalStock', 'forSale', 'createdAt']
+  const sortOption = SORTABLE_POSTER_FIELDS.includes(sortBy)
+    ? { [sortBy]: sortDir === 'desc' ? -1 : 1 }
+    : sort === 'newest' ? { createdAt: -1 } : { title: 1 }
 
   const isAdmin = req.user?.role === 'admin'
 
@@ -53,15 +63,30 @@ exports.getPosterFilters = async (req, res) => {
   const filter = {}
   if (req.query.forSale) filter.forSale = true
 
-  const [countries, genres] = await Promise.all([
+  const [countries, rawGenres] = await Promise.all([
     Poster.distinct('country', filter),
     Poster.distinct('genre', filter),
   ])
 
+  const genres = [...new Set(
+    rawGenres.flatMap((g) => (g || '').split(',').map((part) => part.trim()).filter(Boolean))
+  )].sort()
+
   res.json({
     countries: countries.filter(Boolean).sort(),
-    genres: genres.filter(Boolean).sort(),
+    genres,
   })
+}
+
+exports.checkDuplicateTitle = async (req, res) => {
+  const title = (req.query.title || '').trim()
+  if (!title) return res.json({ exists: false })
+
+  const filter = { title: { $regex: `^${escapeRegex(title)}$`, $options: 'i' } }
+  if (req.query.excludeId) filter._id = { $ne: req.query.excludeId }
+
+  const poster = await Poster.findOne(filter).select('_id title')
+  res.json({ exists: !!poster, poster: poster ? { _id: poster._id, title: poster.title } : null })
 }
 
 exports.getPoster = async (req, res) => {
@@ -72,28 +97,11 @@ exports.getPoster = async (req, res) => {
     const poster = await query
     if (!poster) return res.status(404).json({ message: req.t.poster.notFound })
 
-    // Compute stock info
-    const confirmedBookings = await Booking.aggregate([
-      { $match: { poster: poster._id, status: 'validated' } },
-      { $group: { _id: null, total: { $sum: '$quantity' } } }
-    ])
-
-    const pendingBookings = await Booking.aggregate([
-      { $match: { poster: poster._id, status: 'pending' } },
-      { $group: { _id: null, total: { $sum: '$quantity' } } }
-    ])
-
-    const confirmed = confirmedBookings[0]?.total || 0
-    const pending = pendingBookings[0]?.total || 0
-    const availableStock = poster.totalStock - confirmed - pending
+    const stockInfo = await computeStockInfo(poster._id, poster.totalStock)
 
     const posterWithStock = {
       ...poster.toObject(),
-      stockInfo: {
-        confirmed,
-        pending,
-        availableStock
-      }
+      stockInfo
     }
     if (!isAdmin) delete posterWithStock.locations
 

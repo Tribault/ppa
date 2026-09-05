@@ -28,11 +28,20 @@
 
             <div v-if="bookingToEdit?._id && authStore.isAdmin" class="booking-edit-form--row">
               <b>{{ $t('form.booking.statusLabel') }}</b>
-              <input type="radio" id="pending" value="pending" v-model="form.status" />
-              <label for="pending">{{ $t('form.booking.statusPending') }}</label>
-              <input type="radio" id="validated" value="validated" v-model="form.status" />
-              <label for="validated">{{ $t('form.booking.statusValidated') }}</label>
-
+              <div class="radio-group">
+                <span class="radio-option">
+                  <input type="radio" id="pending" value="pending" v-model="form.status" />
+                  <label for="pending">{{ $t('form.booking.statusPending') }}</label>
+                </span>
+                <span class="radio-option">
+                  <input type="radio" id="ready" value="ready" v-model="form.status" />
+                  <label for="ready">{{ $t('form.booking.statusReady') }}</label>
+                </span>
+                <span class="radio-option">
+                  <input type="radio" id="validated" value="validated" v-model="form.status" />
+                  <label for="validated">{{ $t('form.booking.statusValidated') }}</label>
+                </span>
+              </div>
             </div>
             <div class="booking-edit-form--row">
               <b>{{ $t('form.booking.quantityLabel') }}</b>
@@ -56,6 +65,7 @@
               <div class="booking-edit-form--row">
               <p class="tag-white">{{ $t('form.booking.available') }} {{bookingToEdit?.poster.stockInfo?.availableStock}}</p>
               <p class="tag-white">{{ $t('form.booking.reserved') }} {{bookingToEdit?.poster.stockInfo?.pending}}</p>
+              <p class="tag-white">{{ $t('form.booking.ready') }} {{bookingToEdit?.poster.stockInfo?.ready}}</p>
               <p class="tag-white">{{ $t('form.booking.sold') }} {{bookingToEdit?.poster.stockInfo?.confirmed}}</p>
               </div>
             </div>
@@ -196,6 +206,26 @@ async function submit() {
 .booking-edit-input.stock{
     max-width: 80px;
     margin-right: 0.5rem;
+}
+
+.radio-group {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.radio-option {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+
+  input {
+    margin: 0;
+  }
+
+  label {
+    margin: 0;
+  }
 }
 
 

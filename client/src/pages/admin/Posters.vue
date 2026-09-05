@@ -26,6 +26,9 @@
   <div class="admin-table-wrapper">
     <admin-poster-table
       :posters="posterStore.filteredPosters"
+      :sort-by="sortBy"
+      :sort-dir="sortDir"
+      @sort="handleSort"
       @edit="(p) => openEditPoster(p)"
       @delete="(p) => deletePoster(p)"
     />
@@ -35,7 +38,7 @@
     :visible="showModal"
     :posterToEdit="editingPoster"
     @close="closeModal"
-    @saved="posterStore.fetchPosters({ page: 1, limit: 20, q: activeQuery() })"
+    @saved="fetchList(1)"
   />
   <tag-edit :visible="showTagModal" @close="closeTagModal" />
   <location-edit :visible="showLocationModal" @close="closeLocationModal" />
@@ -93,24 +96,47 @@ function activeQuery() {
   return undefined
 }
 
+const sortBy = ref<string | null>(null)
+const sortDir = ref<'asc' | 'desc'>('asc')
+
+function fetchList(page = posterStore.page) {
+  return posterStore.fetchPosters({
+    page,
+    limit: 20,
+    q: activeQuery(),
+    sortBy: sortBy.value || undefined,
+    sortDir: sortDir.value,
+  })
+}
+
+function handleSort(field: string) {
+  if (sortBy.value === field) {
+    sortDir.value = sortDir.value === 'asc' ? 'desc' : 'asc'
+  } else {
+    sortBy.value = field
+    sortDir.value = 'asc'
+  }
+  fetchList(1)
+}
+
 function loadPage(p: number) {
-  posterStore.fetchPosters({ page: p, limit: 20, q: activeQuery() })
+  fetchList(p)
 }
 
 onMounted(async () => {
-  posterStore.fetchPosters({ page: 1, limit: 20 })
+  fetchList(1)
 })
 
 function onSearchInput(e: Event) {
   posterStore.setSearchQuery((e.target as HTMLInputElement).value)
 }
 
-watch(() => posterStore.selectedLetter, (letter) => {
-  posterStore.fetchPosters({ page: 1, limit: 20, q: letter ? `^${letter}` : undefined })
+watch(() => posterStore.selectedLetter, () => {
+  fetchList(1)
 })
 
-watch(() => posterStore.searchQuery, (q) => {
-  posterStore.fetchPosters({ page: 1, limit: 20, q: q || undefined })
+watch(() => posterStore.searchQuery, () => {
+  fetchList(1)
 })
 
 function deletePoster(poster: Poster) {

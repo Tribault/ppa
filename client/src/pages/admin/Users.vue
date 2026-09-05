@@ -21,6 +21,9 @@
   <div class="admin-table-wrapper">
     <user-table
       :users="userStore.filteredUsers"
+      :sort-by="sortBy"
+      :sort-dir="sortDir"
+      @sort="handleSort"
       @edit="(u) => openEditUser(u)"
       @delete="(u) => deleteUser(u)"
     />
@@ -31,7 +34,7 @@
     :visible="showModal"
     :userToEdit="editingUser"
     @close="closeModal"
-    @saved="userStore.fetchUsers({ page: 1, limit: 20, q: activeQuery() })"
+    @saved="fetchList(1)"
   />
   </div>
 </template>
@@ -70,12 +73,35 @@ function activeQuery() {
   return undefined
 }
 
+const sortBy = ref<string | null>(null)
+const sortDir = ref<'asc' | 'desc'>('asc')
+
+function fetchList(page = userStore.page) {
+  return userStore.fetchUsers({
+    page,
+    limit: 20,
+    q: activeQuery(),
+    sortBy: sortBy.value || undefined,
+    sortDir: sortDir.value,
+  })
+}
+
+function handleSort(field: string) {
+  if (sortBy.value === field) {
+    sortDir.value = sortDir.value === 'asc' ? 'desc' : 'asc'
+  } else {
+    sortBy.value = field
+    sortDir.value = 'asc'
+  }
+  fetchList(1)
+}
+
 function loadPage(p: number) {
-  userStore.fetchUsers({ page: p, limit: 20, q: activeQuery() })
+  fetchList(p)
 }
 
 onMounted(async () => {
-  userStore.fetchUsers({ page: 1, limit: 20 })
+  fetchList(1)
 })
 
 function onSearchInput(e: Event) {
@@ -86,12 +112,12 @@ function deleteUser(userId: string) {
   userStore.deleteUser(userId)
 }
 
-watch(() => userStore.selectedLetter, (letter) => {
-  userStore.fetchUsers({ page: 1, limit: 20, q: letter ? `^${letter}` : undefined })
+watch(() => userStore.selectedLetter, () => {
+  fetchList(1)
 })
 
-watch(() => userStore.searchQuery, (q) => {
-  userStore.fetchUsers({ page: 1, limit: 20, q: q || undefined })
+watch(() => userStore.searchQuery, () => {
+  fetchList(1)
 })
 </script>
 

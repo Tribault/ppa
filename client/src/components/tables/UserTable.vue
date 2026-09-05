@@ -3,8 +3,12 @@
     <table class="sticky-table">
       <thead>
         <tr>
-          <th class="sticky-col">{{ $t('table.user.email') }}</th>
-          <th class="role-col">{{ $t('table.user.role') }}</th>
+          <sortable-th field="email" :sort-by="sortBy" :sort-dir="sortDir" sticky-col @sort="$emit('sort', $event)">
+            {{ $t('table.user.email') }}
+          </sortable-th>
+          <sortable-th field="role" :sort-by="sortBy" :sort-dir="sortDir" class="role-col" @sort="$emit('sort', $event)">
+            {{ $t('table.user.role') }}
+          </sortable-th>
           <th>{{ $t('table.user.actions') }}</th>
         </tr>
       </thead>
@@ -35,15 +39,18 @@ import { useAuthStore } from '@/stores/auth'
 import type { User } from '@/types/models'
 import { ref } from 'vue'
 import ConfirmModal from '@/components/utils/ConfirmModal.vue'
+import SortableTh from '@/components/tables/SortableTh.vue'
 import { PencilIcon, TrashIcon } from '@heroicons/vue/24/solid'
 
 const props = defineProps<{
   users: User[]
+  sortBy?: string | null
+  sortDir?: 'asc' | 'desc'
 }>()
 
 const authStore = useAuthStore()
 
-const emit = defineEmits(['edit', 'delete'])
+const emit = defineEmits(['edit', 'delete', 'sort'])
 
 const showDeleteModal = ref(false)
 const userToDelete = ref<string | null>(null)

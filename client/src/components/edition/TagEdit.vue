@@ -7,7 +7,10 @@
       <!-- List of existing tags -->
       <ul class="tag-list">
         <li v-for="tag in tagStore.tags" :key="tag._id" class="tag-item">
-          {{ tag.name }}
+          <span>{{ tag.name }}</span>
+          <button type="button" class="tag-item-delete" @click="confirmDelete(tag)">
+            <trash-icon class="icon" />
+          </button>
         </li>
       </ul>
 
@@ -18,11 +21,21 @@
       </form>
     </div>
   </div>
+  <confirm-modal
+    :message="$t('form.tag.deleteConfirm')"
+    :visible="showDeleteModal"
+    @cancel="showDeleteModal = false"
+    @confirm="deleteConfirmed"
+  />
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useTagStore } from '@/stores/tags'
+import { TrashIcon } from '@heroicons/vue/24/solid'
+import ConfirmModal from '@/components/utils/ConfirmModal.vue'
+import { useToast } from 'vue-toastification'
+import { useI18n } from 'vue-i18n'
 
 const props = defineProps<{
   visible: boolean
@@ -30,7 +43,12 @@ const props = defineProps<{
 const emit = defineEmits(['close'])
 
 const tagStore = useTagStore()
+const toast = useToast()
+const { t } = useI18n()
 const newTag = ref('')
+
+const showDeleteModal = ref(false)
+const tagToDelete = ref<{ _id: string; name: string } | null>(null)
 
 onMounted(async () => {
   await tagStore.fetchTags()
@@ -47,6 +65,24 @@ async function createTag() {
     newTag.value = ''
   } catch (err) {
     console.error("Impossible de créer l'étiquette", err)
+  }
+}
+
+function confirmDelete(tag: { _id: string; name: string }) {
+  tagToDelete.value = tag
+  showDeleteModal.value = true
+}
+
+async function deleteConfirmed() {
+  if (!tagToDelete.value) return
+  try {
+    await tagStore.deleteTag(tagToDelete.value._id)
+  } catch (err) {
+    console.error("Impossible de supprimer l'étiquette", err)
+    toast.error(t('form.tag.deleteError'))
+  } finally {
+    showDeleteModal.value = false
+    tagToDelete.value = null
   }
 }
 </script>
@@ -99,6 +135,30 @@ async function createTag() {
   margin: 4px 0;
   border-radius: 6px;
   font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.tag-item-delete {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: white;
+  cursor: pointer;
+  padding: 2px;
+
+  .icon {
+    width: 16px;
+    height: 16px;
+  }
+
+  &:hover {
+    color: #ffb3b3;
+  }
 }
 
 .tag-form {

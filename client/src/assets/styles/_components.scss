@@ -105,7 +105,7 @@
 }
 
 .grayscale {
-  $greyscale: grayscale(1);
+  filter: grayscale(1);
 }
 
 .tag-red {

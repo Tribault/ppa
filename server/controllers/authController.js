@@ -36,7 +36,14 @@ exports.signup = async (req, res) => {
 
     return res.json({ message: req.t.auth.signupSuccess })
   } catch (err) {
-    res.status(400).json({ message: err.message })
+    if (err.errors?.email) {
+      const message = err.errors.email.kind === 'required' ? req.t.validation.emailRequired : req.t.validation.invalidEmail
+      return res.status(400).json({ message })
+    }
+    if (err.errors?.password) {
+      return res.status(400).json({ message: req.t.validation.passwordRequired })
+    }
+    res.status(400).json({ message: req.t.auth.serverError })
   }
 }
 

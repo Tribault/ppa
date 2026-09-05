@@ -39,7 +39,9 @@ export const useUserStore = defineStore('users', () => {
     return result
   })
 
-  async function fetchUsers(params: { page?: number; limit?: number; q?: string } = {}) {
+  async function fetchUsers(
+    params: { page?: number; limit?: number; q?: string; sortBy?: string; sortDir?: 'asc' | 'desc' } = {},
+  ) {
     loading.value = true
     try {
       const res = await api.get('/users', { params })

@@ -17,7 +17,7 @@ const upload = multer({
     if (ALLOWED_TYPES.includes(file.mimetype)) {
       cb(null, true)
     } else {
-      cb(new Error('Format non supporté. Utilisez JPEG, PNG, WebP ou GIF.'))
+      cb(Object.assign(new Error(req.t.poster.unsupportedFormat), { isFileFilterError: true }))
     }
   }
 })

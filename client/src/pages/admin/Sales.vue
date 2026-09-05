@@ -31,14 +31,14 @@
   </div>
 
   <div class="admin-table-wrapper">
-    <admin-sale-table :sales="saleStore.sales" />
+    <admin-sale-table :sales="saleStore.sales" :sort-by="sortBy" :sort-dir="sortDir" @sort="handleSort" />
   </div>
   <pagination :page="saleStore.page" :pages="saleStore.pages" @change="loadPage" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useSaleStore } from '@/stores/sales'
 import AdminSaleTable from '@/components/tables/SaleTable.vue'
 import Pagination from '@/components/utils/Pagination.vue'
@@ -47,21 +47,38 @@ import { FolderArrowDownIcon } from '@heroicons/vue/24/solid'
 
 const saleStore = useSaleStore()
 
+const sortBy = ref<string | null>(null)
+const sortDir = ref<'asc' | 'desc'>('asc')
+
+function fetchList(page = saleStore.page) {
+  return saleStore.fetchSales({ page, limit: 20, sortBy: sortBy.value || undefined, sortDir: sortDir.value })
+}
+
+function handleSort(field: string) {
+  if (sortBy.value === field) {
+    sortDir.value = sortDir.value === 'asc' ? 'desc' : 'asc'
+  } else {
+    sortBy.value = field
+    sortDir.value = 'asc'
+  }
+  fetchList(1)
+}
+
 async function applyFilters() {
-  await saleStore.fetchSales()
+  await fetchList(1)
 }
 
 async function resetFilters() {
   saleStore.resetFilters()
-  await saleStore.fetchSales()
+  await fetchList(1)
 }
 
 function loadPage(p: number) {
-  saleStore.fetchSales({ page: p, limit: 20 })
+  fetchList(p)
 }
 
 onMounted(() => {
-  saleStore.fetchSales({ page: 1, limit: 20 })
+  fetchList(1)
 })
 </script>
 <style lang="scss" scoped>

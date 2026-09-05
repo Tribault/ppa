@@ -5,7 +5,7 @@ exports.authenticate = async (req, res, next) => {
   const authHeader = req.headers.authorization
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ message: 'No token provided' })
+    return res.status(401).json({ message: req.t.auth.noToken })
   }
 
   const token = authHeader.split(' ')[1]
@@ -16,17 +16,17 @@ exports.authenticate = async (req, res, next) => {
     const user = await User.findById(decoded.id).select('email role isVerified')
 
     if (!user) {
-      return res.status(401).json({ message: 'User not found' })
+      return res.status(401).json({ message: req.t.auth.userNotFound })
     }
 
     if (!user.isVerified) {
-      return res.status(403).json({ message: 'Email not verified' })
+      return res.status(403).json({ message: req.t.auth.emailNotVerified })
     }
 
     req.user = user
     next()
   } catch (err) {
-    return res.status(401).json({ message: 'Invalid or expired token' })
+    return res.status(401).json({ message: req.t.auth.invalidOrExpiredToken })
   }
 }
 
@@ -54,11 +54,11 @@ exports.optionalAuthenticate = async (req, res, next) => {
 exports.authorize = (...roles) => {
     return (req, res, next) => {
     if (!req.user) {
-      return res.status(401).json({ message: 'Not authenticated' })
+      return res.status(401).json({ message: req.t.auth.notAuthenticated })
     }
 
     if (!roles.includes(req.user.role)) {
-      return res.status(403).json({ message: 'Forbidden' })
+      return res.status(403).json({ message: req.t.auth.forbidden })
     }
 
     next()

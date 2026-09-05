@@ -2,7 +2,7 @@ const request = require('supertest')
 const app = require('../app')
 const { createUser, tokenFor } = require('./helpers/auth')
 const Poster = require('../models/Poster')
-const Sale = require('../models/Sale')
+const Booking = require('../models/Booking')
 
 describe('Sales', () => {
   let admin, adminToken
@@ -15,14 +15,14 @@ describe('Sales', () => {
     adminToken = tokenFor(admin)
     userToken  = tokenFor(user)
     poster = await Poster.create({ title: 'Affiche', price: 20, totalStock: 10, forSale: true })
-    // Seed one sale directly — the Sales endpoints are read-only, so we don't
-    // need to go through the booking→validate flow every time.
-    sale = await Sale.create({
+    sale = await Booking.create({
       user: user._id,
       poster: poster._id,
       quantity: 2,
-      priceAtSale: 20,
+      status: 'validated',
+      priceAtBooking: 20,
       validatedBy: admin._id,
+      validatedAt: new Date(),
     })
   })
 
@@ -36,6 +36,7 @@ describe('Sales', () => {
       expect(res.status).toBe(200)
       expect(res.body.total).toBe(1)
       expect(res.body.data[0].quantity).toBe(2)
+      expect(res.body.data[0].reference).toMatch(/^RES-\d{6}$/)
     })
 
     it('filters by date range (startDate / endDate)', async () => {
@@ -57,6 +58,16 @@ describe('Sales', () => {
       expect(res.body.total).toBe(0)
     })
 
+    it('excludes non-validated bookings', async () => {
+      await Booking.create({
+        user: admin._id, poster: poster._id, quantity: 1, status: 'pending', priceAtBooking: 20,
+      })
+      const res = await request(app)
+        .get('/api/sales')
+        .set('Authorization', `Bearer ${adminToken}`)
+      expect(res.body.total).toBe(1)
+    })
+
     it('rejects a regular user with 403', async () => {
       const res = await request(app)
         .get('/api/sales')
@@ -67,6 +78,67 @@ describe('Sales', () => {
     it('rejects unauthenticated requests with 401', async () => {
       const res = await request(app).get('/api/sales')
       expect(res.status).toBe(401)
+    })
+  })
+
+  describe('GET /api/sales sorting', () => {
+    async function seedSecondSale() {
+      const other = await createUser({ email: 'alice@test.com', role: 'user' })
+      const otherPoster = await Poster.create({ title: 'A Poster', price: 100, totalStock: 5 })
+      await Booking.create({
+        user: other._id,
+        poster: otherPoster._id,
+        quantity: 1,
+        status: 'validated',
+        priceAtBooking: 100,
+        validatedBy: admin._id,
+        validatedAt: new Date(),
+      })
+    }
+
+    it('sorts by buyer email ascending', async () => {
+      await seedSecondSale()
+      const res = await request(app)
+        .get('/api/sales?sortBy=buyerEmail&sortDir=asc')
+        .set('Authorization', `Bearer ${adminToken}`)
+      expect(res.body.data.map((s) => s.user.email)).toEqual(['alice@test.com', 'user@test.com'])
+    })
+
+    it('sorts by poster title descending', async () => {
+      await seedSecondSale()
+      const res = await request(app)
+        .get('/api/sales?sortBy=posterTitle&sortDir=desc')
+        .set('Authorization', `Bearer ${adminToken}`)
+      expect(res.body.data.map((s) => s.poster.title)).toEqual(['Affiche', 'A Poster'])
+    })
+
+    it('sorts by computed total price (quantity × priceAtSale)', async () => {
+      await seedSecondSale()
+      const res = await request(app)
+        .get('/api/sales?sortBy=totalPrice&sortDir=asc')
+        .set('Authorization', `Bearer ${adminToken}`)
+      expect(res.body.data.map((s) => s.totalPrice)).toEqual([40, 100])
+    })
+
+    it('never leaks user password hashes for either user or validatedBy', async () => {
+      const res = await request(app)
+        .get('/api/sales')
+        .set('Authorization', `Bearer ${adminToken}`)
+      expect(res.body.data[0].user.password).toBeUndefined()
+      expect(res.body.data[0].validatedBy.password).toBeUndefined()
+    })
+
+    it('defaults to validatedAt descending when no sortBy is given', async () => {
+      await Booking.updateOne({ _id: sale._id }, { validatedAt: new Date('2020-01-01') })
+      const otherPoster = await Poster.create({ title: 'A Poster', price: 5, totalStock: 5 })
+      const newer = await Booking.create({
+        user: user._id, poster: otherPoster._id, quantity: 1, status: 'validated', priceAtBooking: 5,
+        validatedBy: admin._id, validatedAt: new Date('2030-01-01'),
+      })
+      const res = await request(app)
+        .get('/api/sales')
+        .set('Authorization', `Bearer ${adminToken}`)
+      expect(res.body.data[0]._id).toBe(newer._id.toString())
     })
   })
 
@@ -145,9 +217,9 @@ describe('Sales', () => {
     it('filters CSV by buyerId', async () => {
       // Create a second user + sale to confirm filtering works
       const other = await createUser({ email: 'other@test.com', role: 'user' })
-      await Sale.create({
-        user: other._id, poster: poster._id, quantity: 5,
-        priceAtSale: 20, validatedBy: admin._id,
+      await Booking.create({
+        user: other._id, poster: poster._id, quantity: 5, status: 'validated',
+        priceAtBooking: 20, validatedBy: admin._id, validatedAt: new Date(),
       })
       const res = await request(app)
         .get(`/api/sales/export/csv?buyerId=${user._id}`)

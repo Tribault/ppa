@@ -1,12 +1,12 @@
 const request = require('supertest')
 const app = require('../app')
 const { createUser, tokenFor } = require('./helpers/auth')
-const Location = require('../models/Location')
+const Tag = require('../models/Tag')
 const Poster = require('../models/Poster')
 
 const posterData = { title: 'Affiche Test', size: '40x60', price: 20, totalStock: 10, forSale: true }
 
-describe('Locations', () => {
+describe('Tags', () => {
   let adminToken
   let userToken
 
@@ -17,47 +17,37 @@ describe('Locations', () => {
     userToken = tokenFor(user)
   })
 
-  describe('GET /api/locations', () => {
-    it('rejects anonymous requests', async () => {
-      const res = await request(app).get('/api/locations')
-      expect(res.status).toBe(401)
-    })
-
-    it('rejects non-admin users', async () => {
-      const res = await request(app).get('/api/locations').set('Authorization', `Bearer ${userToken}`)
-      expect(res.status).toBe(403)
-    })
-
-    it('returns locations for an admin', async () => {
-      await Location.create({ name: 'Réserve' })
-      const res = await request(app).get('/api/locations').set('Authorization', `Bearer ${adminToken}`)
+  describe('GET /api/tags', () => {
+    it('is publicly readable without authentication', async () => {
+      await Tag.create({ name: 'Culte' })
+      const res = await request(app).get('/api/tags')
       expect(res.status).toBe(200)
       expect(res.body).toHaveLength(1)
-      expect(res.body[0].name).toBe('Réserve')
+      expect(res.body[0].name).toBe('Culte')
     })
   })
 
-  describe('POST /api/locations', () => {
+  describe('POST /api/tags', () => {
     it('rejects non-admin users', async () => {
       const res = await request(app)
-        .post('/api/locations')
+        .post('/api/tags')
         .set('Authorization', `Bearer ${userToken}`)
-        .send({ name: 'Réserve' })
+        .send({ name: 'Culte' })
       expect(res.status).toBe(403)
     })
 
-    it('lets an admin create a location', async () => {
+    it('lets an admin create a tag', async () => {
       const res = await request(app)
-        .post('/api/locations')
+        .post('/api/tags')
         .set('Authorization', `Bearer ${adminToken}`)
-        .send({ name: 'Réserve' })
+        .send({ name: 'Culte' })
       expect(res.status).toBe(200)
-      expect(res.body.name).toBe('Réserve')
+      expect(res.body.name).toBe('Culte')
     })
 
     it('rejects a missing name with a localized message', async () => {
       const res = await request(app)
-        .post('/api/locations')
+        .post('/api/tags')
         .set('Authorization', `Bearer ${adminToken}`)
         .send({})
       expect(res.status).toBe(400)
@@ -65,56 +55,56 @@ describe('Locations', () => {
     })
 
     it('rejects a duplicate name with a localized message, in English when requested', async () => {
-      await Location.create({ name: 'Réserve' })
+      await Tag.create({ name: 'Culte' })
       const res = await request(app)
-        .post('/api/locations')
+        .post('/api/tags')
         .set('Authorization', `Bearer ${adminToken}`)
         .set('Accept-Language', 'en')
-        .send({ name: 'Réserve' })
+        .send({ name: 'Culte' })
       expect(res.status).toBe(400)
       expect(res.body.message).toBe('This name is already in use.')
     })
   })
 
-  describe('DELETE /api/locations/:id', () => {
+  describe('DELETE /api/tags/:id', () => {
     it('rejects anonymous requests', async () => {
-      const location = await Location.create({ name: 'Réserve' })
-      const res = await request(app).delete(`/api/locations/${location._id}`)
+      const tag = await Tag.create({ name: 'Culte' })
+      const res = await request(app).delete(`/api/tags/${tag._id}`)
       expect(res.status).toBe(401)
     })
 
     it('rejects non-admin users', async () => {
-      const location = await Location.create({ name: 'Réserve' })
+      const tag = await Tag.create({ name: 'Culte' })
       const res = await request(app)
-        .delete(`/api/locations/${location._id}`)
+        .delete(`/api/tags/${tag._id}`)
         .set('Authorization', `Bearer ${userToken}`)
       expect(res.status).toBe(403)
     })
 
-    it('lets an admin delete a location', async () => {
-      const location = await Location.create({ name: 'Réserve' })
+    it('lets an admin delete a tag', async () => {
+      const tag = await Tag.create({ name: 'Culte' })
       const res = await request(app)
-        .delete(`/api/locations/${location._id}`)
+        .delete(`/api/tags/${tag._id}`)
         .set('Authorization', `Bearer ${adminToken}`)
       expect(res.status).toBe(200)
-      expect(await Location.findById(location._id)).toBeNull()
+      expect(await Tag.findById(tag._id)).toBeNull()
     })
 
-    it('removes the deleted location from any poster referencing it', async () => {
-      const location = await Location.create({ name: 'Réserve' })
-      const poster = await Poster.create({ ...posterData, locations: [location._id] })
+    it('removes the deleted tag from any poster referencing it', async () => {
+      const tag = await Tag.create({ name: 'Culte' })
+      const poster = await Poster.create({ ...posterData, tags: [tag._id] })
 
       await request(app)
-        .delete(`/api/locations/${location._id}`)
+        .delete(`/api/tags/${tag._id}`)
         .set('Authorization', `Bearer ${adminToken}`)
 
       const updated = await Poster.findById(poster._id)
-      expect(updated.locations).toEqual([])
+      expect(updated.tags).toEqual([])
     })
 
-    it('returns 404 for an unknown location', async () => {
+    it('returns 404 for an unknown tag', async () => {
       const res = await request(app)
-        .delete('/api/locations/000000000000000000000001')
+        .delete('/api/tags/000000000000000000000001')
         .set('Authorization', `Bearer ${adminToken}`)
       expect(res.status).toBe(404)
     })

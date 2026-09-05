@@ -1,7 +1,7 @@
 <template class="poster-card">
   <div v-if="view === 'grid'" @click="emit('details')" class="poster-card-grid" :class="{ 'no-image': !poster.image }">
     <div v-if="poster.image" class="poster-card-poster">
-      <img :src="imgUrl" alt="" />
+      <img :src="imgUrl" alt="" :class="{ grayscale: poster.stockInfo.availableStock === 0 }" />
       <div class="poster-card-badges">
         <div v-for="t in poster.tags" :key="t._id" class="poster-card-badge">{{ t.name }}</div>
       </div>
@@ -30,12 +30,12 @@
       </button>
     </div>
     <div class="poster-card-info">
-      <div class="poster-card-title">{{ poster.title }}</div>
+      <div class="poster-card-title">{{ poster.title }} ({{ poster.size }})</div>
       <div>{{ poster.price }} €</div>
     </div>
   </div>
   <div v-else @click="emit('details')" class="poster-card-list">
-    <div class="poster-card-list--title">{{ poster.title }}</div>
+    <div class="poster-card-list--title">{{ poster.title }} ({{ poster.size }})</div>
     <div class="poster-card-list--tag-container">
       <div v-for="t in poster.tags" class="poster-card-list--tags">{{ t.name }}</div>
     </div>

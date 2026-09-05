@@ -22,6 +22,8 @@ export const useSaleStore = defineStore('sales', () => {
       page?: number
       limit?: number
       q?: string
+      sortBy?: string
+      sortDir?: 'asc' | 'desc'
     } = {},
   ) {
     loading.value = true

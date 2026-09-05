@@ -44,7 +44,7 @@ export const useBookingStore = defineStore('bookings', () => {
 
   async function fetchBookings(
     options?: { all?: boolean },
-    params: { page?: number; limit?: number; q?: string } = {},
+    params: { page?: number; limit?: number; q?: string; sortBy?: string; sortDir?: 'asc' | 'desc' } = {},
   ) {
     loading.value = true
     try {
@@ -99,6 +99,15 @@ export const useBookingStore = defineStore('bookings', () => {
     }
   }
 
+  async function updateBasketStatus(reference: string, status: 'ready' | 'validated') {
+    try {
+      await api.patch(`/bookings/reference/${reference}`, { status })
+    } catch (err: any) {
+      error.value = err.response?.data?.error || 'Failed to update basket'
+      throw err
+    }
+  }
+
   return {
     bookings,
     booking,
@@ -115,5 +124,6 @@ export const useBookingStore = defineStore('bookings', () => {
     deleteBooking,
     updateBooking,
     createBooking,
+    updateBasketStatus,
   }
 })

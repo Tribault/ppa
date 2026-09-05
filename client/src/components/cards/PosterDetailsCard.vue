@@ -7,7 +7,7 @@
       <img v-if="posterInfo.image"
         :src="imgUrl.value"
         :class="{
-          greyscale: posterInfo.stockInfo.availableStock == 0,
+          grayscale: posterInfo.stockInfo.availableStock == 0,
         }"
         alt=""
       />
@@ -19,7 +19,7 @@
       <div>
         <ul>
           <li class="poster-details-card-data--title title">
-            {{ posterInfo.title }}
+            {{ posterInfo.title }} ({{ posterInfo.size }})
             <button v-if="auth.isAdmin" class="btn-red-bg" @click="isEditing = true">
               <pencil-icon />
             </button>

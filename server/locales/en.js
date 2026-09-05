@@ -13,6 +13,19 @@ module.exports = {
     invalidOrExpiredToken: 'Invalid or expired token.',
     passwordResetSuccess: 'Password reset successfully.',
     serverError: 'Server error.',
+    noToken: 'No token provided.',
+    userNotFound: 'User not found.',
+    emailNotVerified: 'Email not verified.',
+    notAuthenticated: 'Not authenticated.',
+    forbidden: 'Forbidden.',
+  },
+
+  validation: {
+    emailRequired: 'Email address is required.',
+    invalidEmail: 'Invalid email address.',
+    passwordRequired: 'Password is required.',
+    nameRequired: 'Name is required.',
+    nameAlreadyInUse: 'This name is already in use.',
   },
 
   email: {
@@ -49,11 +62,51 @@ module.exports = {
       </ul>
       <p>Please come collect and pay for your posters on that date.</p>
     `,
+    overdueReminderSubject: 'Reminder: booking still pending',
+    overdueReminderBody: (email, date, bookings) => `
+      <p>Hello ${email},</p>
+      <p>The poster sale on
+      <strong>${new Date(date).toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</strong>
+      was more than 30 days ago, but you still have a pending booking:</p>
+      <ul>
+        ${bookings.map((b) => `<li>${b.quantity} × ${b.poster.title}</li>`).join('')}
+      </ul>
+      <p>Please get in touch with us soon to come collect and pay for your posters, or to cancel your booking.</p>
+    `,
+    newBookingAdminSubject: 'New booking',
+    newBookingAdminBody: (userEmail, reference, bookings) => `
+      <p>New booking from <strong>${userEmail}</strong> (reference <strong>${reference}</strong>):</p>
+      <ul>
+        ${bookings.map((b) => `<li>${b.quantity} × ${b.poster.title} — ${(b.quantity * b.priceAtBooking).toFixed(2)} €</li>`).join('')}
+      </ul>
+    `,
+    overdueAdminSubject: (days) => `Unpaid bookings for ${days} days`,
+    overdueAdminBody: (days, saleDate, bookings) => `
+      <p>The following bookings are still not validated ${days} days after the sale on
+      <strong>${new Date(saleDate).toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</strong>:</p>
+      <ul>
+        ${bookings.map((b) => `<li>${b.user.email} — ${b.quantity} × ${b.poster.title} (ref. ${b.reference})</li>`).join('')}
+      </ul>
+    `,
   },
 
   poster: {
     notFound: 'Poster not found.',
     deleted: 'Poster deleted.',
+    serverError: 'Server error.',
+    unsupportedFormat: 'Unsupported format. Use JPEG, PNG, WebP or GIF.',
+    fileTooLarge: 'File too large (10 MB max).',
+  },
+
+  location: {
+    notFound: 'Location not found.',
+    deleted: 'Location deleted.',
+    serverError: 'Server error.',
+  },
+
+  tag: {
+    notFound: 'Tag not found.',
+    deleted: 'Tag deleted.',
     serverError: 'Server error.',
   },
 
@@ -71,6 +124,8 @@ module.exports = {
     onlyPendingCanBeCancelled: 'Only pending bookings can be cancelled.',
     cancelled: 'Booking cancelled.',
     serverError: 'Server error.',
+    invalidStatus: 'Invalid status.',
+    basketUpdated: 'Basket updated.',
   },
 
   user: {
@@ -84,6 +139,7 @@ module.exports = {
     failedToFetchOne: 'Unable to fetch the user.',
     failedToUpdate: 'Unable to update the user.',
     failedToDelete: 'Unable to delete the user.',
+    failedToCreate: 'Unable to create the user.',
   },
 
   sale: {
@@ -92,6 +148,7 @@ module.exports = {
 
   message: {
     defaultContent: 'Welcome message',
+    serverError: 'Server error.',
   },
 
   movie: {

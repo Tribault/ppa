@@ -21,6 +21,7 @@ export interface Poster {
   mainActors?: string[]
   genre?: string
   country?: string
+  createdAt?: string
 }
 
 export interface MovieSearchResult {
@@ -52,11 +53,13 @@ export interface TmdbPosterOption {
 export interface StockInfo {
   confirmed: number
   pending: number
+  ready: number
   availableStock: number
 }
 
 export interface Booking {
   _id: string
+  reference: string
   user: User
   poster: Poster
   quantity: number
@@ -67,6 +70,7 @@ export interface Booking {
 
 export interface Sale {
   _id: string
+  reference: string
   user: User
   poster: Poster
   quantity: number
@@ -91,6 +95,11 @@ export interface BookingPayload {
   posterId: string
   quantity: number
   status?: string
+}
+
+export interface BasketItemPayload {
+  posterId: string
+  quantity: number
 }
 
 export interface PosterPayload {

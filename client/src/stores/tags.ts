@@ -15,5 +15,10 @@ export const useTagStore = defineStore('tags', () => {
     tags.value.push(res.data)
   }
 
-  return { tags, fetchTags, createTag }
+  async function deleteTag(id: string) {
+    await api.delete(`/tags/${id}`)
+    tags.value = tags.value.filter((t) => t._id !== id)
+  }
+
+  return { tags, fetchTags, createTag, deleteTag }
 })

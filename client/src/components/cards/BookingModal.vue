@@ -24,7 +24,7 @@
 
           <p class="booking-modal-total"><b>{{ $t('posterDetails.totalPrice') }}</b> : {{ quantity * poster.price }} €</p>
 
-          <button class="btn-red-bg booking-modal-submit" @click="bookPoster" :disabled="booking">
+          <button class="btn-red-bg booking-modal-submit" @click="addToBasket">
             {{ $t('posterDetails.book') }}
           </button>
         </template>
@@ -33,11 +33,10 @@
           <h2 class="booking-modal-title">{{ $t('posterDetails.bookConfirmedTitle') }}</h2>
           <p class="booking-modal-poster-title">{{ poster.title }}</p>
 
-          <p v-if="saleDateStore.saleDate?.date" class="booking-modal-sale-date">
-            {{ $t('posterDetails.saleDateReminder', { date: formattedSaleDate }) }}
-          </p>
-
-          <button class="btn-red-bg booking-modal-submit" @click="close">
+          <button class="btn-red-bg booking-modal-submit" @click="viewBasket">
+            {{ $t('nav.viewBasket') }}
+          </button>
+          <button class="btn-white-bg booking-modal-submit" @click="close">
             {{ $t('posterDetails.close') }}
           </button>
         </template>
@@ -47,12 +46,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, watch } from 'vue'
 import type { Poster } from '@/types/models'
 import { XMarkIcon, PlusIcon, MinusIcon } from '@heroicons/vue/24/solid'
 import { useAuthStore } from '@/stores/auth'
-import { useBookingStore } from '@/stores/bookings'
-import { useSaleDateStore } from '@/stores/saleDate'
+import { useBasketStore } from '@/stores/basket'
 import { useToast } from 'vue-toastification'
 import { useI18n } from 'vue-i18n'
 
@@ -63,33 +61,19 @@ const props = defineProps<{
 const emit = defineEmits(['close', 'booked'])
 
 const auth = useAuthStore()
-const bookingStore = useBookingStore()
-const saleDateStore = useSaleDateStore()
+const basketStore = useBasketStore()
 const toast = useToast()
-const { t, locale } = useI18n()
+const { t } = useI18n()
 
 const quantity = ref(1)
-const booking = ref(false)
 const confirmed = ref(false)
-
-const formattedSaleDate = computed(() => {
-  const date = saleDateStore.saleDate?.date
-  if (!date) return ''
-  return new Date(date).toLocaleDateString(locale.value === 'en' ? 'en-US' : 'fr-FR', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  })
-})
 
 watch(
   () => props.visible,
   (v) => {
     if (v) {
-      quantity.value = 1
+      quantity.value = basketStore.quantityFor(props.poster._id) || 1
       confirmed.value = false
-      saleDateStore.fetchSaleDate()
     }
   },
 )
@@ -106,23 +90,17 @@ function close() {
   emit('close')
 }
 
-async function bookPoster() {
+function addToBasket() {
   if (!auth.user) return
-  booking.value = true
-  try {
-    await bookingStore.createBooking({
-      posterId: props.poster._id,
-      userId: auth.user._id,
-      quantity: quantity.value,
-    })
-    toast.success(t('posterDetails.bookSuccess'))
-    emit('booked')
-    confirmed.value = true
-  } catch (err: any) {
-    toast.error(err.response?.data?.error || t('posterDetails.bookError'))
-  } finally {
-    booking.value = false
-  }
+  basketStore.setItem(props.poster, quantity.value)
+  toast.success(t('posterDetails.bookSuccess'))
+  emit('booked')
+  confirmed.value = true
+}
+
+function viewBasket() {
+  close()
+  basketStore.open()
 }
 </script>
 
@@ -188,18 +166,18 @@ async function bookPoster() {
   margin-bottom: 16px;
 }
 
-.booking-modal-sale-date {
-  margin-bottom: 16px;
-  line-height: 1.4;
-}
-
 .booking-modal-submit {
   width: 100%;
   justify-content: center;
+  margin-bottom: 8px;
 
   &:disabled {
     opacity: 0.6;
     cursor: not-allowed;
+  }
+
+  &:last-child {
+    margin-bottom: 0;
   }
 }
 

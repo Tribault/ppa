@@ -104,14 +104,25 @@
               <b>{{ $t('form.poster.sizeLabel') }}</b>
               <div class="radio-group">
                 <span class="radio-option">
-                  <input type="radio" id="sizeL" value="120*160 cm" v-model="form.size" />
+                  <input type="radio" id="sizeL" value="120*160 cm" v-model="sizeChoice" />
                   <label for="sizeL">{{ $t('form.poster.size120') }}</label>
                 </span>
                 <span class="radio-option">
-                  <input type="radio" id="sizeM" value="60*80 cm" v-model="form.size" />
+                  <input type="radio" id="sizeM" value="60*80 cm" v-model="sizeChoice" />
                   <label for="sizeM">{{ $t('form.poster.size60') }}</label>
                 </span>
+                <span class="radio-option">
+                  <input type="radio" id="sizeOther" value="other" v-model="sizeChoice" />
+                  <label for="sizeOther">{{ $t('form.poster.sizeOther') }}</label>
+                </span>
               </div>
+              <input
+                v-if="sizeChoice === 'other'"
+                v-model="form.size"
+                type="text"
+                :placeholder="$t('form.poster.sizeOtherPlaceholder')"
+                class="poster-edit-input"
+              />
             </div>
             <div class="poster-edit-form--row">
               <b>{{ $t('form.poster.priceLabel') }}</b>
@@ -134,6 +145,7 @@
               <div v-if="posterToEdit?._id" class="poster-edit-form--row">
               <p class="tag-white">{{ $t('form.poster.available') }} {{posterToEdit?.stockInfo?.availableStock}}</p>
               <p class="tag-white">{{ $t('form.poster.reserved') }} {{posterToEdit?.stockInfo?.pending}}</p>
+              <p class="tag-white">{{ $t('form.poster.ready') }} {{posterToEdit?.stockInfo?.ready}}</p>
               <p class="tag-white">{{ $t('form.poster.sold') }} {{posterToEdit?.stockInfo?.confirmed}}</p>
               </div>
             </div>
@@ -194,6 +206,24 @@
     @close="showPosterPicker = false"
     @select="selectPosterOption"
   />
+  <div v-if="showDuplicateModal" class="poster-edit-duplicate-overlay" @click="showDuplicateModal = false">
+    <div class="poster-edit-duplicate-box" @click.stop>
+      <p>{{ $t('form.poster.duplicateWarning') }}</p>
+      <div class="poster-edit-duplicate-actions">
+        <router-link
+          v-if="duplicatePoster"
+          :to="{ name: 'posters', params: { id: duplicatePoster._id } }"
+          class="btn-white-bg"
+          @click="closeDuplicateModal(true)"
+        >
+          {{ $t('form.poster.viewExistingPoster') }}
+        </router-link>
+        <button type="button" class="btn-white-bg" @click="showDuplicateModal = false">
+          {{ $t('modal.cancel') }}
+        </button>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -261,6 +291,16 @@ const mainActorsText = computed({
   }
 })
 
+const sizeChoice = computed({
+  get: () => {
+    if (form.value.size === '120*160 cm' || form.value.size === '60*80 cm') return form.value.size
+    return 'other'
+  },
+  set: (val: string) => {
+    form.value.size = val === 'other' ? '' : val
+  }
+})
+
 const previewUrl = ref<string>('')
 const movieResults = ref<MovieSearchResult[]>([])
 const searching = ref(false)
@@ -274,6 +314,8 @@ const showPosterPicker = ref(false)
 // the admin explicitly asks for it (none of the suggestions fit).
 const showManualUpload = ref(false)
 const movieLookupAttempted = ref(false)
+const showDuplicateModal = ref(false)
+const duplicatePoster = ref<{ _id: string; title: string } | null>(null)
 
 async function searchMovie() {
   searching.value = true
@@ -317,10 +359,25 @@ async function applyMovieResult(result: MovieSearchResult) {
     } else {
       showPosterPicker.value = true
     }
+
+    try {
+      const dup = await store.checkDuplicateTitle(form.value.title, props.posterToEdit?._id)
+      if (dup.exists && dup.poster) {
+        duplicatePoster.value = dup.poster
+        showDuplicateModal.value = true
+      }
+    } catch (err) {
+      console.error(err)
+    }
   } catch (err) {
     console.error(err)
     toast.error(t('form.poster.error'))
   }
+}
+
+function closeDuplicateModal(navigating = false) {
+  showDuplicateModal.value = false
+  if (navigating) close()
 }
 
 async function selectPosterOption(option: TmdbPosterOption) {
@@ -385,6 +442,8 @@ watch(
     selectedPosterPath.value = null
     showPosterPicker.value = false
     movieLookupAttempted.value = false
+    showDuplicateModal.value = false
+    duplicatePoster.value = null
     // Editing an existing poster already has an image to manage — show the
     // upload control right away. Creating a new one starts search-first.
     showManualUpload.value = !!val
@@ -490,6 +549,36 @@ async function submit() {
   position: absolute;
   top: 12px;
   right: 16px;
+}
+
+.poster-edit-duplicate-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 2200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.poster-edit-duplicate-box {
+  background: $darker-red;
+  color: white;
+  border-radius: 12px;
+  padding: 24px;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+
+  p {
+    margin: 0 0 16px;
+  }
+}
+
+.poster-edit-duplicate-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
 }
 
 .poster-edit-movie-results {

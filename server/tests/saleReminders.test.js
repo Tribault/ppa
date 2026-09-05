@@ -114,4 +114,188 @@ describe('runSaleReminderCheck', () => {
 
     expect(sendEmail).not.toHaveBeenCalled()
   })
+
+  it('does nothing when fewer than 30 days have passed since the sale', async () => {
+    const user = await createUser()
+    await makeBooking(user)
+    await SaleDate.create({ date: new Date('2026-06-01') })
+
+    await runSaleReminderCheck(new Date('2026-06-20'))
+
+    expect(sendEmail).not.toHaveBeenCalled()
+  })
+
+  it('sends an overdue reminder to the booking owner exactly 30 days after the sale', async () => {
+    const user = await createUser({ email: 'reserver@test.com' })
+    const booking = await makeBooking(user)
+    await SaleDate.create({ date: new Date('2026-06-01') })
+
+    await runSaleReminderCheck(new Date('2026-07-01'))
+
+    expect(sendEmail).toHaveBeenCalledTimes(1)
+    expect(sendEmail.mock.calls[0][0]).toBe('reserver@test.com')
+
+    const updated = await Booking.findById(booking._id)
+    expect(updated.overdueReminderSentAt).not.toBeNull()
+  })
+
+  it('still sends the overdue reminder well past the 30-day mark', async () => {
+    const user = await createUser({ email: 'reserver@test.com' })
+    await makeBooking(user)
+    await SaleDate.create({ date: new Date('2026-06-01') })
+
+    await runSaleReminderCheck(new Date('2026-09-01'))
+
+    expect(sendEmail).toHaveBeenCalledTimes(1)
+  })
+
+  it('is idempotent — does not re-send the overdue reminder on a later run', async () => {
+    const user = await createUser()
+    await makeBooking(user)
+    await SaleDate.create({ date: new Date('2026-06-01') })
+
+    await runSaleReminderCheck(new Date('2026-07-01'))
+    await runSaleReminderCheck(new Date('2026-08-01'))
+
+    expect(sendEmail).toHaveBeenCalledTimes(1)
+  })
+
+  it('does not send an overdue reminder for a validated or cancelled booking', async () => {
+    const user = await createUser()
+    await makeBooking(user, { status: 'validated' })
+    const poster2 = await Poster.create(posterData)
+    await Booking.create({
+      user: user._id,
+      poster: poster2._id,
+      quantity: 1,
+      status: 'cancelled',
+      priceAtBooking: poster2.price,
+    })
+    await SaleDate.create({ date: new Date('2026-06-01') })
+
+    await runSaleReminderCheck(new Date('2026-07-01'))
+
+    expect(sendEmail).not.toHaveBeenCalled()
+  })
+
+  it('still sends the overdue reminder even if the 7-day and 1-day reminders were already sent for the same booking', async () => {
+    const user = await createUser({ email: 'reserver@test.com' })
+    const booking = await makeBooking(user)
+    await SaleDate.create({ date: new Date('2026-06-15') })
+
+    await runSaleReminderCheck(new Date('2026-06-08'))
+    await runSaleReminderCheck(new Date('2026-06-14'))
+    sendEmail.mockClear()
+
+    await runSaleReminderCheck(new Date('2026-07-15'))
+
+    expect(sendEmail).toHaveBeenCalledTimes(1)
+    const updated = await Booking.findById(booking._id)
+    expect(updated.reminder7SentAt).not.toBeNull()
+    expect(updated.reminder1SentAt).not.toBeNull()
+    expect(updated.overdueReminderSentAt).not.toBeNull()
+  })
+
+  describe('admin overdue alerts', () => {
+    const originalAdminEmail = process.env.ADMIN_EMAIL
+
+    beforeEach(() => {
+      process.env.ADMIN_EMAIL = 'admin@test.com'
+    })
+
+    afterEach(() => {
+      process.env.ADMIN_EMAIL = originalAdminEmail
+    })
+
+    it('does nothing when ADMIN_EMAIL is not configured', async () => {
+      delete process.env.ADMIN_EMAIL
+      const user = await createUser()
+      await makeBooking(user)
+      await SaleDate.create({ date: new Date('2026-06-01') })
+
+      await runSaleReminderCheck(new Date('2026-06-08'))
+
+      expect(sendEmail).not.toHaveBeenCalled()
+    })
+
+    it('alerts the admin once a pending booking is unpaid 7 days after the sale', async () => {
+      const user = await createUser({ email: 'reserver@test.com' })
+      const booking = await makeBooking(user)
+      await SaleDate.create({ date: new Date('2026-06-01') })
+
+      await runSaleReminderCheck(new Date('2026-06-08'))
+
+      expect(sendEmail).toHaveBeenCalledTimes(1)
+      expect(sendEmail.mock.calls[0][0]).toBe('admin@test.com')
+
+      const updated = await Booking.findById(booking._id)
+      expect(updated.adminOverdue7SentAt).not.toBeNull()
+      expect(updated.adminOverdue30SentAt).toBeNull()
+    })
+
+    it('also alerts for a booking that is only "ready", not just "pending"', async () => {
+      const user = await createUser()
+      await makeBooking(user, { status: 'ready' })
+      await SaleDate.create({ date: new Date('2026-06-01') })
+
+      await runSaleReminderCheck(new Date('2026-06-08'))
+
+      expect(sendEmail).toHaveBeenCalledTimes(1)
+    })
+
+    it('sends a separate alert at the 30-day mark for a booking still unpaid', async () => {
+      const user = await createUser()
+      const booking = await makeBooking(user)
+      await SaleDate.create({ date: new Date('2026-06-01') })
+
+      await runSaleReminderCheck(new Date('2026-06-08'))
+      sendEmail.mockClear()
+
+      await runSaleReminderCheck(new Date('2026-07-01'))
+
+      const adminCalls = sendEmail.mock.calls.filter((call) => call[0] === 'admin@test.com')
+      expect(adminCalls).toHaveLength(1)
+      const updated = await Booking.findById(booking._id)
+      expect(updated.adminOverdue7SentAt).not.toBeNull()
+      expect(updated.adminOverdue30SentAt).not.toBeNull()
+    })
+
+    it('is idempotent per threshold — does not re-send the 7-day admin alert on a later run', async () => {
+      const user = await createUser()
+      await makeBooking(user)
+      await SaleDate.create({ date: new Date('2026-06-01') })
+
+      await runSaleReminderCheck(new Date('2026-06-08'))
+      await runSaleReminderCheck(new Date('2026-06-09'))
+
+      expect(sendEmail).toHaveBeenCalledTimes(1)
+    })
+
+    it('does not alert for a validated or cancelled booking', async () => {
+      const user = await createUser()
+      await makeBooking(user, { status: 'validated' })
+      const poster2 = await Poster.create(posterData)
+      await Booking.create({
+        user: user._id, poster: poster2._id, quantity: 1, status: 'cancelled', priceAtBooking: poster2.price,
+      })
+      await SaleDate.create({ date: new Date('2026-06-01') })
+
+      await runSaleReminderCheck(new Date('2026-06-08'))
+
+      expect(sendEmail).not.toHaveBeenCalled()
+    })
+
+    it('sends one grouped email covering every overdue booking, not one per booking', async () => {
+      const user1 = await createUser({ email: 'a@test.com' })
+      const user2 = await createUser({ email: 'b@test.com' })
+      await makeBooking(user1)
+      await makeBooking(user2)
+      await SaleDate.create({ date: new Date('2026-06-01') })
+
+      await runSaleReminderCheck(new Date('2026-06-08'))
+
+      expect(sendEmail).toHaveBeenCalledTimes(1)
+      expect(sendEmail.mock.calls[0][0]).toBe('admin@test.com')
+    })
+  })
 })

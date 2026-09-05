@@ -8,14 +8,18 @@ exports.getUsers = async(req, res) => {
     const limit = parseInt(req.query.limit) || 20
     const skip = (page -1) * limit  
 
-    const {q} = req.query
+    const {q, sortBy, sortDir} = req.query
     const filter = {}
 
     if(q) filter.email = {$regex:q, $options:"i"}
 
+    const SORTABLE_USER_FIELDS = ['email', 'role']
+    const sortField = SORTABLE_USER_FIELDS.includes(sortBy) ? sortBy : 'email'
+    const sortOption = { [sortField]: sortDir === 'desc' ? -1 : 1 }
+
         const [users, total] = await Promise.all([
          User.find(filter).select('-password')
-        .sort({ title: 1 })
+        .sort(sortOption)
         .skip(skip)
         .limit(limit),
         User.countDocuments(filter)
@@ -43,14 +47,25 @@ exports.getUser = async(req, res) => {
 }
 
 exports.createUser = async (req, res) => {
-  const { email, password, role } = req.body
-  const existing = await User.findOne({ email })
-  if (existing) return res.status(400).json({ error: req.t.user.emailAlreadyInUse })
-  const user = new User({ email, password, role })
-  await user.save()
-  const userObj = user.toObject()
-  delete userObj.password
-  res.status(201).json({ message: req.t.user.created, user: userObj })
+  try {
+    const { email, password, role } = req.body
+    const existing = await User.findOne({ email })
+    if (existing) return res.status(400).json({ error: req.t.user.emailAlreadyInUse })
+    const user = new User({ email, password, role })
+    await user.save()
+    const userObj = user.toObject()
+    delete userObj.password
+    res.status(201).json({ message: req.t.user.created, user: userObj })
+  } catch (err) {
+    if (err.errors?.email) {
+      const error = err.errors.email.kind === 'required' ? req.t.validation.emailRequired : req.t.validation.invalidEmail
+      return res.status(400).json({ error })
+    }
+    if (err.errors?.password) {
+      return res.status(400).json({ error: req.t.validation.passwordRequired })
+    }
+    res.status(500).json({ error: req.t.user.failedToCreate })
+  }
 }
 
 exports.updateUser = async (req, res) => {

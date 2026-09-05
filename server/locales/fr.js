@@ -13,6 +13,19 @@ module.exports = {
     invalidOrExpiredToken: 'Jeton invalide ou expiré.',
     passwordResetSuccess: 'Mot de passe réinitialisé avec succès.',
     serverError: 'Erreur serveur.',
+    noToken: 'Aucun jeton fourni.',
+    userNotFound: 'Utilisateur introuvable.',
+    emailNotVerified: 'E-mail non vérifié.',
+    notAuthenticated: 'Non authentifié.',
+    forbidden: 'Accès interdit.',
+  },
+
+  validation: {
+    emailRequired: "L'adresse e-mail est requise.",
+    invalidEmail: 'Adresse e-mail invalide.',
+    passwordRequired: 'Le mot de passe est requis.',
+    nameRequired: 'Le nom est requis.',
+    nameAlreadyInUse: 'Ce nom est déjà utilisé.',
   },
 
   email: {
@@ -49,6 +62,32 @@ module.exports = {
       </ul>
       <p>Merci de venir chercher et régler vos affiches à cette date.</p>
     `,
+    overdueReminderSubject: "Rappel : réservation toujours en attente",
+    overdueReminderBody: (email, date, bookings) => `
+      <p>Bonjour ${email},</p>
+      <p>La vente d'affiches du
+      <strong>${new Date(date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</strong>
+      est passée depuis plus de 30 jours, mais vous avez encore une réservation en attente :</p>
+      <ul>
+        ${bookings.map((b) => `<li>${b.quantity} × ${b.poster.title}</li>`).join('')}
+      </ul>
+      <p>Merci de nous contacter rapidement pour venir chercher et régler vos affiches, ou pour annuler votre réservation.</p>
+    `,
+    newBookingAdminSubject: 'Nouvelle réservation',
+    newBookingAdminBody: (userEmail, reference, bookings) => `
+      <p>Nouvelle réservation de <strong>${userEmail}</strong> (référence <strong>${reference}</strong>) :</p>
+      <ul>
+        ${bookings.map((b) => `<li>${b.quantity} × ${b.poster.title} — ${(b.quantity * b.priceAtBooking).toFixed(2)} €</li>`).join('')}
+      </ul>
+    `,
+    overdueAdminSubject: (days) => `Réservations impayées depuis ${days} jours`,
+    overdueAdminBody: (days, saleDate, bookings) => `
+      <p>Les réservations suivantes ne sont toujours pas validées ${days} jours après la vente du
+      <strong>${new Date(saleDate).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</strong> :</p>
+      <ul>
+        ${bookings.map((b) => `<li>${b.user.email} — ${b.quantity} × ${b.poster.title} (réf. ${b.reference})</li>`).join('')}
+      </ul>
+    `,
   },
   help: {
     paragraphUser1: `Bienvenue sur le site de ventes des affiches du cinéma l'Arvor à Rennes !
@@ -81,6 +120,20 @@ module.exports = {
     notFound: 'Affiche introuvable.',
     deleted: 'Affiche supprimée.',
     serverError: 'Erreur serveur.',
+    unsupportedFormat: 'Format non supporté. Utilisez JPEG, PNG, WebP ou GIF.',
+    fileTooLarge: 'Fichier trop volumineux (10 Mo max).',
+  },
+
+  location: {
+    notFound: 'Localisation introuvable.',
+    deleted: 'Localisation supprimée.',
+    serverError: 'Erreur serveur.',
+  },
+
+  tag: {
+    notFound: 'Étiquette introuvable.',
+    deleted: 'Étiquette supprimée.',
+    serverError: 'Erreur serveur.',
   },
 
   saleDate: {
@@ -97,6 +150,8 @@ module.exports = {
     onlyPendingCanBeCancelled: 'Seules les réservations en attente peuvent être annulées.',
     cancelled: 'Réservation annulée.',
     serverError: 'Erreur serveur.',
+    invalidStatus: 'Statut invalide.',
+    basketUpdated: 'Panier mis à jour.',
   },
 
   user: {
@@ -110,6 +165,7 @@ module.exports = {
     failedToFetchOne: "Impossible de récupérer l'utilisateur.",
     failedToUpdate: "Impossible de mettre à jour l'utilisateur.",
     failedToDelete: "Impossible de supprimer l'utilisateur.",
+    failedToCreate: "Impossible de créer l'utilisateur.",
   },
 
   sale: {
@@ -118,6 +174,7 @@ module.exports = {
 
   message: {
     defaultContent: 'Message de bienvenue',
+    serverError: 'Erreur serveur.',
   },
 
   movie: {
