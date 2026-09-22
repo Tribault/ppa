@@ -43,6 +43,7 @@ exports.signup = async (req, res) => {
     if (err.errors?.password) {
       return res.status(400).json({ message: req.t.validation.passwordRequired })
     }
+    console.error('Signup failed:', err)
     res.status(400).json({ message: req.t.auth.serverError })
   }
 }
@@ -120,6 +121,7 @@ exports.forgotPassword = async (req, res) => {
 
     res.json({ message: req.t.auth.resetLinkSent })
   } catch (err) {
+    console.error('Forgot password failed:', err)
     res.status(500).json({ message: req.t.auth.serverError })
   }
 }
@@ -154,6 +156,7 @@ exports.resendEmail = async (req, res) => {
 
     res.json({ message: req.t.auth.verificationEmailSent })
   } catch (err) {
+    console.error('Resend verification email failed:', err)
     res.status(500).json({ message: req.t.auth.serverError })
   }
 }
