@@ -4,12 +4,12 @@
       <router-link class="navbar-home__link" to="/"><img src="@/assets/logo.png" /></router-link>
     </div>
     <div v-if="!auth.user" class="navbar-options">
-      <router-link to="/login">{{ $t('nav.loginSignup') }}</router-link>
+      <router-link v-if="!CATALOG_MODE" to="/login">{{ $t('nav.loginSignup') }}</router-link>
     </div>
     <div v-else class="navbar-options">
       <router-link v-if="auth.user.role === 'admin' && $route.path !== '/admin'" to="/admin">{{ $t('nav.admin')
         }}</router-link>
-      <router-link v-if="auth.user.role === 'user'" to="/account">{{ $t('nav.myBookings') }}</router-link>
+      <router-link v-if="auth.user.role === 'user' && !CATALOG_MODE" to="/account">{{ $t('nav.myBookings') }}</router-link>
       <div class="navbar-options__user">
         <span class="navbar-home__logout--user">{{ auth.user.email }}</span>
         <button @click="logout" class="navbar-home__logout" :title="$t('nav.logoutTitle')">
@@ -18,7 +18,7 @@
       </div>
     </div>
     <button
-      v-if="auth.user?.role === 'user'"
+      v-if="auth.user?.role === 'user' && !CATALOG_MODE"
       class="navbar-basket"
       :title="$t('nav.viewBasket')"
       :aria-label="$t('nav.viewBasket')"
@@ -31,7 +31,7 @@
       <QuestionMarkCircleIcon />
     </router-link>
   </nav>
-  <basket-modal />
+  <basket-modal v-if="!CATALOG_MODE" />
 </template>
 
 <script setup lang="ts">
@@ -40,6 +40,7 @@ import { useBasketStore } from '../stores/basket'
 import { useRouter } from 'vue-router'
 import { QuestionMarkCircleIcon, ShoppingBagIcon } from '@heroicons/vue/24/solid'
 import BasketModal from '@/components/cards/BasketModal.vue'
+import { CATALOG_MODE } from '@/config'
 
 const auth = useAuthStore()
 const basketStore = useBasketStore()

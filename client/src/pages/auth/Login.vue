@@ -10,7 +10,7 @@
         <button type="submit" class="btn-red-bg"><b>{{ $t('auth.login.submit') }}</b></button>
         <p v-if="error">{{ error }}</p>
       </form>
-      <router-link to="/signup"><p class="signup">{{ $t('auth.login.signup') }}</p></router-link>
+      <router-link v-if="!CATALOG_MODE" to="/signup"><p class="signup">{{ $t('auth.login.signup') }}</p></router-link>
       <p class="forgot-password">
         <RouterLink to="/forgot-password">{{ $t('auth.login.forgotPassword') }}</RouterLink>
       </p>
@@ -23,6 +23,7 @@ import { ref } from 'vue'
 import { useToast } from 'vue-toastification'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { CATALOG_MODE } from '@/config'
 import { useI18n } from 'vue-i18n'
 import PasswordInput from '@/components/utils/PasswordInput.vue'
 

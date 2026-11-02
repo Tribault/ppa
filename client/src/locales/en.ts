@@ -31,6 +31,8 @@ export default {
     tickUser7:
       "A reservation remains valid for two weeks after the sale. If you're unavailable, please contact l'Arvor at the following address: BLA BLA. Since poster stock is large, posters may still be picked up after the sale, but payment must be made at l'Arvor's box office beforehand.",
     tickUser8: 'If you have any questions at all, feel free to send an email to: BLA BLA.',
+    catalogParagraph:
+      "Welcome to the poster catalog of the Arvor cinema in Rennes! Here you can browse the posters put up for sale by Arvor staff. Posters are bought in person during the sales held at the cinema. All proceeds go directly to actively funding the cinema.",
     adminContent: `
       <p>The admin side has a somewhat different interface than the public side. Here are the different tabs and what you can do in each of them.</p>
 
@@ -267,6 +269,7 @@ export default {
       status: 'Status',
       actions: 'Actions',
       deleteConfirm: 'Delete the booking.',
+      onlyPendingCanBeDeleted: 'Only pending bookings can be deleted — set it back to pending first.',
       basketToReady: 'Mark the whole basket as ready',
       basketToValidated: 'Validate the whole basket',
       basketUpdateSuccess: 'Basket updated.',

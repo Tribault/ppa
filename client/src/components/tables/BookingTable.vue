@@ -37,20 +37,28 @@
           <td>{{ new Date(b.bookedAt).toLocaleString() }}</td>
           <td>{{ statusLabel(b.status) }}</td>
           <td class="admin-booking-table--actions">
-            <clock-icon
+            <span
               v-if="authStore.isAdmin"
-              class="icon"
               :title="$t('table.booking.basketToReady')"
               @click="$emit('basket-status', { reference: b.reference, status: 'ready' })"
-            />
-            <check-circle-icon
+            >
+              <clock-icon class="icon" />
+            </span>
+            <span
               v-if="authStore.isAdmin"
-              class="icon"
               :title="$t('table.booking.basketToValidated')"
               @click="$emit('basket-status', { reference: b.reference, status: 'validated' })"
-            />
+            >
+              <check-circle-icon class="icon" />
+            </span>
             <pencil-icon class="icon" @click="$emit('edit', b)" />
-            <trash-icon class="icon" @click="deleteConfirmation(b._id)" />
+            <span
+              :class="{ disabled: b.status !== 'pending' }"
+              :title="b.status !== 'pending' ? $t('table.booking.onlyPendingCanBeDeleted') : $t('table.booking.deleteConfirm')"
+              @click="b.status === 'pending' && deleteConfirmation(b._id)"
+            >
+              <trash-icon class="icon" />
+            </span>
           </td>
         </tr>
       </tbody>
@@ -115,6 +123,11 @@ function closeDeletionModal() {
     text-align: right;
     white-space: nowrap;
     > * { cursor: pointer; }
+
+    .disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
   }
 }
 

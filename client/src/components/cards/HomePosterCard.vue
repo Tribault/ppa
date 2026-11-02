@@ -1,11 +1,12 @@
 <template class="poster-card">
-  <div v-if="view === 'grid'" @click="emit('details')" class="poster-card-grid" :class="{ 'no-image': !poster.image }">
-    <div v-if="poster.image" class="poster-card-poster">
-      <img :src="imgUrl" alt="" :class="{ grayscale: poster.stockInfo.availableStock === 0 }" />
+  <div v-if="view === 'grid'" @click="emit('details')" class="poster-card-grid" :class="{ 'no-image': !poster.image || imageLoadFailed }">
+    <div v-if="poster.image && !imageLoadFailed" class="poster-card-poster">
+      <img :src="imgUrl" alt="" :class="{ grayscale: poster.stockInfo.availableStock === 0 }" @error="imageLoadFailed = true" />
       <div class="poster-card-badges">
         <div v-for="t in poster.tags" :key="t._id" class="poster-card-badge">{{ t.name }}</div>
       </div>
       <button
+        v-if="!CATALOG_MODE"
         class="poster-card-book-btn"
         :class="{ disabled: !canBook }"
         :disabled="!canBook"
@@ -19,6 +20,7 @@
     <div v-else class="poster-card-poster no-logo">
       <EyeSlashIcon />
       <button
+        v-if="!CATALOG_MODE"
         class="poster-card-book-btn"
         :class="{ disabled: !canBook }"
         :disabled="!canBook"
@@ -43,6 +45,7 @@
   </div>
 
   <booking-modal
+    v-if="!CATALOG_MODE"
     :visible="showBookingModal"
     :poster="poster"
     @close="showBookingModal = false"
@@ -52,10 +55,11 @@
 
 <script setup lang="ts">
 import type { Poster } from '@/types/models'
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { EyeSlashIcon } from '@heroicons/vue/24/solid'
 import { PlusIcon } from '@heroicons/vue/24/outline'
 import { useAuthStore } from '@/stores/auth'
+import { CATALOG_MODE } from '@/config'
 import { useMessageStore } from '@/stores/messages'
 import BookingModal from '@/components/cards/BookingModal.vue'
 
@@ -71,6 +75,14 @@ const messageStore = useMessageStore()
 
 const imgUrl = ref<string>(import.meta.env.VITE_IMG_URL + props.poster.image)
 const showBookingModal = ref(false)
+const imageLoadFailed = ref(false)
+
+watch(
+  () => props.poster.image,
+  () => {
+    imageLoadFailed.value = false
+  },
+)
 
 const canBook = computed(
   () =>

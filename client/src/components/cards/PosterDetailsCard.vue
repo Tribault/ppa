@@ -4,12 +4,13 @@
       <ArrowUturnLeftIcon />
     </router-link>
     <div class="poster-details-card-image">
-      <img v-if="posterInfo.image"
+      <img v-if="posterInfo.image && !imageLoadFailed"
         :src="imgUrl.value"
         :class="{
           grayscale: posterInfo.stockInfo.availableStock == 0,
         }"
         alt=""
+        @error="imageLoadFailed = true"
       />
       <img v-else
       src = "@/assets/404.svg"
@@ -73,6 +74,7 @@
     @close="isEditing = false"
   />
   <booking-modal
+    v-if="!CATALOG_MODE"
     :visible="showBookingModal"
     :poster="posterInfo"
     @close="showBookingModal = false"
@@ -85,7 +87,8 @@ import type { Poster } from '@/types/models'
 import { usePosterStore } from '@/stores/posters'
 import { useMessageStore } from '@/stores/messages'
 import { useAuthStore } from '@/stores/auth'
-import { computed, ref, onMounted } from 'vue'
+import { CATALOG_MODE } from '@/config'
+import { computed, ref, watch, onMounted } from 'vue'
 import { ArrowUturnLeftIcon, PencilIcon } from '@heroicons/vue/24/solid'
 
 import PosterEdit from '@/components/edition/PosterEdit.vue'
@@ -103,15 +106,19 @@ const messageStore = useMessageStore()
 
 const isEditing = ref<boolean>(false)
 const showBookingModal = ref(false)
+const imageLoadFailed = ref(false)
 
 const posterInfo = computed(() => {
   return posterStore.poster ?? props.poster
 })
 
+watch(() => posterInfo.value.image, () => {
+  imageLoadFailed.value = false
+})
 
 const imgUrl = computed(() => ref<string>(import.meta.env.VITE_IMG_URL + posterInfo.value.image))
 
-const canBook = computed(() => auth.user?.role === 'user' && posterInfo.value.stockInfo.availableStock > 0 && messageStore.message?.bookingAllowed)
+const canBook = computed(() => !CATALOG_MODE && auth.user?.role === 'user' && posterInfo.value.stockInfo.availableStock > 0 && messageStore.message?.bookingAllowed)
 
 
 

@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
 import { useAuthStore } from '@/stores/auth'
+import { CATALOG_MODE } from '@/config'
 
 import Home from '@/pages/Home.vue'
 import Login from '@/pages/auth/Login.vue'
@@ -20,11 +21,11 @@ const routes = [
   { path: '/help', name: 'help', component: Help },
   { path: '/posters/:id', name: 'posters', component: PosterDetails, props: true },
   { path: '/login', name: 'login', component: Login },
-  { path: '/signup', component: Signup },
+  { path: '/signup', component: Signup, meta: { bookingOnly: true } },
   { path: '/admin', component: Admin, meta: { requiresAuth: true, roles: ['admin'] } },
   { path: '/admin/new', component: PosterForm, meta: { requiresAuth: true, roles: ['admin'] } },
   { path: '/admin/edit/:id', component: PosterForm, props: true, meta: { requiresAuth: true, roles: ['admin'] } },
-  { path: '/account', component: Account, meta: { requiresAuth: true, roles: ['user'] } },
+  { path: '/account', component: Account, meta: { requiresAuth: true, roles: ['user'], bookingOnly: true } },
   { path: '/forgot-password', component: ForgotPassword },
   { path: '/reset-password', component: ResetPassword },
   { path: '/verify-email', component: EmailVerification },
@@ -38,6 +39,10 @@ const router = createRouter({
 
 router.beforeEach(async (to, from, next) => {
   const auth = useAuthStore()
+
+  if (CATALOG_MODE && to.meta.bookingOnly) {
+    return next('/')
+  }
 
   if (auth.token && !auth.user) {
     try {

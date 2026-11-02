@@ -93,8 +93,9 @@ export const useBookingStore = defineStore('bookings', () => {
       bookings.value = bookings.value.filter((p) => p._id !== id)
       toast.success('Réservation supprimée ✅')
     } catch (err: any) {
-      error.value = err.response?.data?.message || 'Failed to delete booking'
-      toast.error('Erreur durant la suppression ❌')
+      const message = err.response?.data?.error || 'Failed to delete booking'
+      error.value = message
+      toast.error(message)
       throw err
     }
   }

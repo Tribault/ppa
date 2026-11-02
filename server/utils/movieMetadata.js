@@ -32,19 +32,43 @@ async function searchTmdb(title) {
   }
 }
 
+// Matches letters outside the Latin alphabet (CJK, Hangul, Arabic, Cyrillic...).
+const NON_LATIN = /[^\p{Script=Latin}\p{Script=Common}\p{Script=Inherited}]/u
+
+// Some people only have a native-script name on TMDB (e.g. "大九明子"). Their
+// "also known as" list usually holds a romanized spelling, so use that instead.
+async function latinName(person) {
+  if (!person) return ''
+  if (!NON_LATIN.test(person.name)) return person.name
+  try {
+    const res = await fetch(`${TMDB_BASE}/person/${person.id}`, { headers: tmdbHeaders() })
+    if (!res.ok) return person.name
+    const data = await res.json()
+    return (data.also_known_as || []).find((n) => n && !NON_LATIN.test(n)) || person.name
+  } catch {
+    return person.name
+  }
+}
+
 async function getTmdbDetails(id) {
   if (!process.env.TMDB_API_KEY) return null
 
-  const url = `${TMDB_BASE}/movie/${id}?append_to_response=credits&language=fr-FR`
-  const res = await fetch(url, { headers: tmdbHeaders() })
+  // Credits are fetched without language=fr-FR: with it, TMDB returns names in
+  // their native script for many Asian filmmakers (e.g. "大九明子" instead of "Akiko Ohku").
+  const [res, creditsRes] = await Promise.all([
+    fetch(`${TMDB_BASE}/movie/${id}?language=fr-FR`, { headers: tmdbHeaders() }),
+    fetch(`${TMDB_BASE}/movie/${id}/credits`, { headers: tmdbHeaders() })
+  ])
   if (!res.ok) return null
 
   const data = await res.json()
+  data.credits = creditsRes.ok ? await creditsRes.json() : {}
   const director = (data.credits?.crew || []).find((c) => c.job === 'Director')
-  const mainActors = (data.credits?.cast || []).slice(0, 5).map((c) => c.name)
+  const cast = (data.credits?.cast || []).slice(0, 5)
+  const [filmmaker, ...mainActors] = await Promise.all([director, ...cast].map(latinName))
 
   return {
-    filmmaker: director?.name || '',
+    filmmaker: filmmaker || '',
     year: data.release_date ? parseInt(data.release_date.slice(0, 4), 10) : null,
     mainActors,
     genre: (data.genres || []).map((g) => g.name).join(', '),
@@ -156,4 +180,4 @@ async function downloadTmdbPoster(filePath) {
   return filename
 }
 
-module.exports = { searchTmdb, getTmdbDetails, getTmdbPosters, downloadTmdbPoster, searchWikipediaFallback }
+module.exports = { latinName, NON_LATIN, searchTmdb, getTmdbDetails, getTmdbPosters, downloadTmdbPoster, searchWikipediaFallback }

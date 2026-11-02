@@ -6,6 +6,9 @@
       <template v-if="auth.isAdmin">
         <div v-html="$t('help.adminContent')" />
       </template>
+      <template v-else-if="CATALOG_MODE">
+        <p>{{ $t('help.catalogParagraph') }}</p>
+      </template>
       <template v-else>
         <p>
           {{ $t('help.paragraphUser1') }}
@@ -32,6 +35,7 @@
 
 <script setup lang="ts">
 import { useAuthStore } from '@/stores/auth'
+import { CATALOG_MODE } from '@/config'
 
 const auth = useAuthStore()
 </script>

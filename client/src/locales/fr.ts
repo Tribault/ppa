@@ -32,6 +32,8 @@ export default {
     tickUser7:
       "Une réservation reste valide deux semaines après la vente. Si vous n'êtes pas disponible, merci de contacter l'arvor à l'adresse suivante : BLA BLA. Le stock des affiches étant important, les affiches pourront être retirées après la vente mais le paiement devra être réalisé auprès de la billeterie de l'Arvor auparavant.",
     tickUser8: "Si vous avez la moindre question, n'hésitez pas à envoyer un email à : BLA BLA.",
+    catalogParagraph:
+      "Bienvenue sur le catalogue des affiches du cinéma l'Arvor à Rennes ! Vous pouvez y consulter les affiches mises en vente par le personnel de l'Arvor. Les affiches s'achètent sur place lors des ventes organisées au cinéma. L'intégralité des fonds reviendra au financement actif du cinéma.",
     adminContent: `
       <p>L'administration possède une interface un peu différente du côté client. Voici les différents onglets et les choses que vous pouvez réaliser.</p>
 
@@ -268,6 +270,7 @@ export default {
       status: 'Statut',
       actions: 'Actions',
       deleteConfirm: 'Supprimer la réservation.',
+      onlyPendingCanBeDeleted: "Seules les réservations en attente peuvent être supprimées — remettez-la en attente d'abord.",
       basketToReady: 'Marquer tout le panier comme prêt',
       basketToValidated: 'Valider tout le panier',
       basketUpdateSuccess: 'Panier mis à jour.',
