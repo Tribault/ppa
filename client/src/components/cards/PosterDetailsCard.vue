@@ -1,8 +1,8 @@
 <template>
   <div class="poster-details-card">
-    <router-link to="/" class="poster-details-card-back">
+    <a href="/" class="poster-details-card-back" @click.prevent="goBack">
       <ArrowUturnLeftIcon />
-    </router-link>
+    </a>
     <div class="poster-details-card-image">
       <img v-if="posterInfo.image && !imageLoadFailed"
         :src="imgUrl.value"
@@ -89,6 +89,7 @@ import { useMessageStore } from '@/stores/messages'
 import { useAuthStore } from '@/stores/auth'
 import { CATALOG_MODE } from '@/config'
 import { computed, ref, watch, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { ArrowUturnLeftIcon, PencilIcon } from '@heroicons/vue/24/solid'
 
 import PosterEdit from '@/components/edition/PosterEdit.vue'
@@ -121,6 +122,16 @@ const imgUrl = computed(() => ref<string>(import.meta.env.VITE_IMG_URL + posterI
 const canBook = computed(() => !CATALOG_MODE && auth.user?.role === 'user' && posterInfo.value.stockInfo.availableStock > 0 && messageStore.message?.bookingAllowed)
 
 
+
+const router = useRouter()
+
+// Return to the catalog view the visitor came from (keeping its sort, filter
+// and page); fall back to the home page when arriving from elsewhere.
+function goBack() {
+  const back = router.options.history.state.back
+  if (typeof back === 'string' && (back === '/' || back.startsWith('/?'))) router.back()
+  else router.push('/')
+}
 
 async function refreshData() {
   await posterStore.fetchPoster(posterInfo.value._id)

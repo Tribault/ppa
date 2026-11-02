@@ -14,7 +14,12 @@
     <div class="home-header">
       <div class="home-search">
         <MagnifyingGlassIcon class="icon" />
-        <input type="text" :placeholder="$t('home.searchPlaceholder')" @input="onSearchInput" />
+        <input
+          type="text"
+          :value="posterStore.searchQuery"
+          :placeholder="$t('home.searchPlaceholder')"
+          @input="onSearchInput"
+        />
       </div>
       <div class="home-browse">
         <select v-model="browseMode" class="home-browse-select">
@@ -105,7 +110,7 @@ import { usePosterStore } from '@/stores/posters'
 import { useTagStore } from '@/stores/tags'
 import { useMessageStore } from '@/stores/messages'
 import { ref, computed, onMounted, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import {
   Squares2X2Icon,
   ListBulletIcon,
@@ -117,6 +122,7 @@ import Spinner from '@/components/utils/Spinner.vue'
 import Pagination from '@/components/utils/Pagination.vue'
 
 const router = useRouter()
+const route = useRoute()
 
 const posterStore = usePosterStore()
 const tagStore = useTagStore()
@@ -129,11 +135,22 @@ const limit = computed(() => view.value === 'list' ? 30 : 10)
 const PREVIEW_LIMIT = 12
 
 type BrowseMode = 'new' | 'all' | 'country' | 'genre' | 'tag'
-const browseMode = ref<BrowseMode>('new')
-const selectedCountry = ref('')
-const selectedGenre = ref('')
-const selectedTagId = ref('')
-const expanded = ref(false)
+const BROWSE_MODES: BrowseMode[] = ['new', 'all', 'country', 'genre', 'tag']
+
+// The browse state lives in the URL (?browse=genre&genre=Drame&page=2) so it
+// survives opening a poster and coming back, a page refresh, or a shared link.
+const queryString = (key: string) => {
+  const v = route.query[key]
+  return typeof v === 'string' ? v : ''
+}
+const initialMode = queryString('browse') as BrowseMode
+const browseMode = ref<BrowseMode>(BROWSE_MODES.includes(initialMode) ? initialMode : 'new')
+const selectedCountry = ref(queryString('country'))
+const selectedGenre = ref(queryString('genre'))
+const selectedTagId = ref(queryString('tag'))
+const expanded = ref(queryString('expanded') === '1')
+const initialPage = Math.max(1, parseInt(queryString('page'), 10) || 1)
+posterStore.searchQuery = queryString('q')
 
 const isPreview = computed(
   () => view.value === 'grid' && browseMode.value === 'new' && !expanded.value && !posterStore.searchQuery,
@@ -161,7 +178,20 @@ function loadPosters(page = 1) {
   if (browseMode.value === 'country' && selectedCountry.value) params.country = selectedCountry.value
   if (browseMode.value === 'genre' && selectedGenre.value) params.genre = selectedGenre.value
   if (browseMode.value === 'tag' && selectedTagId.value) params.tags = selectedTagId.value
+  syncUrl(page)
   return posterStore.fetchPosters(params)
+}
+
+function syncUrl(page: number) {
+  const query: Record<string, string> = {}
+  if (browseMode.value !== 'new') query.browse = browseMode.value
+  if (browseMode.value === 'country' && selectedCountry.value) query.country = selectedCountry.value
+  if (browseMode.value === 'genre' && selectedGenre.value) query.genre = selectedGenre.value
+  if (browseMode.value === 'tag' && selectedTagId.value) query.tag = selectedTagId.value
+  if (posterStore.searchQuery) query.q = posterStore.searchQuery
+  if (expanded.value) query.expanded = '1'
+  if (page > 1) query.page = String(page)
+  router.replace({ query })
 }
 
 function loadPage(p: number) {
@@ -179,7 +209,7 @@ function onBooked() {
 
 onMounted(async () => {
   await Promise.all([
-    loadPosters(1),
+    loadPosters(initialPage),
     messageStore.fetchMessage(),
     posterStore.fetchFilters({ forSale: true }),
     tagStore.fetchTags(),
