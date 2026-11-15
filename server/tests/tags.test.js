@@ -109,4 +109,31 @@ describe('Tags', () => {
       expect(res.status).toBe(404)
     })
   })
+
+  describe('PUT /api/tags/:id', () => {
+    it('lets an admin rename a tag, and posters show the new name', async () => {
+      const item = await Tag.create({ name: 'Ancien nom' })
+      const poster = await Poster.create({ ...posterData, tags: [item._id] })
+      const res = await request(app)
+        .put(`/api/tags/${item._id}`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({ name: '  Nouveau nom  ' })
+      expect(res.status).toBe(200)
+      expect(res.body.name).toBe('Nouveau nom')
+      const updated = await Poster.findById(poster._id).populate('tags')
+      expect(updated.tags[0].name).toBe('Nouveau nom')
+    })
+
+    it('rejects an empty name, a duplicate name, a missing id and non-admins', async () => {
+      const a = await Tag.create({ name: 'A' })
+      await Tag.create({ name: 'B' })
+      const put = (id, body, token = adminToken) =>
+        request(app).put(`/api/tags/${id}`).set('Authorization', `Bearer ${token}`).send(body)
+      expect((await put(a._id, { name: '   ' })).status).toBe(400)
+      expect((await put(a._id, { name: 'B' })).status).toBe(400)
+      expect((await put('000000000000000000000001', { name: 'C' })).status).toBe(404)
+      expect((await put(a._id, { name: 'C' }, userToken)).status).toBe(403)
+      expect((await Tag.findById(a._id)).name).toBe('A')
+    })
+  })
 })

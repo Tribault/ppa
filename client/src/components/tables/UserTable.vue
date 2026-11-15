@@ -9,14 +9,14 @@
           <sortable-th field="role" :sort-by="sortBy" :sort-dir="sortDir" class="role-col" @sort="$emit('sort', $event)">
             {{ $t('table.user.role') }}
           </sortable-th>
-          <th>{{ $t('table.user.actions') }}</th>
+          <th class="sticky-col-right">{{ $t('table.user.actions') }}</th>
         </tr>
       </thead>
       <tbody>
         <tr v-for="u in users">
           <th scope="row" class="sticky-col">{{ u.email }}</th>
           <td class="role-col">{{ u.role }}</td>
-          <td class="admin-booking-table--actions">
+          <td class="admin-booking-table--actions sticky-col-right">
             <span v-if="isAuthorized(u._id)">
               <pencil-icon class="icon" @click="$emit('edit', u)" />
               <trash-icon class="icon" @click="deleteConfirmation(u._id)" />

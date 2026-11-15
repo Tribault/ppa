@@ -82,12 +82,15 @@ const closeModal = () => {
   showModal.value = false
 }
 
+// Reload the list on close so renamed tags/locations show their new names
 const closeTagModal = () => {
   showTagModal.value = false
+  fetchList()
 }
 
 const closeLocationModal = () => {
   showLocationModal.value = false
+  fetchList()
 }
 
 function activeQuery() {
@@ -159,19 +162,17 @@ function deletePoster(poster: Poster) {
 
 .admin-posters-header {
   background-color: $red;
-  display: grid;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   width: 100%;
-  grid-template-columns: 1fr;
-  gap: 0.5rem;
+  gap: 0.5rem 1rem;
 
   padding: 0.5rem 1rem;
   > * {
     font-weight: 700;
   }
 
-  @media screen and (min-width: $break-md) {
-    grid-template-columns: 0.5fr 3fr auto;
-  }
   svg {
     margin-right: 0.5rem;
   }
@@ -179,6 +180,8 @@ function deletePoster(poster: Poster) {
   &--search {
     display: flex;
     align-items: center;
+    flex: 0 1 auto;
+    min-width: 0;
     > input {
       margin-left: $space-sm;
       height: 30px;
@@ -190,14 +193,17 @@ function deletePoster(poster: Poster) {
 
   &--actions {
     display: flex;
+    flex-wrap: wrap;
     gap: 0.5rem;
     align-items: center;
+    margin-left: auto;
   }
 
   &--filter {
     display: flex;
     align-items: center;
     flex-wrap: wrap;
+    flex: 1 1 280px;
     font-weight: 500;
     color: white;
 

@@ -7,10 +7,35 @@
       <!-- List of existing tags -->
       <ul class="tag-list">
         <li v-for="tag in tagStore.tags" :key="tag._id" class="tag-item">
-          <span>{{ tag.name }}</span>
-          <button type="button" class="tag-item-delete" @click="confirmDelete(tag)">
-            <trash-icon class="icon" />
-          </button>
+          <template v-if="editingId === tag._id">
+            <input
+              v-model="editingName"
+              v-focus
+              type="text"
+              class="tag-input tag-item-input"
+              @keydown.enter.prevent="saveEdit"
+              @keydown.esc.stop="cancelEdit"
+            />
+            <span class="tag-item-actions">
+              <button type="button" class="tag-item-btn" :title="$t('form.tag.save')" @click="saveEdit">
+                <check-icon class="icon" />
+              </button>
+              <button type="button" class="tag-item-btn" :title="$t('form.tag.cancel')" @click="cancelEdit">
+                <x-mark-icon class="icon" />
+              </button>
+            </span>
+          </template>
+          <template v-else>
+            <span>{{ tag.name }}</span>
+            <span class="tag-item-actions">
+              <button type="button" class="tag-item-btn" :title="$t('form.tag.edit')" @click="startEdit(tag)">
+                <pencil-icon class="icon" />
+              </button>
+              <button type="button" class="tag-item-btn" @click="confirmDelete(tag)">
+                <trash-icon class="icon" />
+              </button>
+            </span>
+          </template>
         </li>
       </ul>
 
@@ -32,7 +57,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useTagStore } from '@/stores/tags'
-import { TrashIcon } from '@heroicons/vue/24/solid'
+import { CheckIcon, PencilIcon, TrashIcon, XMarkIcon } from '@heroicons/vue/24/solid'
 import ConfirmModal from '@/components/utils/ConfirmModal.vue'
 import { useToast } from 'vue-toastification'
 import { useI18n } from 'vue-i18n'
@@ -65,6 +90,33 @@ async function createTag() {
     newTag.value = ''
   } catch (err) {
     console.error("Impossible de créer l'étiquette", err)
+  }
+}
+
+// Inline rename
+const editingId = ref<string | null>(null)
+const editingName = ref('')
+const vFocus = { mounted: (el: HTMLElement) => el.focus() }
+
+function startEdit(item: { _id: string; name: string }) {
+  editingId.value = item._id
+  editingName.value = item.name
+}
+
+function cancelEdit() {
+  editingId.value = null
+  editingName.value = ''
+}
+
+async function saveEdit() {
+  const id = editingId.value
+  const name = editingName.value.trim()
+  if (!id || !name) return
+  try {
+    await tagStore.updateTag(id, { name })
+    cancelEdit()
+  } catch (err: any) {
+    toast.error(err.response?.data?.message || t('form.tag.updateError'))
   }
 }
 
@@ -141,7 +193,18 @@ async function deleteConfirmed() {
   gap: 8px;
 }
 
-.tag-item-delete {
+.tag-item-actions {
+  display: inline-flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.tag-item-input {
+  min-width: 0;
+  padding: 2px 6px;
+}
+
+.tag-item-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;

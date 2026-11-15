@@ -187,19 +187,17 @@ watch(() => bookingStore.searchQuery, () => {
 
 .admin-bookings-header {
   background-color: $red;
-  display: grid;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   width: 100%;
-  grid-template-columns: 1fr;
-  gap: 0.5rem;
+  gap: 0.5rem 1rem;
 
   padding: 0.5rem 1rem;
   > * {
     font-weight: 700;
   }
 
-  @media screen and (min-width: $break-md) {
-    grid-template-columns: 0.5fr 3fr auto;
-  }
   svg {
     margin-right: 0.5rem;
   }
@@ -207,6 +205,8 @@ watch(() => bookingStore.searchQuery, () => {
   &--search {
     display: flex;
     align-items: center;
+    flex: 0 1 auto;
+    min-width: 0;
     > input {
       margin-left: $space-sm;
       height: 30px;
@@ -218,8 +218,10 @@ watch(() => bookingStore.searchQuery, () => {
 
   &--actions {
     display: flex;
+    flex-wrap: wrap;
     gap: 0.5rem;
     align-items: center;
+    margin-left: auto;
 
     button span {
       display: inline-flex;
@@ -231,6 +233,7 @@ watch(() => bookingStore.searchQuery, () => {
     display: flex;
     align-items: center;
     flex-wrap: wrap;
+    flex: 1 1 280px;
     font-weight: 500;
     color: white;
 

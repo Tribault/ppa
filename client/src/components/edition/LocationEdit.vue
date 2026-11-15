@@ -7,10 +7,35 @@
       <!-- List of existing locations -->
       <ul class="location-list">
         <li v-for="location in locationStore.locations" :key="location._id" class="location-item">
-          <span>{{ location.name }}</span>
-          <button type="button" class="location-item-delete" @click="confirmDelete(location)">
-            <trash-icon class="icon" />
-          </button>
+          <template v-if="editingId === location._id">
+            <input
+              v-model="editingName"
+              v-focus
+              type="text"
+              class="location-input location-item-input"
+              @keydown.enter.prevent="saveEdit"
+              @keydown.esc.stop="cancelEdit"
+            />
+            <span class="location-item-actions">
+              <button type="button" class="location-item-btn" :title="$t('form.location.save')" @click="saveEdit">
+                <check-icon class="icon" />
+              </button>
+              <button type="button" class="location-item-btn" :title="$t('form.location.cancel')" @click="cancelEdit">
+                <x-mark-icon class="icon" />
+              </button>
+            </span>
+          </template>
+          <template v-else>
+            <span>{{ location.name }}</span>
+            <span class="location-item-actions">
+              <button type="button" class="location-item-btn" :title="$t('form.location.edit')" @click="startEdit(location)">
+                <pencil-icon class="icon" />
+              </button>
+              <button type="button" class="location-item-btn" @click="confirmDelete(location)">
+                <trash-icon class="icon" />
+              </button>
+            </span>
+          </template>
         </li>
       </ul>
 
@@ -32,7 +57,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useLocationStore } from '@/stores/locations'
-import { TrashIcon } from '@heroicons/vue/24/solid'
+import { CheckIcon, PencilIcon, TrashIcon, XMarkIcon } from '@heroicons/vue/24/solid'
 import ConfirmModal from '@/components/utils/ConfirmModal.vue'
 import { useToast } from 'vue-toastification'
 import { useI18n } from 'vue-i18n'
@@ -65,6 +90,33 @@ async function createLocation() {
     newLocation.value = ''
   } catch (err) {
     console.error('Impossible de créer la localisation', err)
+  }
+}
+
+// Inline rename
+const editingId = ref<string | null>(null)
+const editingName = ref('')
+const vFocus = { mounted: (el: HTMLElement) => el.focus() }
+
+function startEdit(item: { _id: string; name: string }) {
+  editingId.value = item._id
+  editingName.value = item.name
+}
+
+function cancelEdit() {
+  editingId.value = null
+  editingName.value = ''
+}
+
+async function saveEdit() {
+  const id = editingId.value
+  const name = editingName.value.trim()
+  if (!id || !name) return
+  try {
+    await locationStore.updateLocation(id, { name })
+    cancelEdit()
+  } catch (err: any) {
+    toast.error(err.response?.data?.message || t('form.location.updateError'))
   }
 }
 
@@ -141,7 +193,18 @@ async function deleteConfirmed() {
   gap: 8px;
 }
 
-.location-item-delete {
+.location-item-actions {
+  display: inline-flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.location-item-input {
+  min-width: 0;
+  padding: 2px 6px;
+}
+
+.location-item-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;

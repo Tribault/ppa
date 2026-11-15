@@ -10,6 +10,16 @@ export default {
     viewBasket: 'View basket',
   },
 
+  gallery: {
+    loading: 'Loading posters…',
+    empty: 'No posters to show.',
+    prev: 'Previous poster',
+    next: 'Next poster',
+    close: 'Close the gallery',
+    fullscreen: 'Full screen',
+    exitFullscreen: 'Exit full screen',
+    soldOut: 'sold out',
+  },
   help: {
     title: 'Help',
     paragraphUser1:
@@ -392,6 +402,10 @@ export default {
       createError: 'Unable to create the tag',
       deleteConfirm: 'Delete this tag? It will be removed from any poster using it.',
       deleteError: 'Unable to delete the tag',
+      edit: 'Rename',
+      save: 'Save',
+      cancel: 'Cancel',
+      updateError: 'Unable to rename the tag',
     },
     location: {
       title: 'Manage positions',
@@ -400,6 +414,10 @@ export default {
       createError: 'Unable to create the position',
       deleteConfirm: 'Delete this position? It will be removed from any poster using it.',
       deleteError: 'Unable to delete the position',
+      edit: 'Rename',
+      save: 'Save',
+      cancel: 'Cancel',
+      updateError: 'Unable to rename the position',
     },
     message: {
       title: 'Edit message',

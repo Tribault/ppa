@@ -6,6 +6,7 @@ const { createUser, tokenFor } = require('./helpers/auth')
 const Poster = require('../models/Poster')
 const Location = require('../models/Location')
 const Tag = require('../models/Tag')
+const Booking = require('../models/Booking')
 
 // Reusable poster fixture to avoid repeating the same fields everywhere.
 const posterData = { title: 'Affiche Test', size: '40x60', price: 20, totalStock: 10, forSale: true }
@@ -345,6 +346,22 @@ describe('Posters', () => {
     })
   })
 
+  describe('GET /api/posters (gallery options)', () => {
+    it('hasImage=true only returns posters with an image', async () => {
+      await Poster.create({ ...posterData, title: 'Avec image', image: 'a.jpg' })
+      await Poster.create({ ...posterData, title: 'Sans image', image: '' })
+      await Poster.create({ ...posterData, title: 'Pas de champ' })
+      const res = await request(app).get('/api/posters?hasImage=true')
+      expect(res.body.data.map((p) => p.title)).toEqual(['Avec image'])
+    })
+
+    it('sorts titles in French alphabetical order', async () => {
+      for (const title of ['Zorro', 'Écologie', 'avatar', 'Bambi']) await Poster.create({ ...posterData, title })
+      const res = await request(app).get('/api/posters?sort=title')
+      expect(res.body.data.map((p) => p.title)).toEqual(['avatar', 'Bambi', 'Écologie', 'Zorro'])
+    })
+  })
+
   // ── UPDATE ─────────────────────────────────────────────────────────────────
 
   describe('PUT /api/posters/:id', () => {
@@ -358,6 +375,51 @@ describe('Posters', () => {
       expect(res.status).toBe(200)
       expect(res.body.title).toBe('Titre Modifié')
       expect(res.body.price).toBe(25)
+    })
+
+    it('admin can lower the stock of a poster with no bookings', async () => {
+      const poster = await Poster.create({ ...posterData, totalStock: 3 })
+      const res = await request(app)
+        .put(`/api/posters/${poster._id}`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .field('totalStock', '1')
+      expect(res.status).toBe(200)
+      expect(res.body.totalStock).toBe(1)
+      expect(res.body.stockInfo.availableStock).toBe(1)
+    })
+
+    it('refuses a stock below the copies already booked', async () => {
+      const poster = await Poster.create({ ...posterData, totalStock: 5 })
+      const buyerA = await createUser({ email: 'buyer.a@test.com' })
+      const buyerB = await createUser({ email: 'buyer.b@test.com' })
+      await Booking.create({ reference: 'R-1', user: buyerA._id, poster: poster._id, quantity: 2, status: 'pending', priceAtBooking: 20 })
+      await Booking.create({ reference: 'R-2', user: buyerB._id, poster: poster._id, quantity: 1, status: 'validated', priceAtBooking: 20 })
+
+      const tooLow = await request(app)
+        .put(`/api/posters/${poster._id}`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .set('Accept-Language', 'en')
+        .field('totalStock', '2')
+      expect(tooLow.status).toBe(400)
+      expect(tooLow.body.message).toMatch(/below 3/)
+
+      const ok = await request(app)
+        .put(`/api/posters/${poster._id}`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .field('totalStock', '3')
+      expect(ok.status).toBe(200)
+      expect(ok.body.stockInfo.availableStock).toBe(0)
+    })
+
+    it('rejects a negative or non-numeric stock', async () => {
+      const poster = await Poster.create(posterData)
+      for (const bad of ['-1', 'abc']) {
+        const res = await request(app)
+          .put(`/api/posters/${poster._id}`)
+          .set('Authorization', `Bearer ${adminToken}`)
+          .field('totalStock', bad)
+        expect(res.status).toBe(400)
+      }
     })
 
     it('returns 404 when updating a non-existent poster', async () => {

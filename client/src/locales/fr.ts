@@ -10,6 +10,16 @@ export default {
     viewBasket: 'Voir le panier',
   },
 
+  gallery: {
+    loading: 'Chargement des affiches…',
+    empty: 'Aucune affiche à afficher.',
+    prev: 'Affiche précédente',
+    next: 'Affiche suivante',
+    close: 'Fermer la galerie',
+    fullscreen: 'Plein écran',
+    exitFullscreen: 'Quitter le plein écran',
+    soldOut: 'épuisée',
+  },
   help: {
     title: 'Aide',
     paragraphUser1:
@@ -393,6 +403,10 @@ export default {
       createError: "Impossible de créer l'étiquette",
       deleteConfirm: "Supprimer l'étiquette ? Elle sera retirée des affiches concernées.",
       deleteError: "Impossible de supprimer l'étiquette",
+      edit: 'Renommer',
+      save: 'Enregistrer',
+      cancel: 'Annuler',
+      updateError: "Impossible de renommer l'étiquette",
     },
     location: {
       title: 'Gestion des localisations',
@@ -401,6 +415,10 @@ export default {
       createError: 'Impossible de créer la localisation',
       deleteConfirm: 'Supprimer la localisation ? Elle sera retirée des affiches concernées.',
       deleteError: 'Impossible de supprimer la localisation',
+      edit: 'Renommer',
+      save: 'Enregistrer',
+      cancel: 'Annuler',
+      updateError: 'Impossible de renommer la localisation',
     },
     message: {
       title: 'Modifier le message',

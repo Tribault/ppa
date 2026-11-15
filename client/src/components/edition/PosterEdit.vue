@@ -140,7 +140,7 @@
                 type="number"
                 :placeholder="$t('form.poster.stockPlaceholder')"
                 class="poster-edit-input stock"
-                :min="posterToEdit?.stockInfo?.availableStock"
+                :min="committedStock"
               />
               <div v-if="posterToEdit?._id" class="poster-edit-form--row">
               <p class="tag-white">{{ $t('form.poster.available') }} {{posterToEdit?.stockInfo?.availableStock}}</p>
@@ -468,6 +468,12 @@ function capitalizeTitle(string: String){
   return string.charAt(0).toLocaleUpperCase() + string.slice(1)
 }
 
+// Copies already reserved, ready or sold: the stock can't go below this.
+const committedStock = computed(() => {
+  const info = props.posterToEdit?.stockInfo
+  return info ? (info.pending || 0) + (info.ready || 0) + (info.confirmed || 0) : 0
+})
+
 async function submit() {
   try {
     const formData = new FormData()
@@ -501,9 +507,9 @@ async function submit() {
 
     emit('saved')
     close()
-  } catch (err) {
+  } catch (err: any) {
     console.error(err)
-    toast.error(t('form.poster.error'))
+    toast.error(err.response?.data?.message || t('form.poster.error'))
   }
 }
 </script>

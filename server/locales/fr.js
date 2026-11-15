@@ -122,6 +122,8 @@ module.exports = {
     serverError: 'Erreur serveur.',
     unsupportedFormat: 'Format non supporté. Utilisez JPEG, PNG, WebP ou GIF.',
     fileTooLarge: 'Fichier trop volumineux (10 Mo max).',
+    invalidStock: 'Le stock doit être un nombre entier positif.',
+    stockBelowCommitted: (n) => `Le stock ne peut pas être inférieur à ${n} : ce nombre d'exemplaires est déjà réservé, prêt ou vendu.`,
   },
 
   location: {

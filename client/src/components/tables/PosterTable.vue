@@ -23,7 +23,7 @@
           <sortable-th field="createdAt" :sort-by="sortBy" :sort-dir="sortDir" @sort="$emit('sort', $event)">
             {{ $t('table.poster.createdAt') }}
           </sortable-th>
-          <th>{{ $t('table.poster.actions') }}</th>
+          <th class="sticky-col-right">{{ $t('table.poster.actions') }}</th>
         </tr>
       </thead>
       <tbody>
@@ -36,7 +36,7 @@
           <td>{{ (p.locations ?? []).map((l) => l.name).join(', ') }}</td>
           <td>{{ p.forSale ? $t('form.poster.yes') : $t('form.poster.no') }}</td>
           <td>{{ p.createdAt ? new Date(p.createdAt).toLocaleString() : '—' }}</td>
-          <td class="admin-poster-table--actions">
+          <td class="admin-poster-table--actions sticky-col-right">
             <eye-icon v-if="p.image" class="icon" @click="viewImage(p.image)" />
             <pencil-icon class="icon" @click="$emit('edit', p)" />
             <trash-icon class="icon" @click="deleteConfirmation(p)" />

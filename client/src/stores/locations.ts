@@ -15,10 +15,16 @@ export const useLocationStore = defineStore('locations', () => {
     locations.value.push(res.data)
   }
 
+  async function updateLocation(id: string, payload: { name: string }) {
+    const res = await api.put(`/locations/${id}`, payload)
+    const index = locations.value.findIndex((item) => item._id === id)
+    if (index !== -1) locations.value[index] = res.data
+  }
+
   async function deleteLocation(id: string) {
     await api.delete(`/locations/${id}`)
     locations.value = locations.value.filter((l) => l._id !== id)
   }
 
-  return { locations, fetchLocations, createLocation, deleteLocation }
+  return { locations, fetchLocations, createLocation, updateLocation, deleteLocation }
 })

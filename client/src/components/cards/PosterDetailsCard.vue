@@ -68,6 +68,7 @@
     </div>
   </div>
   <poster-edit
+    v-if="auth.isAdmin"
     :poster-to-edit="posterStore.poster"
     :visible="isEditing"
     @saved="refreshData"
@@ -125,11 +126,12 @@ const canBook = computed(() => !CATALOG_MODE && auth.user?.role === 'user' && po
 
 const router = useRouter()
 
-// Return to the catalog view the visitor came from (keeping its sort, filter
-// and page); fall back to the home page when arriving from elsewhere.
+// Return to the catalog view or gallery the visitor came from (keeping its
+// sort, filter, page or current poster); fall back to the home page otherwise.
 function goBack() {
   const back = router.options.history.state.back
-  if (typeof back === 'string' && (back === '/' || back.startsWith('/?'))) router.back()
+  const fromCatalog = typeof back === 'string' && (back === '/' || back.startsWith('/?') || back.startsWith('/gallery'))
+  if (fromCatalog) router.back()
   else router.push('/')
 }
 

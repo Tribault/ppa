@@ -17,7 +17,7 @@ exports.getPosters = async (req, res) => {
   const limit = parseInt(req.query.limit) || 20
   const skip = (page - 1) * limit
 
-  const { q, sort, sortBy, sortDir, country, genre, tags } = req.query
+  const { q, sort, sortBy, sortDir, country, genre, tags, hasImage } = req.query
 
   const filter = {}
   if (q) filter.title = { $regex: q, $options: 'i' }
@@ -25,6 +25,7 @@ exports.getPosters = async (req, res) => {
   if (country) filter.country = country
   if (genre) filter.genre = genreFilterRegex(genre)
   if (tags) filter.tags = tags
+  if (hasImage === 'true') filter.image = { $nin: ['', null] }
 
   const SORTABLE_POSTER_FIELDS = ['title', 'size', 'price', 'totalStock', 'forSale', 'createdAt']
   const sortOption = SORTABLE_POSTER_FIELDS.includes(sortBy)
@@ -35,6 +36,8 @@ exports.getPosters = async (req, res) => {
 
   const query = Poster.find(filter).populate('tags')
   if (isAdmin) query.populate('locations')
+  // French alphabetical order for titles: "Écologie" sorts with E, not after Z
+  if (sortOption.title) query.collation({ locale: 'fr', strength: 1 })
 
   const [posters, total] = await Promise.all([
     query.sort(sortOption).skip(skip).limit(limit),
@@ -134,6 +137,19 @@ exports.updatePoster = async (req, res) => {
         }
       }
       poster.image = req.file.filename
+    }
+
+    // Stock can go down freely, but never below what's already reserved or sold
+    if (req.body.totalStock !== undefined) {
+      const newStock = Number(req.body.totalStock)
+      if (!Number.isInteger(newStock) || newStock < 0) {
+        return res.status(400).json({ message: req.t.poster.invalidStock })
+      }
+      const { confirmed, pending, ready } = await computeStockInfo(poster._id, poster.totalStock)
+      const committed = confirmed + pending + ready
+      if (newStock < committed) {
+        return res.status(400).json({ message: req.t.poster.stockBelowCommitted(committed) })
+      }
     }
 
     Object.assign(poster, req.body)

@@ -247,6 +247,29 @@
   background-color: rgba(0, 0, 0, 0.07);
 }
 
+/* Sticky last column (row actions): stays visible when the table scrolls sideways.
+   Backgrounds are opaque and declared after the striping rules so they win. */
+.sticky-table .sticky-col-right {
+  position: sticky;
+  right: 0;
+  z-index: 2;
+  box-shadow: -1px 0 0 0 var(--border);
+  white-space: nowrap;
+}
+
+.sticky-table thead th.sticky-col-right {
+  z-index: 4;
+  background-color: white;
+}
+
+.sticky-table tbody tr:nth-child(even) td.sticky-col-right {
+  background-color: white;
+}
+
+.sticky-table tbody tr:nth-child(odd) td.sticky-col-right {
+  background-color: $darker-red;
+}
+
 /* Compact mode on very small screens */
 @media (max-width: 480px) {
   .sticky-table {

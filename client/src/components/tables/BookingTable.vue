@@ -24,7 +24,7 @@
           <sortable-th field="status" :sort-by="sortBy" :sort-dir="sortDir" @sort="$emit('sort', $event)">
             {{ $t('table.booking.status') }}
           </sortable-th>
-          <th>{{ $t('table.booking.actions') }}</th>
+          <th class="sticky-col-right">{{ $t('table.booking.actions') }}</th>
         </tr>
       </thead>
       <tbody>
@@ -36,7 +36,7 @@
           <td>{{ b.quantity * b.priceAtBooking }} €</td>
           <td>{{ new Date(b.bookedAt).toLocaleString() }}</td>
           <td>{{ statusLabel(b.status) }}</td>
-          <td class="admin-booking-table--actions">
+          <td class="admin-booking-table--actions sticky-col-right">
             <span
               v-if="authStore.isAdmin"
               :title="$t('table.booking.basketToReady')"

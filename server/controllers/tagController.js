@@ -26,3 +26,17 @@ exports.deleteTag = async (req, res) => {
 
   res.json({ message: req.t.tag.deleted })
 }
+
+// Renaming keeps the same id, so every poster using it shows the new name.
+exports.updateTag = async (req, res) => {
+  const name = typeof req.body.name === 'string' ? req.body.name.trim() : ''
+  if (!name) return res.status(400).json({ message: req.t.validation.nameRequired })
+  try {
+    const tag = await Tag.findByIdAndUpdate(req.params.id, { name }, { new: true, runValidators: true })
+    if (!tag) return res.status(404).json({ message: req.t.tag.notFound })
+    res.json(tag)
+  } catch (err) {
+    if (err.code === 11000) return res.status(400).json({ message: req.t.validation.nameAlreadyInUse })
+    res.status(400).json({ message: req.t.tag.serverError })
+  }
+}
