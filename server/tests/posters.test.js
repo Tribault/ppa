@@ -377,6 +377,42 @@ describe('Posters', () => {
       expect(res.body.price).toBe(25)
     })
 
+    it('clears tags, locations and actors when the form sends an empty list', async () => {
+      const tag = await Tag.create({ name: 'Culte' })
+      const location = await Location.create({ name: 'Boîte 1' })
+      const poster = await Poster.create({ ...posterData, tags: [tag._id], locations: [location._id], mainActors: ['A'] })
+      const res = await request(app)
+        .put(`/api/posters/${poster._id}`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .field('tags', '')
+        .field('locations', '')
+        .field('mainActors', '')
+      expect(res.status).toBe(200)
+      const updated = await Poster.findById(poster._id)
+      expect(updated.tags).toHaveLength(0)
+      expect(updated.locations).toHaveLength(0)
+      expect(updated.mainActors).toHaveLength(0)
+    })
+
+    it('removes one tag and keeps the others', async () => {
+      const keep = await Tag.create({ name: 'Garder' })
+      const drop = await Tag.create({ name: 'Retirer' })
+      const poster = await Poster.create({ ...posterData, tags: [keep._id, drop._id] })
+      const res = await request(app)
+        .put(`/api/posters/${poster._id}`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .field('tags[]', String(keep._id))
+      expect(res.status).toBe(200)
+      expect((await Poster.findById(poster._id)).tags.map(String)).toEqual([String(keep._id)])
+    })
+
+    it('keeps tags when an update does not mention them', async () => {
+      const tag = await Tag.create({ name: 'Culte' })
+      const poster = await Poster.create({ ...posterData, tags: [tag._id] })
+      await request(app).put(`/api/posters/${poster._id}`).set('Authorization', `Bearer ${adminToken}`).field('title', 'Nouveau')
+      expect((await Poster.findById(poster._id)).tags).toHaveLength(1)
+    })
+
     it('admin can lower the stock of a poster with no bookings', async () => {
       const poster = await Poster.create({ ...posterData, totalStock: 3 })
       const res = await request(app)

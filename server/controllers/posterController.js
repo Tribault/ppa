@@ -11,6 +11,16 @@ function genreFilterRegex(genre) {
   return new RegExp(`(^|,\\s*)${escapeRegex(genre)}\\s*(,|$)`, 'i')
 }
 
+// A multipart form can't send an empty list, so the edit form sends '' to
+// mean "none" (e.g. every tag removed). Turn that into a real empty array.
+const LIST_FIELDS = ['tags', 'locations', 'mainActors']
+function normalizeListFields(body) {
+  for (const field of LIST_FIELDS) {
+    if (body[field] === '') body[field] = []
+    else if (Array.isArray(body[field])) body[field] = body[field].filter((v) => v !== '')
+  }
+}
+
 exports.getPosters = async (req, res) => {
   const forSale = req.query.forSale
   const page = parseInt(req.query.page) || 1
@@ -116,6 +126,7 @@ exports.getPoster = async (req, res) => {
 }
 
 exports.createPoster = async (req, res) => {
+    normalizeListFields(req.body)
     const {title, size, price, note, totalStock, tags, locations, filmmaker, year, mainActors, genre, country, image: bodyImage} = req.body
     const image = req.file?.filename || bodyImage || ''
     const poster = await Poster.create({title, size, price, note, totalStock, image, tags, locations, filmmaker, year, mainActors, genre, country})
@@ -138,6 +149,8 @@ exports.updatePoster = async (req, res) => {
       }
       poster.image = req.file.filename
     }
+
+    normalizeListFields(req.body)
 
     // Stock can go down freely, but never below what's already reserved or sold
     if (req.body.totalStock !== undefined) {

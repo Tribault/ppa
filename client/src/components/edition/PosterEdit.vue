@@ -487,9 +487,14 @@ async function submit() {
     if (form.value.year) formData.append('year', form.value.year.toString())
     formData.append('genre', form.value.genre)
     formData.append('country', form.value.country)
-    form.value.tags.forEach((tag) => formData.append('tags[]', tag))
-    form.value.locations.forEach((location) => formData.append('locations[]', location))
-    form.value.mainActors.forEach((actor) => formData.append('mainActors[]', actor))
+    // An empty list is sent as '' so the server knows it was cleared
+    const appendList = (field: string, values: string[]) => {
+      if (values.length === 0) formData.append(field, '')
+      else values.forEach((v) => formData.append(`${field}[]`, v))
+    }
+    appendList('tags', form.value.tags)
+    appendList('locations', form.value.locations)
+    appendList('mainActors', form.value.mainActors)
 
     if (form.value.image instanceof File) {
       formData.append('image', form.value.image)
